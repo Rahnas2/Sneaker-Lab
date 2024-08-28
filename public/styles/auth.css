@@ -1,0 +1,87 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+html, body{
+    font-family: 'Poppins';
+}
+
+.fs-14{
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+.login-text{
+    font-size: 2rem;
+    font-weight: 700;
+    font-family: 'Inter',sans-serif;
+}
+
+.details-text{
+    font-size: 0.9rem;
+    color: #636364;
+    letter-spacing: 0.42px;
+    font-weight: 400;
+}
+
+.label{
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #181818;
+}
+
+.form-modify{
+    font-size: 0.9rem;
+    font-weight: 300;
+    color: #636364;
+    width: 95%;
+    border-radius: 0.6rem;
+}
+.btn-modify{
+    width: 95%;
+    border-style: none;
+    border-radius: 0.6rem;
+    height: 2.5rem;
+    background: #E5E5E5;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    
+}
+.btn-google{
+    background: #fff;
+    box-shadow: none;
+}
+
+.forgot-btn{
+    width: 95%;
+    font-family: 'Poppins';
+    font-size: 0.75rem;
+    color: #181818;
+    margin-top: 1.25rem;
+    font-weight: 500;
+}
+
+.signup-msg{
+    font-size: 0.6rem;
+    font-family: 'Poppins';
+    font-weight: 500;
+    color: #595959;
+}
+.signup-link{
+    color: #000;
+}
+
+.parent{
+    height: 100vh;
+}
+.img-align{
+   background: url('/images/authbannercopy.jpg');
+   background-size: cover;
+}
+
+/* Otp verification */
+#verify-button{
+    background-color: #e53637 !important;
+    color: #fff;
+}

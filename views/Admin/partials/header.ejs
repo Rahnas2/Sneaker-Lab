@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <link rel="stylesheet" href="/styles/adminHome.css">
+
+    <!-- cropper css -->
+    <link href="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.css" rel="stylesheet">
+    
+    <title>SNEAKER LAB</title>
+</head>
+<body>
+    <!-- Main content -->
+    <main class="flex-grow-1">
+      <!-- Navbar -->
+      <nav id="main-navbar" class="navbar navbar-expand-lg navbar-light bg-white">
+          <div class="container-fluid">
+              <!-- Toggle button -->
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu"
+                  aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+                  <i class="fas fa-bars"></i>
+              </button>
+
+              <!-- <a class="navbar-brand position-relative" href="#">
+                  <img src="https://mdbootstrap.com/img/logo/mdb-transaprent-noshadows.png" height="25" alt="" loading="lazy" />
+              </a> -->
+
+              <!-- Right links -->
+              <ul class="navbar-nav ms-auto d-flex flex-row">
+                  <!-- Avatar -->
+                  <li class="nav-item dropdown">
+                      <a class="nav-link hidden-arrow d-flex align-items-center" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/img (31).webp" class="rounded-circle" height="22" alt="Avatar" loading="lazy" />
+                      </a>
+                  </li>
+              </ul>
+          </div>
+      </nav>
+
+    <!-- Sidebar -->
+    <nav id="sidebarMenu" class="collapse d-lg-flex justify-content-center sidebar collapse">
+        <div class="position-sticky">
+            <div class="list-group list-group-flush mx-3">
+                <a href="#" class="list-group-item mt-5 mb-5">
+                    <h3>SNEAKER LAB</h3>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action py-2 mb-2" aria-current="true">
+                    <i class="fas fa-tachometer-alt fa-fw me-3"></i><h4 class="d-inline fw-normal">Dashboard</h4>
+                </a>
+                <a href="/admin/userManagment" class="list-group-item list-group-item-action py-2 ripple mb-2">
+                    <i class="fas fa-chart-area fa-fw me-3"></i><h4 class="d-inline fw-normal">Users</h4>
+                </a>
+                <a href="/admin/productManagment" class="list-group-item list-group-item-action py-2 ripple mb-2">
+                    <i class="fas fa-lock fa-fw me-3"></i><h4 class="d-inline fw-normal">Products</h4>
+                </a>
+                <a href="#" class="list-group-item border-0 list-group-item-action py-2 ripple mb-2">
+                    <i class="fas fa-chart-line fa-fw me-3"></i><h4 class="d-inline fw-normal">Orders</h4>
+                </a>
+                <a href="/admin/categoryManagment" class="list-group-item list-group-item-action py-2 ripple mb-2">
+                    <i class="fas fa-chart-pie fa-fw me-3"></i><h4 class="d-inline fw-normal">Category</h4>
+                </a>
+                <a href="/admin/brandManagment" class="list-group-item list-group-item-action py-2 ripple mb-2">
+                    <i class="fas fa-chart-bar fa-fw me-3"></i><h4 class="d-inline fw-normal">Brands</h4>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action py-2 ripple mb-2">
+                    <i class="fas fa-globe fa-fw me-3"></i><h4 class="d-inline fw-normal">Promo Code</h4>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action py-2 ripple">
+                    <i class="fas fa-building fa-fw me-3"></i><h4 class="d-inline fw-normal">Offers</h4>
+                </a>
+                <a href="/admin/logout" onclick="return Confirm()" class="list-group-item list-group-item-action py-2 ripple">
+                    <i class="fas fa-calendar fa-fw me-3"></i><h4 class="d-inline fw-normal">Logout</h4>
+                </a>
+            </div>
+        </div>
+    </nav>
+    <!-- Sidebar -->

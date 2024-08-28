@@ -1,0 +1,102 @@
+body {
+    padding: 0;
+    margin: 0;
+    background-color: #fbfbfb;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    padding: 10px 0 0; /* Height of navbar */
+    box-shadow: 0 2px 5px 0 rgb(0 0 0 / 5%), 0 2px 10px 0 rgb(0 0 0 / 5%);
+    width: 250px; /* Adjusted sidebar width */
+    z-index: 600;
+    background: #d9d9d9;
+}
+
+@media (min-width: 991.98px) {
+    main {
+        margin-left: 250px; /* Matches the sidebar width */
+    }
+}
+
+@media (max-width: 991.98px) {
+    .sidebar {
+        /* width: 100%;
+        position: relative;
+        margin-bottom: 20px; */
+        display: none;
+    }
+    .navbar-toggler{
+        display: block;
+    }
+    main {
+        margin-left: 0;
+    }
+}
+
+.sidebar .active {
+    border-radius: 5px;
+    box-shadow: 0 2px 5px 0 rgb(0 0 0 / 16%), 0 2px 10px 0 rgb(0 0 0 / 12%);
+}
+
+.sidebar-sticky {
+    position: relative;
+    top: 0;
+    height: calc(100vh - 48px);
+    padding-top: 0.5rem;
+    overflow-x: hidden;
+    overflow-y: auto; /* Scrollable contents if viewport is shorter than content */
+}
+
+.list-group-item {
+    background: none;
+    border: 0;
+}
+
+.search-wrapper{
+    position: relative;
+    width: 100%;
+}
+#myInput {
+   
+    width: 100%;
+    padding-left: 1.875rem;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    
+}
+.searchbar {
+   
+    width: 100%;
+    padding-left: 1.875rem;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    
+}
+
+.search-icon {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: #aaa;
+    pointer-events: none;
+}
+
+.checkbox-align{
+    width: 1.5rem;
+}
+
+.add-btn{
+    width: 10rem;
+    height: 2rem;
+    background: #000;
+    
+}

@@ -1,0 +1,676 @@
+<%- include('partials/header') %>  
+
+<div class="container pt-4">
+
+    <div class="mb-3">Product Managment</div>
+
+    <div class="container border w-100 px-4 py-4 ">
+        <h4 class="border-bottom pb-2">Product Information</h4>
+        <form action="<%= product?`/admin/editProduct/${product.id}`:'/admin/addProduct' %>" id="add-product" method="POST" enctype="multipart/form-data">
+            <div class="row form-group mb-2">
+    
+                <div class="col">
+                <label for="productName">Product Name</label>
+                <input type="text" class="form-control" value="<%=product?product.productName:'' %>" placeholder="product name" name="productName" >
+                </div>
+    
+                </div>
+            
+            <div class="row form-group mb-2">
+
+                <div class="col">
+                    <label for="category">Category</label>
+                    <select class="form-select" id="" name="category">    
+                        <option value="" disabled selected>category</option>
+                        <% categories.forEach(category => { %>
+                            <option value="<%= category._id %>" <%= product && product.category.toString() === category._id.toString() ? 'selected' : '' %>><%= category.categoryName %></option>
+                        <% }) %>
+                    </select>
+                  </div>
+
+
+                <div class="col">
+                    <label for="brand">Brand</label>
+                    <select class="form-select" id="" name="brand"> 
+                        <option value="" disabled selected>brand</option>  
+                        <% brands.forEach(brand => { %>
+                            <option value="<%= brand._id %>" <%= product && product.brand.toString() === brand._id.toString() ? 'selected' : ''  %>><%= brand.brandName %></option>
+                        <% }) %> 
+                    </select>
+                  </div>
+                
+            </div>
+            <div id="varients-container">
+                <% if (product && product.variants && product.variants.length > 0) { %>
+                    <% product.variants.forEach((variant, index) => { %>
+                        <div class="row form-group mb-2 varient-group">
+                            <h5>Variant <%= index + 1 %></h5>
+                            <div class="col">
+                                <select class="form-select" name="variants[<%= index %>][color]">    
+                                    <option value="" disabled>color</option>
+                                    <option value="white" <%= variant.color === 'white' ? 'selected' : '' %>>white</option>
+                                    <option value="black" <%= variant.color === 'black' ? 'selected' : '' %>>black</option>
+                                    <option value="blue" <%= variant.color === 'blue' ? 'selected' : '' %>>blue</option>
+                                    <option value="green" <%= variant.color === 'green' ? 'selected' : '' %>>green</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <select class="form-select" name="variants[<%= index %>][size]">
+                                    <option value="" disabled>size</option>
+                                    <% for (let i = 6; i <= 12; i++) { %>
+                                        <option value="<%= i %>" <%= variant.size == i ? 'selected' : '' %>><%= i %></option>
+                                    <% } %>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <input type="number" placeholder="stock" class="form-control" name="variants[<%= index %>][stock]" value="<%= variant.stock %>">  
+                            </div>
+                            <div class="col">
+                                <input type="number" placeholder="price" class="form-control" name="variants[<%= index %>][price]" value="<%= variant.price %>">
+                            </div>
+                            <div class="col">
+                                <button type="button" onclick="removeVariant(this)">Remove</button>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    
+                        <div class="row form-group mb-2 varient-group">
+                            <h5>Varients</h5>
+                            <div class="col">
+                                <select class="form-select" id="" name="variants[0][color]">    
+                                <option value="" disabled selected>color</option>
+                                <option value="white">white</option>
+                                <option value="black">black</option>
+                                <option value="green">blue</option>
+                                <option value="green">green</option>
+                                </select>
+                              </div>
+            
+                              <div class="col">
+                                <select class="form-select" id="size-chart" name="variants[0][size]">
+                                <option value="" disabled selected>size</option>
+                            
+                            </select>
+                              </div>
+            
+                              <div class="col">
+                                 <input type="number" placeholder="stock" class="form-control" name="variants[0][stock]" value="<%= product?product.variants.stock: ''  %>">  
+                                
+                              </div>
+            
+                              <div class="col">
+                                  <input type="number" placeholder="price" class="form-control" name="variants[0][price]" value="<%= product?product.variants.price: ''  %>">
+                              </div>
+            
+                              <div class="col">
+                                <button type="button" onclick="removeVariant(this)">Remove</button>
+                            </div>
+            
+                        </div>
+                <% } %>
+            
+        </div>
+        <button type="button" onclick="addVariant()">Add Variant</button>
+
+            <div class="row form-group mb-3">
+                
+                <div class="col ">
+                <label for="description">Description</label>
+                <textarea type="text" class="form-control" value="" placeholder="" name="description"  style="height:9.25rem;">
+                    <%= product?product.productDescription: ''  %>
+                </textarea>
+            </div>
+            </div>
+           
+            <div class="row form-group mb-4">
+        <div class="col">
+            <label for="image1">Image 1</label>
+            <div class="image-preview">
+                <% if (product && product.images[0]) { %>
+                 <img src="<%= product.images[0] %>" id="preview-image1" alt="Image 1" class="img-thumbnail w-100 h-100" />
+                <% } else { %>
+                         <img id="preview-image1" alt="Image 1" class="img-thumbnail w-100 h-100" style="display: none;" />
+                <% } %>
+            </div>
+            <input type="file" id="image1" class="form-control" name="images" accept="image/*" onchange="handleFileChange(event,'image1')" >
+            <button type="button" class="btn btn-dark mt-2" data-bs-toggle="modal" data-bs-target="#cropModal" onclick="initCropper('image1')">Crop</button>
+        </div>
+        <div class="col">
+            <label for="image2">Image 2</label>
+            <div class="image-preview">
+                <% if (product && product.images[1]) { %>
+                    <img src="<%= product.images[1] %>" id="preview-image2" alt="Image 2" class="img-thumbnail w-100 h-100" />
+                   <% } else { %>
+                            <img id="preview-image2" alt="Image 2" class="img-thumbnail w-100 h-100" style="display: none;" />
+                   <% } %>
+               </div>
+               <input type="file" id="image2" class="form-control" name="images" accept="image/*" onchange="handleFileChange(event,'image2')">
+               <button type="button" class="btn btn-dark mt-2" data-bs-toggle="modal" data-bs-target="#cropModal" onclick="initCropper('image2')">Crop</button>  
+        </div>
+        <div class="col">
+            <label for="image3">Image 3</label>
+            <div class="image-preview">
+                <% if (product && product.images[2]) { %>
+                    <img src="<%= product.images[2] %>" id="preview-image3" alt="Image 3" class="img-thumbnail w-100 h-100" />
+                   <% } else { %>
+                            <img id="preview-image3" alt="Image 3" class="img-thumbnail w-100 h-100" style="display: none;" />
+                   <% } %>
+               </div>
+               <input type="file" id="image3" class="form-control" name="images" accept="image/*" onchange="handleFileChange(event,'image3')">
+               <button type="button" class="btn btn-dark mt-2" data-bs-toggle="modal" data-bs-target="#cropModal" onclick="initCropper('image3')">Crop</button>
+        </div>
+        <div class="col">
+            <label for="image4">Image 4</label>
+            <div class="image-preview">
+                <% if (product && product.images[3]) { %>
+                    <img src="<%= product.images[3] %>" id="preview-image4" alt="Image 4" class="img-thumbnail w-100 h-10" />
+                   <% } else { %>
+                            <img id="preview-image4" alt="Image 4" class="img-thumbnail w-100 h-100" style="display: none;" />
+                   <% } %>
+               </div>
+               <input type="file" id="image4" value="" class="form-control" name="images" accept="image/*" onchange="handleFileChange(event,'image4')">
+               <button type="button" class="btn btn-dark mt-2" data-bs-toggle="modal" data-bs-target="#cropModal" onclick=" initCropper('image4')">Crop</button>
+        </div>
+    </div>
+
+    <!-- cropper modal -->
+
+    <div class="modal fade" id="cropModal" tabindex="-1" aria-labelledby="cropModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="cropModalLabel">Crop Image</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="height: 400px;">
+              <div class="cropper-container w-100 h-100">
+                  <img id="cropper-image" src="" style="max-width: 100%; max-height: 100%; display: block; margin: auto;">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-primary" id="crop-button">Crop</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <div class="form-group mt-2 text-center border-0">
+        <button type="submit" class="add-btn text-white " id="sub-form"><%= product? 'Update Product':'Add product'  %></button>
+        </div>
+            
+        </form> 
+        
+    </div>
+
+</div>
+</main> 
+
+<script src="https://cdn.jsdelivr.net/npm/cropperjs"></script>
+
+<script>
+
+
+
+    
+    let variantsCount = 1;
+    let cropper;
+    let currentImageId;
+
+    function addVariant() {
+        const container = document.getElementById('varients-container');
+        const variantGroup = document.querySelector('.varient-group').cloneNode(true);
+
+        variantGroup.querySelectorAll('select').forEach(element => {
+            let name = element.name.replace(/\d+/, variantsCount);
+            element.name = name;
+            element.value = '';
+        });
+        variantGroup.querySelectorAll('input').forEach(element => {
+            let name = element.name.replace(/\d+/, variantsCount);
+            element.name = name;
+            element.value = '';
+        });
+        variantsCount++;
+        container.appendChild(variantGroup);
+    }
+
+    function removeVariant(button) {
+        button.closest('.varient-group').remove();
+    }
+
+    function initializeSizeChart() {
+        const elm = document.getElementById('size-chart');
+        const df = document.createDocumentFragment(); // create a document fragment to hold the options while we create them
+        for (let i = 6; i <= 12; i++) {
+            const option = document.createElement('option'); // create the option element
+            option.value = i; // set the value property
+            option.appendChild(document.createTextNode(i));
+            df.appendChild(option);
+        }
+        elm.appendChild(df);
+    }
+
+    function handleFileChange(event, imageId) {
+        console.log(imageId)
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const previewImage = document.getElementById(`preview-${imageId}`);
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function initCropper(imageId) {
+        currentImageId = imageId;
+        const image = document.getElementById('cropper-image');
+        image.src = document.getElementById(`preview-${currentImageId}`).src;
+
+        if (cropper) {
+            cropper.destroy();
+        }
+        cropper = new Cropper(image, {
+            aspectRatio: 1,
+            viewMode: 1
+        });
+    }
+
+    document.getElementById('crop-button').addEventListener('click', () => {
+        const croppedCanvas = cropper.getCroppedCanvas();
+        if (croppedCanvas) {
+            croppedCanvas.toBlob((blob) => {
+                const file = new File([blob], `cropped-${currentImageId}.jpg`, { type: 'image/jpeg' });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+
+                const fileInput = document.getElementById(currentImageId);
+                fileInput.files = dataTransfer.files;
+
+                document.getElementById(`preview-${currentImageId}`).src = croppedCanvas.toDataURL();
+
+                const modal = bootstrap.Modal.getInstance(document.getElementById('cropModal'));
+                modal.hide();
+            });
+        }
+    });
+
+    function handleFormSubmission(event, isUpdate , productId) {
+        console.log(isUpdate)
+        console.log(productId)
+        event.preventDefault();
+        try {
+            const formData = new FormData(addProductForm);
+
+            const variantGroup = document.querySelectorAll('.varient-group');
+            const variants = Array.from(variantGroup).map((group, index) => ({
+                color: formData.get(`variants[${index}][color]`),
+                price: formData.get(`variants[${index}][price]`),
+                size: formData.get(`variants[${index}][size]`),
+                stock: formData.get(`variants[${index}][stock]`)
+            }));
+            
+            console.log('variants before stringigy',variants)
+            const variantsString = JSON.stringify(variants);
+            console.log('variants after stringigy',variantsString)
+
+            const newFormData = new FormData();
+            newFormData.append('productName', formData.get('productName'));
+            newFormData.append('category', formData.get('category'));
+            newFormData.append('brand', formData.get('brand'));
+            newFormData.append('description', formData.get('description'));
+            newFormData.append('variants', variantsString);
+
+            // Append images
+            for (let i = 1; i <= 4; i++) {
+                const fileInput = document.getElementById(`image${i}`);
+                if (fileInput.files.length > 0) {
+                    newFormData.append('images', fileInput.files[0]);
+                }
+            }
+
+            for (let [key, value] of newFormData.entries()) {
+             console.log(key, value);
+            }
+
+            const endpoint = isUpdate ? `/admin/editProduct/${productId}` : '/admin/addProduct';
+            const method = isUpdate ? 'POST' : 'POST'; // Both add and update use POST
+
+            fetch(endpoint, {
+                method,
+                body: newFormData
+            })
+                .then(response => response.json())
+                .then(result => {
+                    console.log(newFormData)
+                    if(result.valdationError){
+                        console.log('validation error',result.validationError)
+                    }
+                    if (result.success) {
+                        Swal.fire({
+                            icon: "success",
+                            title: result.message,
+                            showConfirmButton: false,
+                            timer: 2000
+                          });
+                          window.location.href = '/admin/productManagment';  
+                    } else {
+                        Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: result.message,
+                      });
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    // Initialization
+    const addProductForm = document.getElementById('add-product');
+
+    const productString = `<%- JSON.stringify(product || {}).replace(/\\/g, '\\\\') %>`;
+    const product = JSON.parse(productString);
+    console.log('Parsed product:', product);
+
+    const productId = product._id || null;
+    console.log('Product ID:', productId);
+
+    addProductForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        console.log('hello')      
+        const isUpdate = document.getElementById('sub-form').textContent == 'Update Product'?true:false
+        console.log(isUpdate)
+        handleFormSubmission(event, isUpdate, productId);
+    });
+
+    initializeSizeChart();
+
+
+    //cropper js
+//     let cropper
+//     let currentImageId
+
+//     function handleFileChange(event, imageId) {
+//     const file = event.target.files[0]
+//     if (file) {
+//         const reader = new FileReader()
+//         reader.onload = function(e) {
+//             document.getElementById(`preview-${imageId}`).src = e.target.result
+//             document.getElementById(`preview-${imageId}`).style.display = 'block'
+//         }
+//         reader.readAsDataURL(file);
+//     }
+// }
+    
+//     function initCropper(imageId){
+//         currentImageId = imageId
+//         const image = document.getElementById('cropper-image')
+//         image.src = document.getElementById(`preview-${currentImageId}`).src
+        
+//         if(cropper){
+//             cropper.destroy()
+//         }
+//         cropper = new Cropper(image,{
+//             aspectRatio: 0,
+//             viewMode:0
+//         })
+//     }
+
+//     document.getElementById('crop-button').addEventListener('click', ()=>{
+//         const croppedCanvas = cropper.getCroppedCanvas()
+//         if(croppedCanvas){
+//             croppedCanvas.toBlob((blob)=>{
+//                 const file = new File([blob],`cropped-${currentImageId}.jpg` , {type: 'image/jpeg' })
+//                 dataTransfer = new DataTransfer
+//                 dataTransfer.items.add(file)
+                 
+//                 document.getElementById(currentImageId).files = dataTransfer.files
+//                 document.getElementById(`preview-${currentImageId}`).src = croppedCanvas.toDataURL()
+
+//                 const modal = bootstrap.Modal.getInstance(document.getElementById('cropModal'))
+//                 modal.hide()
+//             })
+//         }
+//     })
+
+//     // add multiple varients
+//    let varientsCount = 1
+//     function addVariant(){
+//         const container = document.getElementById('varients-container')
+//         const varientGroup = document.querySelector('.varient-group').cloneNode(true)
+
+//         varientGroup.querySelectorAll('select').forEach(element => {
+//            let name = element.name.replace(/\d+/,varientsCount)
+//            element.name = name
+//            element.value = ''
+//         });
+//         varientGroup.querySelectorAll('input').forEach(element => {
+//            let name = element.name.replace(/\d+/,varientsCount)
+//            element.name = name
+//            element.value = ''
+//         });
+//         varientsCount++
+//         container.appendChild(varientGroup)
+//     }
+
+//     //remove a varient
+//     function removeVariant(button){
+//       button.closest('.varient-group').remove()
+//     }
+
+//     //size chart
+//     function initializeSizeChart(){
+//     const elm = document.getElementById('size-chart')
+//     const df = document.createDocumentFragment(); // create a document fragment to hold the options while we create them
+//     for (let i = 6; i <= 12; i++) { 
+//         const option = document.createElement('option'); // create the option element
+//         option.value = i; // set the value property
+//         option.appendChild(document.createTextNode(i));
+//         df.appendChild(option); 
+//     }
+//     elm.appendChild(df); 
+// }
+
+//     function handleFormSubmission(event, isUpdate) {
+//         console.log(isUpdate)
+//         event.preventDefault();
+//         try {
+//             const formData = new FormData(addProductForm);
+
+//             const variantGroup = document.querySelectorAll('.varient-group');
+//             const variants = Array.from(variantGroup).map((group, index) => ({
+//                 color: formData.get(`variants[${index}][color]`),
+//                 price: formData.get(`variants[${index}][price]`),
+//                 size: formData.get(`variants[${index}][size]`),
+//                 stock: formData.get(`variants[${index}][stock]`)
+//             }));
+
+//             console.log('Variants before stringify:', variants)
+//             const variantsString = JSON.stringify(variants);
+//             console.log('Variants after stringify:', variantsString)
+
+//             const newFormData = new FormData();
+//             newFormData.append('productName', formData.get('productName'));
+//             newFormData.append('category', formData.get('category'));
+//             newFormData.append('brand', formData.get('brand'));
+//             newFormData.append('description', formData.get('description'));
+//             newFormData.append('variants', variantsString);
+
+//             // Append images
+//             for (let i = 1; i <= 4; i++) {
+//                 const fileInput = document.getElementById(`image${i}`);
+//                 if (fileInput.files.length > 0) {
+//                     newFormData.append('images', fileInput.files[0]);
+//                 }
+//             }
+
+//             const endpoint = isUpdate ? `/admin/editProduct/${product.id}` : '/admin/addProduct';
+//             const method = isUpdate ? 'POST' : 'POST'; // Both add and update use POST
+//             console.log(isUpdate)
+//             console.log(endpoint)
+
+//             fetch(endpoint, {   
+//                 method,
+//                 body: newFormData
+//             })
+//                 .then(response => response.json())
+//                 .then(result => {
+//                     successMessage.classList.add('d-none');
+//                     errorMessage.classList.add('d-none');
+//                     if (result.success) {
+//                         successMessage.textContent = result.message;
+//                         successMessage.classList.remove('d-none');
+
+//                         if (!isUpdate) {
+//                             addProductForm.reset();
+//                             // Clear preview images
+//                             const previewsImages = document.querySelectorAll('.img-thumbnail');
+//                             previewsImages.forEach(images => {
+//                                 images.src = '';
+//                                 images.style.display = 'none';
+//                             });
+//                         } else {
+//                             window.location.href = '/admin/productManagment';
+//                         }
+//                     } else {
+//                         errorMessage.textContent = result.message;
+//                         errorMessage.classList.remove('d-none');
+//                     }
+//                 })
+//                 .catch(error => console.error('Error:', error));
+//         } catch (error) {
+//             console.error('Error:', error);
+//         }
+//     }
+
+//     // Initialization
+//     const addProductForm = document.getElementById('add-product');
+//     const errorMessage = document.getElementById('error-message');
+//     const successMessage = document.getElementById('success-message');
+
+//     addProductForm.addEventListener('submit', (event) => {
+//         const isUpdate = typeof product !== 'undefined' && product != null;
+//         console.log(typeof(product))
+//         console.log(product)
+//         handleFormSubmission(event, isUpdate);     
+//     });
+
+//     initializeSizeChart()
+
+   
+
+
+    // addProductForm = document.getElementById('add-product')
+    // errorMessage = document.getElementById('error-message')
+    // successMessage = document.getElementById('success-message')
+    
+    // addProductForm.addEventListener('submit',(event)=>{
+    //     event.preventDefault()
+    //     try {
+    //         const formData = new FormData(addProductForm)
+
+    //         const varientGroup = document.querySelectorAll('.varient-group')
+    //         const variants = Array.from(varientGroup).map((group,index)=>{
+    //              return {
+    //                 color:formData.get(`variants[${index}][color]`),
+    //                 price:formData.get(`variants[${index}][price]`),
+    //                 size:formData.get(`variants[${index}][size]`),
+    //                 stock:formData.get(`variants[${index}][stock]`)
+    //              }
+    //         })
+            
+    //         console.log('Variants before stringify:', variants)
+    //         const variantsString = JSON.stringify(variants)
+    //         console.log('Variants after stringify:', variantsString)
+           
+    //         const newFormData = new FormData()
+    //         newFormData.append('productName', formData.get('productName'))
+    //         newFormData.append('category', formData.get('category'))
+    //         newFormData.append('brand', formData.get('brand'))
+    //         newFormData.append('description', formData.get('description'))
+    //         newFormData.append('variants', variantsString)
+
+        // Append images
+        // for (let i = 1 ; i <= 4 ; i++){
+        //     const fileInput = document.getElementById(`image${i}`)
+        //     if(fileInput.files.length>0){
+        //         newFormData.append('images', fileInput.files[0])
+        //     }
+        // }
+
+        // Append existing images
+            // const existingImages = document.getElementsByName('existingImages[]');
+            // for (let input of existingImages) {
+            //     newFormData.append('existingImages[]', input.value);
+            // }
+
+        // if(product){
+            
+        //==============update product==============// 
+
+//     fetch(`/admin/editProduct/${product.id}`,{
+//         method:'POST',
+//         body:newFormData
+//     })
+//     .then(response => response.json())
+//     .then(result =>{
+//         console.log('result')
+//         if(result.success){
+//             console.log('success')
+//             window.location.href = '/admin/productManagment'
+//         }else{  
+//             console.log('error while updating the product')
+//         }
+//     })
+//     .catch(error => console.log(error))
+// }else{    
+//     //==============add product==============//      
+        
+//         fetch('/admin/addProduct',{
+//             method:'POST',
+//             body:newFormData
+//         }) 
+//         .then(response => response.json())
+//         .then(result=>{
+//             successMessage.classList.add('d-none')
+//             errorMessage.classList.add('d-none')
+//             if(result.success){
+//               successMessage.textContent = result.message
+//               successMessage.classList.remove('d-none')
+//               addProductForm.reset()
+
+              //clear previews images
+    //           const previewsImages = document.querySelectorAll('.img-thumbnail')
+    //           previewsImages.forEach(images => {
+    //             images.src = ''
+    //             images.style.display = 'none'
+    //           })
+
+    //         }else{
+    //             errorMessage.textContent = result.message
+    //             errorMessage.classList.remove('d-none')
+    //         }
+    //     })
+    //     .catch(error => console.log('error', error))
+    // }      
+
+    // } 
+        
+    //    catch (error) {
+    //    console.log('error',error)
+    // }
+    // })
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+
+    <%- include('partials/footer') %>

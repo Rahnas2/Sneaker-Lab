@@ -1,0 +1,89 @@
+
+    <%- include('authHeader') %>
+
+    <div class="d-flex parent">
+         <div class="col-6 col-lg-8 d-flex justify-content-center align-items-center ">
+            <div class="">
+             <div class="login-text">Login to your account</div>
+             <p class="details-text">Please enter your details</p>
+             <form action="/login" method="post" id="login-form">
+                <div class="form-group hight-form mb-3">
+                <label for="email" class="label mb-1">Email</label>
+                <input type="email" class="form-control form-modify" placeholder="Enter your email" name="email" >
+                <p id="email-error" class="text-danger fs-14"></p>
+            </div>
+            <div class="form-group">
+                <label for="password" class="label mb-1">password</label>
+                <input type="password" class="form-control form-modify" placeholder="********" name="password" >
+                <p id="password-error" class="text-danger fs-14"></p>
+            </div>
+            <a href="#" class="text-end text-decoration-none"><div class="forgot-btn mb-2">Forgot password</div></a>
+            <button type="submit" class="label btn-modify  mb-2">Sign in</button>
+             </form>
+             <a href="/auth/google" type="submit" class="btn label btn-modify btn-google border d-flex align-items-center justify-content-center mb-3"><img src="/images/google-icon.jpg" alt="" style="width: 35px;">Sign in With Google</a>
+             <p class="signup-msg text-center">Dont't have an account?<a href="/signup" class="text-decoration-none signup-link">Sign up for free</a></p>
+             <p id="error-message" class="alert alert-danger d-none"></p>
+         </div>
+         </div>
+         <div class="col-6 col-lg-4 img-align">
+         </div>
+    </div>
+    
+ 
+    <script>
+        document.addEventListener('DOMContentLoaded',()=>{
+           const loginForm = document.getElementById('login-form')
+           const errorMessage = document.getElementById('error-message')
+           const emailError = document.getElementById('email-error')
+           const passwordError = document.getElementById('password-error')
+           
+
+           loginForm.addEventListener('submit',(event)=>{
+            event.preventDefault()
+
+            emailError.textContent = '';
+            passwordError.textContent = '';
+            errorMessage.classList.add('d-none');
+
+            const formData = new FormData(loginForm)
+
+            const data ={
+                email:formData.get('email'),
+                password:formData.get('password')
+            }
+
+            fetch('/login',{
+                method:'POST',
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if(result.validationError){
+                    if (result.validationErrors.email) {
+                       
+                        emailError.textContent = result.validationErrors.email;
+                    }
+                    if (result.validationErrors.password) {
+                        
+                        passwordError.textContent = result.validationErrors.password;
+                    }
+                }
+                else if(result.error){
+                    errorMessage.textContent = result.error
+                    errorMessage.classList.remove('d-none')
+                }else{
+                    window.location.href = '/'
+                }
+            })
+            .catch(error => {
+                console.error('error:',error)
+            })
+           })
+        })
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,148 @@
+<%- include('authHeader') %>
+
+<div class="d-flex parent">
+    <div class="col-6 col-lg-8 d-flex justify-content-center align-items-center ">
+       <div class="">
+        <div class="login-text">Create an account</div>
+        <p class="details-text">Please enter your details</p>
+        <form action="/signup" method="post" id='signup-form'>
+           <div class="form-group hight-form ">
+           <label for="username" class="label mb-1">Username</label>
+           <input type="text" class="form-control form-modify" placeholder="Enter your username" name="username" >
+           <p id="username-valid" class="text-danger d-none fs-14"></p>
+       </div>
+       <div class="form-group">
+           <label for="email" class="label mb-1">Email</label>
+           <input type="email" class="form-control form-modify" placeholder="Enter your email" name="email" >
+           <p class='text-danger d-none fs-15' id='existed-user'></p>
+           <p id="email-valid" class="text-danger d-none fs-14"></p>
+         </div>
+       
+       <div class="form-group">
+        <label for="phone" class="label mb-1">Phone</label>
+        <input type="number" class="form-control form-modify" placeholder="Enter your phone" name="phone" >
+        <p id="phone-valid" class="text-danger d-none fs-14"></p>
+    </div>
+    <div class="form-group">
+        <label for="password" class="label mb-1">Password</label>
+        <input type="password" class="form-control form-modify" placeholder="********" name="password" >
+        <p id="password-valid" class="text-danger d-none fs-14"></p>
+        
+    </div>
+    <div class="form-group mb-4">
+        <label for="password" class="label mb-1">Confirm Password</label>
+        <input type="password" class="form-control form-modify" placeholder="********" name="cfpassword" >
+        <p id="cfpassword-valid" class="text-danger d-none fs-14"></p>
+        <p class='text-danger fs-14 d-none' id='pass-not-match'></p>
+    </div>
+       <button type="submit" class="label btn-modify mb-2">Sign up</button>
+        </form>
+        <p class="signup-msg text-center">Already have an account?<a href="/login" class="text-decoration-none signup-link">sign in</a></p>
+    </div>
+    </div>
+    <div class="col-6 col-lg-4 img-align">
+    </div>
+    </div>
+   
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const signupForm = document.getElementById('signup-form');
+            const existedUser = document.getElementById('existed-user');
+            const passNotMatch = document.getElementById('pass-not-match');
+            const usernameValid = document.getElementById('username-valid')
+            const emailValid = document.getElementById('email-valid')
+            const phoneValid = document.getElementById('phone-valid')
+            const passwordValid = document.getElementById('password-valid')
+            const cfpasswordValid = document.getElementById('cfpassword-valid')
+    
+            signupForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+    
+                const formData = new FormData(signupForm);
+    
+                const data = {
+                    username: formData.get('username'),
+                    email: formData.get('email'),
+                    phone: formData.get('phone'),
+                    password: formData.get('password'),
+                    cfpassword: formData.get('cfpassword')
+                };
+                
+                console.log(data); // For debugging purposes
+                
+                fetch('/signup', {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    console.log('result error')
+                    //clear prevous error messages
+                    existedUser.classList.add('d-none');
+                    passNotMatch.classList.add('d-none');
+                    usernameValid.classList.add('d-none');
+                    emailValid.classList.add('d-none');
+                    phoneValid.classList.add('d-none');
+                    passwordValid.classList.add('d-none');
+                    cfpasswordValid.classList.add('d-none');
+
+                    if(result.validationError){
+                        console.log('validation error')
+                        console.log('validatoin error',result.validationErrors)
+                        Object.entries(result.validationErrors).forEach(([field,message])=>{
+                              const validationFaild = document.getElementById(`${field}-valid`)
+                              if(validationFaild){
+                                validationFaild.classList.remove('d-none')
+                                validationFaild.textContent = message
+                              }
+                        })
+                    }
+                    //     if(result.validationErrors.username){
+                    //         console.log('1 feild',result.validationErrors.username)
+                    //         usernameValid.classList.remove('d-none')
+                    //         usernameValid.textContent = result.validationErrors.username
+                    //     }
+                    //     if(result.validationError.email){
+                    //         emailValid.classList.remove('d-none')
+                    //         emailValid.textContent = result.validationError.email
+                    //     }
+                    //     if(result.validationError.phone){
+                    //         console.log('phone number errror')
+                    //         phoneValid.classList.remove('d-none')
+                    //         phoneValid.textContent = result.validationError.phone
+                    //     }
+                    //     if(result.validationError.password){
+                    //         passwordValid.classList.remove('d-none')
+                    //         passwordValid.textContent = result.validationError.password
+                    //     }
+                    //     if(result.validationError.cfpassword){
+                    //         cfpasswordValid.classList.remove('d-none')
+                    //         cfpasswordValid.textContent = result.validationError.cfpassword
+                    //     }
+                    // }
+
+                  
+    
+                    else if (result.emailError) {
+                        console.log('email erro')
+                        existedUser.classList.remove('d-none');
+                        existedUser.textContent = result.emailError;
+                    } else if (result.passError) {
+                        console.log('pass error')
+                        passNotMatch.classList.remove('d-none');
+                        passNotMatch.textContent = result.passError;
+                    } else {
+                        window.location.href = '/signup/verifyOtp';
+                    }
+                })
+                .catch(error => console.error('error: here', error));
+            });
+        });
+    </script>
+    
+
+</body>
+</html>
