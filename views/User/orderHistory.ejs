@@ -1,0 +1,88 @@
+
+<%- include('partials/header') %>
+
+<% if (orders.length < 1) { %>
+  <div class="container m-5 p5 d-flex justify-content-center"> 
+    <div class="border d-flex justify-content-center align-items-center p-5 w-100" style="height: 20rem; margin-left: 500px; margin-right: auto;">
+        Orders Not Fount
+    </div>
+  </div>
+<% }else { %>
+    <div class="container mt-5" style="margin-bottom: 15rem;">
+    <table class="table">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">ProductName</th>
+            <th scope="col">Image</th>
+            <th scope="col">Price</th>
+            <th scope="col">quality</th>
+            <th scope="col">itemTotal</th>
+            <th scope="col">PaymentMethod</th>
+            <th scope="col">orderStatus</th>
+            <th scope="col" class="">Managment</th>
+          </tr>
+        </thead>
+        <tbody>
+            <% orders.forEach((order, orderIndex) => { %>
+                <% order.items.forEach((item, itemIndex) => { %>
+                  <tr>
+                    <th scope="row"><%= orderIndex + 1 %>.<%= itemIndex + 1 %></th>
+                    <td><%= item.productName %></td>
+                    <td><img src="\<%= item.image %>" alt="" style="width: 50px; height: 50px;"></td>
+                    <td><%= item.price %></td>
+                    <td><%= item.quantity %></td>
+                    <td><%= item.itemTotal %></td>
+                    <td><%= order.paymentMethod %></td>
+                    <td class="<% if (order.orderStatus === 'pending') { %>text-primary<% } else if (order.orderStatus === 'delivered') { %>text-success<% } else if (order.orderStatus === 'canceled') { %>text-danger<% } %>">
+                      <%= order.orderStatus %> 
+                    </td> 
+                    <td type="button" onclick="cancelProductUser('<%= order._id %>','<%= item._id %>')" class="btn-danger ">Cancel</td>
+                <% }) %>
+                
+              </tr>
+              <% }) %>
+        </tbody>
+      </table>
+
+         
+
+    </div>
+<% } %>
+
+<script>
+  function cancelProductUser(orderId,itemId){
+    try {
+      fetch('/cancelProductUser',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json'
+        },
+        body:JSON.stringify({orderId,itemId})
+      })
+      .then(response => response.json())
+      .then(result =>{
+        if(result.success){
+          Swal.fire({
+            icon:'success',
+            title:'success',
+            text: result.message,
+            confirmButtonText:'ok'
+            })
+        }else{
+          Swal.fire({
+            icon:'error',
+            title:'error',
+            text: result.message,
+            confirmButtonText:'ok'
+            })
+        }
+      })
+      .catch(error => console.error('error',error))
+    } catch (error) {
+      console.error('someting went wrong',error)
+    }
+  }
+</script>
+
+<%- include('partials/footer') %> 

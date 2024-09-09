@@ -90,7 +90,6 @@
                     cfpasswordValid.classList.add('d-none');
 
                     if(result.validationError){
-                        console.log('validation error')
                         console.log('validatoin error',result.validationErrors)
                         Object.entries(result.validationErrors).forEach(([field,message])=>{
                               const validationFaild = document.getElementById(`${field}-valid`)

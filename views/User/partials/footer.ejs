@@ -62,7 +62,7 @@
         </div>
     </div>
 </footer>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     function Confirm(){
        return confirm('are you sure you want to sign out')
@@ -83,13 +83,13 @@
                 }
                 
             })
-            .then(result =>{
+            .then(result =>{   
                 console.log('result')
                 if(result.type == 'json'){
                     Swal.fire({
                     icon: 'error',
                     title: 'Access Denied',
-                    html: result.data.message,
+                    html: result.data.message,  
                     confirmButtonText: 'OK'
                 });
             }else if(result.type == 'html'){
@@ -114,15 +114,23 @@
     function addCart(url){
         const parts = url.split('/')
         const productId = parts[parts.length -1]
+
+        //product quantity
         const quantity = document.getElementById(`quantity-${productId}`)?
          document.getElementById(`quantity-${productId}`).value:1
+
+         //product price
+         const price = parseInt(document.getElementById(`productPrice-${productId}`).textContent.replace(/([^0-9])+/i, ""))
+
+         const itemTotal = price * quantity
+
         try {
             fetch(url,{
                 method:'POST',
                 headers: {
                 'Content-Type': 'application/json',
             },
-                body:JSON.stringify({quantity:quantity})
+                body:JSON.stringify({quantity:quantity,itemTotal:itemTotal})
             })
             .then(response => response.json()) 
             .then(result =>{
@@ -149,7 +157,7 @@
                     timer: 3000, 
                     backdrop: false,
                     customClass: {
-                        popup: 'swal2-popup-custom', // Add custom CSS classes (optional)
+                        popup: 'swal2-popup-custom', 
                     }
                     });
                 }
@@ -157,7 +165,7 @@
             .catch(error => console.log(error))
         } catch (error) {
             console.log('something went wrong')
-            swal.fire({
+            Swal.fire({
             icon:'error',
             title:'Error',
             text:'Something went wrong. Please try again later',
@@ -167,9 +175,29 @@
             
     }
     
+    const successMessage = localStorage.getItem('successMessage')
+    if(successMessage){
+        Swal.fire({
+            icon:'success',
+            title:'success',
+            text: successMessage,
+            confirmButtonText:'ok'
+            })
+        localStorage.removeItem('successMessage')   
+    }
+
+    const errorMessage = localStorage.getItem('errorMessage')
+    if(errorMessage){
+        Swal.fire({
+            icon:'error',
+            text: errorMessage,
+            confirmButtonText:'ok'
+            })
+        localStorage.removeItem('errorMessage')
+    }
    
  </script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
  <!-- Js Plugins -->
  <script src="/js/jquery-3.3.1.min.js"></script>
  <script src="/js/bootstrap.min.js"></script>

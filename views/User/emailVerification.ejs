@@ -1,0 +1,64 @@
+
+<%- include('authHeader') %>
+<div class="text-center center-div">
+   <div class="container rounded col-9 col-sm-6 col-md-3 py-4 bg-light">
+      <div>
+       <h2>Verify OTP</h2>
+      </div>
+      <form id="forgotPasswordEmailVerifyForm" onsubmit="return false">
+       <div class="form-group hight-form">
+           <input type="email" class="form-control mt-5" id="email" placeholder="email" name="email">
+       </div>
+       <button onclick="frgPassEmailVerify('/forgotPassword/emailVerify')" class="form-control mt-3" id='verify-button' style='background-color: #e53637;color:#fff'>Get Otp</button>
+      </form>
+       
+      <p id="email-notValid" class="text-danger d-none fs-14"></p>
+
+      <p id="googleSignOn" class="text-success d-none fs-14"></p>
+   </div>
+</div>
+<script>
+    function frgPassEmailVerify(url){
+         const emailInput = document.getElementById('email');
+         const email = emailInput.value.trim(); 
+ 
+         const emailValidation = document.getElementById('email-notValid');
+         const googleUser = document.getElementById('googleSignOn');
+ 
+         // Clear previous error messages
+         emailValidation.classList.add('d-none');
+         googleUser.classList.add('d-none');
+ 
+         if (email === '') {
+             emailValidation.textContent = 'Please enter a valid email address';
+             emailValidation.classList.remove('d-none');
+             return;
+         }
+ 
+         fetch(url, {
+             method: 'POST',
+             headers: {
+                 'Content-Type': 'application/json'
+             },
+             body: JSON.stringify({ email }) 
+         })
+         .then(response => response.json())
+         .then(result => {
+             console.log('result',result)
+             if (result.googleUser) {
+                 googleUser.textContent = result.message;
+                 googleUser.classList.remove('d-none');
+             } else if (result.inValidEmail) {
+                 emailValidation.textContent = result.message;
+                 emailValidation.classList.remove('d-none');
+             } else if(result.success){
+                 window.location.href = '/forgotPassword/otpVerify'
+             }else{
+                 console.log('error')
+             }
+         })
+         .catch(error => console.error('Error:', error));
+     }
+ </script>
+</body>
+</html>

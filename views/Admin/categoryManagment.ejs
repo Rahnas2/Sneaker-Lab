@@ -5,7 +5,7 @@
     <div class="mb-3">category Managment</div>
 
     <div class="d-flex justify-content-end">
-        <button class="mb-3 add-btn border-0" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+        <button class="mb-3 primary-btn border-0" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
             <a href="#" class="text-decoration-none text-white ">+ Add Category</a>
             
         </button>
@@ -22,10 +22,12 @@
                 <form id="add-category" action="/admin/addCategory" method="POST">
                 <div class="modal-body">
                     <div id="category-error" class="alert alert-danger d-none"></div>
-                     <label for="categoryName" class="mb-1">Category Name</label><br>
-                    <input id="category-name"  type="text" name="categoryName" required><br><br>
-                    <label for="categoryName" class="mb-1">Category Discription</label><br>
-                    <input id="category-description" name="categoryDescription" type="text" required>
+                     <label for="categoryName" class="mb-1 d-block">Category Name</label>
+                    <input id="category-name"  type="text" class="d-block mb-1" name="categoryName" >
+                    <p id="categoryName-notvalid" class="text-danger fs-14 d-none" ></p>
+                    <label for="categoryDescription" class="mb-1 d-block">Category Discription</label>
+                    <input id="category-description" name="categoryDescription" type="text">
+                    <p id="categoryDescription-notvalid" class="text-danger fs-14 d-none" ></p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -129,6 +131,7 @@ document.getElementById('searchCategory').addEventListener('keypress',(event)=>{
         localStorage.removeItem('successMessage'); 
     }
 
+    //delete category
         function deleteCategory(categoryId){
             confirm('are you sure you want to delete category')
 
@@ -153,6 +156,8 @@ document.getElementById('searchCategory').addEventListener('keypress',(event)=>{
 
    const categoryForm = document.getElementById('add-category')
    const categoryError = document.getElementById('category-error')
+   const nameValidationRes = document.getElementById('categoryName-notvalid')
+   const descriptionValidationRes = document.getElementById('categoryDescription-notvalid')
    
    categoryForm.addEventListener('submit',(event)=>{
          event.preventDefault()
@@ -174,7 +179,21 @@ document.getElementById('searchCategory').addEventListener('keypress',(event)=>{
          })
          .then(response => response.json())
          .then(result=>{
-            if(result.success){
+            //clear previous errors
+            nameValidationRes.classList.add('d-none')
+            descriptionValidationRes.classList.add('d-none')
+            
+            if(result.validationError){
+                console.log('validation is there',result.validationErrors)
+                Object.entries(result.validationErrors).forEach(([field,message])=>{
+                      const validationFaild = document.getElementById(`${field}-notvalid`)
+                      if(validationFaild){
+                        validationFaild.classList.remove('d-none')
+                        validationFaild.textContent = message
+                      }
+                })
+            }
+            else if(result.success){
                 const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
                 modal.hide();
 

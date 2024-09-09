@@ -1,42 +1,52 @@
 const { body } = require('express-validator')
 
+
 const proValidation = [
     //validate product name
     body('productName')
     .trim()
-    .isLength({min:5, max:25}).withMessage('product name should be between 5 and 25!'),
+    .isLength({min:5, max:30}).withMessage('product name should be between 5 and 30!'),
 
     //validate category
     body('category')
-    .isString().withMessage('category should be string!')
-    .isLength({min:4}).withMessage('category should atleast 4 characters!'),
+    .notEmpty().withMessage('plese select the category'),
+    
+    
 
-    //brand validate
     body('brand')
-    .isLength({min:2}).withMessage('brand must have atlest 2 characters'),
+    .notEmpty().withMessage('please select brand'),
 
-    //variants array validate(color, size, stock, price)
-    body('variants.*.color')
-    .trim()
-    .notEmpty().withMessage('color is required!'),
+    body('description')
+    .notEmpty().withMessage('description is required!'),
 
-    body('variants.*.size')
-    .trim()
-    .notEmpty().withMessage('size is required!'),
+    //brand validate 
+    // body('brand')
+    // .notEmpty().withMessage('brand is required')
+    // .custom((value)=>{
+    //     if(value == null){
+    //         throw new Error('please select valid brand')
+    //     }
+    //     return true
+    // }),
 
-    body('variants.*.stock')
-    .trim()
-    .notEmpty().withMessage('stock is required!')
-    .isInt({min:1}).withMessage('stock should be positive number!'),
+    // variants array validate(color, size, stock, price)
+    // body('variants.*.color')
+    // .notEmpty().withMessage('color is required!'),
+    
 
-    body('variants.*.price')
-    .trim()
-    .notEmpty().withMessage('price is required!')
-    .isInt({min:1}).withMessage('price should be positive number!'),
+    // body('variants.*.price')
+    // .trim()
+    // .notEmpty().withMessage('price is required!')
+    // .isFloat({min:1}).withMessage('price should be positive'),
 
-    //validate images
-    body('images')
-    .notEmpty().withMessage('all images are required') 
+    // body('sizes.*.size')
+    // .notEmpty().withMessage('size is required'),
+
+    // body('sizes.*.stock')
+    // .notEmpty().withMessage('stock is required')
+    // .isInt({min:1}).withMessage('stock should be positive'),
+    
+      
 ]
 
 module.exports = proValidation

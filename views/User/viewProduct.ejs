@@ -16,11 +16,11 @@
                 <div class="row">
                     <div class="col-lg-3 col-md-3">
                         <ul class="nav nav-tabs" role="tablist">
-                            <% product.images.forEach(img => { %>
+                            <% product.variants[0].images.forEach(img => { %>
                             <li class="nav-item">
                                 <a class="nav-link active" data-toggle="tab" href="<%= img %>" role="tab">
                                     <div class="product__thumb__pic ">
-                                        <img src="<%= img %>" alt="">
+                                        <img src="\<%= img %>" alt="">
                                     </div>
                                 </a>
                             </li>
@@ -30,26 +30,26 @@
                     <div class="col-lg-6 col-md-9">
                         <div class="tab-content">
                             <div class="tab-pane active" id="tabs-1" role="tabpanel">
-                                <div class="product__details__pic__item" data-image-url="<%= product.images[0] %>"> 
-                                    <img src="<%= product.images[0] %>" alt="">
+                                <div class="product__details__pic__item" data-image-url="<%= product.variants[0].images[0] %>"> 
+                                    <img src="\<%= product.variants[0].images[0] %>" alt="">
                                 </div>
                             </div>
                             <div class="tab-pane" id="tabs-2" role="tabpanel">
                                 <div class="product__details__pic__item">
                                     <!-- <img src="img/shop-details/product-big-3.png" alt=""> -->
-                                    <img src="<%= product.images[1] %>" alt="">
+                                    <img src="\<%= product.variants[0].images[1] %>" alt="">
                                 </div>
                             </div>
                             <div class="tab-pane" id="tabs-3" role="tabpanel">
                                 <div class="product__details__pic__item">
                                     <!-- <img src="img/shop-details/product-big.png" alt=""> -->
-                                    <img src="<%= product.images[2] %>" alt="">
+                                    <img src="\<%= product.variants[0].images[2] %>" alt="">
                                 </div>
                             </div>
                             <div class="tab-pane" id="tabs-4" role="tabpanel">
                                 <div class="product__details__pic__item">
                                     <!-- <img src="img/shop-details/product-big-4.png" alt=""> -->
-                                    <img src="<%= product.images[4] %>" alt="">
+                                    <img src="\<%= product.variants[0].images[4] %>" alt="">
                                 </div>
                             </div>
                         </div>
@@ -71,27 +71,34 @@
                                 <i class="fa fa-star-o"></i>
                                 <span> - 5 Reviews</span>
                             </div>
-                            <% product.variants.forEach(variant => { %>
-                                <h3>₹ <%= variant.price %></h3>
-                            <% }) %>
+                            
+                                <h3 id="productPrice-<%= product._id %>">₹ <%= product.variants[0].price %></h3>
+                            
                             
                             <p>Coat with quilted lining and an adjustable hood. Featuring long sleeves with adjustable
                                 cuff tabs, adjustable asymmetric hem with elastic side tabs and a front zip fastening
                             with placket.</p>
                             <div class="product__details__option">
-                                <div class="product__details__option__size">
-                                    <span>Size:</span>
-                                    <% product.variants.forEach(variant => { %>
-                                    <label for="xxl active"><%= variant.size %>
-                                        <input type="radio" id="xxl">
-                                    </label>
-                                    <% }) %>
+                                <div class="product__details__option__size" id="sizeOption">
+                                    <!-- <span>Size:</span> -->
+                                    
+                                            <!-- <label id="availableSizes" for="xxl active"> -->
+                                                <input type="radio" id="xxl">
+                                            </label>
+                                        
                                 </div>
                                 <div class="product__details__option__color">
                                     <span>Color:</span>
-                                    <% uniqueColors.forEach(color => { %>
-                                    <label class="c-<%= color %>" for="">
-                                        <input type="radio" id=""> 
+                                    <% product.variants.forEach((variant, index) => { %>
+                                    <label class="c-<%= variant.color %>" for="<%= variant._id %>">
+                                        <input 
+                                        type="radio"
+                                        value="<%= variant.color%>" 
+                                        id="<%= variant._id %>" 
+                                        name="colorVariant"
+                                        <%= index === 0 ?'checked': '' %>
+                                        onchange="handleVariantChange('<%= variant._id  %>', '<%= variant.color %>')"
+                                        >                                        
                                     </label>
                                     <% }) %>
                                     <!-- <label class="c-1" for="sp-1">
@@ -113,14 +120,18 @@
                             </div>
                             <div class="product__details__cart__option">
                                 <div class="quantity">
+                                    <p id="max-limit" class="text-danger fw-14"></p>
                                     <div class="pro-qty">
                                         <input type="number" id="quantity-<%= product._id %>" name="quantity" value="1" />
                                     </div>
                                 </div>
-                                <!-- <a href="#" class="primary-btn">add to cart</a> -->
-                                 <button onclick="addCart('/addToCart/<%= product._id %>')" id="cart-action-<%= product._id %>" class="primary-btn border-0">
-                                    <%- productInCart? '<i class="fa-solid fa-arrow-right"></i>  go to cart' : 'add to cart' %>
-                                </button>
+                                <% if ((product.variants[0].sizes[0].stock) === 0) { %>
+                                    <span class="text-warning fs-14">out of stock</span>
+                                  <% } else { %> 
+                                    <button onclick="addCart('/addToCart/<%= product._id %>')" id="cart-action-<%= product._id %>" class="primary-btn border-0">
+                                        <%- productInCart? '<i class="fa-solid fa-arrow-right"></i>  go to cart' : 'add to cart' %>
+                                    </button>
+                                  <% } %>   
                             </div>
                             <div class="product__details__btns__option"> 
                                 <a href="#"><i class="fa fa-heart"></i> add to wishlist</a> 
@@ -416,8 +427,8 @@
     <!-- Related Section End -->
 
     <script>
+        //zooming functionality
         document.querySelectorAll('.product__details__pic__item').forEach(item =>{
-            console.log('items',item)
             const img = item.querySelector('img')
 
             item.addEventListener('mousemove',(e)=>{
@@ -435,6 +446,39 @@
         })
         })
 
+        const product = <%-JSON.stringify(product) %>
+        console.log('product',product)
+
+        //variant selction
+
+        const defaultSelectedVariant = document.querySelector('input[name="colorVariant"]:checked')
+        if(defaultSelectedVariant){
+            handleVariantChange(defaultSelectedVariant.id, defaultSelectedVariant.value)
+        }
+
+        function handleVariantChange(variantId,color){
+            console.log('hello')
+            try {
+            console.log('variantId',variantId)
+            console.log('color',color)
+
+            //find the selected variant
+            const selectedVariant = product.variants.find(variant => variant._id === variantId)
+            console.log('selected variant',selectedVariant)
+
+            if(selectedVariant){
+              const sizeOptionContainer = document.getElementById('sizeOption') 
+              sizeOptionContainer.innerHTML = '<span>Size:</span>'
+              selectedVariant.sizes.forEach((size, index)=>{
+                const label = document.createElement('label')
+                label.textContent = size.size
+                sizeOptionContainer.appendChild(label)
+              })
+            } 
+            } catch (error) {
+                console.error('something went wrong',error)
+            }           
+        }
     </script>
 
      <%- include('partials/footer') %> 

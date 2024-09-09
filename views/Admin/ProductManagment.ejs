@@ -5,8 +5,8 @@
     <div class="mb-3">Product Managment</div>
 
     <div class="d-flex justify-content-end">
-        <button class="mb-3 add-btn border-0">
-            <a href="/admin/addProduct" class="text-decoration-none text-white ">+ Add product</a>   
+        <button class="mb-3 primary-btn border-0">
+            <a href="/admin/addProduct" class="text-decoration-none text-white">+ Add product</a>   
         </button>
     </div>
 
@@ -40,15 +40,17 @@
               <td><%=product.productName %></td>
               <td><%=product.category.categoryName%></td>
               <td><%=product.brand.brandName %></td>
+              
               <td>
-                <% 
-                    let totalStock = 0;
-                    product.variants.forEach(variant => { 
-                        totalStock += variant.stock;
-                    });
-                %>
-                <%= totalStock %>
+                <% let stock = 0 %>
+                <% product.variants.forEach(variant => { %>
+                  <% variant.sizes.forEach(size => { %>
+                   <% stock += size.stock %>
+                  <% }) %>
+                <% }) %>
+                <%= stock %>
             </td>
+            
             <td class="">
             <div class="d-flex flex-row justify-content-end gap-2">
                 <button class="bg-primiary border-0" onclick="editProduct('<%=product._id %>')">edit</button> 

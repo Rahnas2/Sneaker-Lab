@@ -7,7 +7,7 @@ const productSchema = new mongoose.Schema({
     },
     productDescription:{
         type:String,
-        requuired:true
+        required:true
     },
     category:{  
         type:mongoose.Schema.Types.ObjectId,
@@ -19,16 +19,11 @@ const productSchema = new mongoose.Schema({
         ref:'brands',
         required:true
     },
-    variants: [{
-        color: String,
-        price: Number,
-        size: Number,
-        stock: Number
-    }],
-    images: {
-        type: [String], 
+    variants: [{ 
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'variants',
         required:true
-    },
+     }],
     review:[
         {
         comments:{type:String},
@@ -41,5 +36,7 @@ const productSchema = new mongoose.Schema({
        default:false
     }
 },{timestamps:true})
+
+productSchema.index({ productName: 'text' });
 
 module.exports = new mongoose.model('products',productSchema)     

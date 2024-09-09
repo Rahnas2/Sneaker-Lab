@@ -50,6 +50,13 @@
         });
     });
 
+    $('#search-form').on('submit', function (e) {
+        e.preventDefault();
+        const query = $('#search-input').val();
+    
+        window.location.href = `/shop?search=${encodeURIComponent(query)}`;
+    });
+
     /*------------------
 		Navigation
 	--------------------*/
@@ -105,10 +112,10 @@
     /*-------------------
 		Radio Btn
 	--------------------- */
-    $(".product__color__select label, .shop__sidebar__size label, .product__details__option__size label").on('click', function () {
-        $(".product__color__select label, .shop__sidebar__size label, .product__details__option__size label").removeClass('active');
-        $(this).addClass('active');
-    });
+    // $(".product__color__select label, .shop__sidebar__size label, .product__details__option__size label").on('click', function () {
+    //     $(".product__color__select label, .shop__sidebar__size label, .product__details__option__size label").removeClass('active');
+    //     $(this).addClass('active');
+    // });
 
     /*-------------------
 		Scroll
@@ -161,23 +168,36 @@
 		Quantity change
 	--------------------- */
     var proQty = $('.pro-qty');
+
+    // var limitWar = $('#max-limit')
     
     //increment and decrement button 
     proQty.prepend('<span class="fa fa-angle-up dec qtybtn"></span>');
     proQty.append('<span class="fa fa-angle-down inc qtybtn"></span>');
 
-    proQty.on('click', '.qtybtn', function () {
+    
+    proQty.on('click', '.qtybtn', function () { 
+        const productQuantity = product.variants[0].sizes[0].stock
         let $button = $(this);
         let $input = $button.parent().find('input')
-        
         let oldValue = parseInt($input.val());
         let newVal;
         if ($button.hasClass('inc')) {
-            newVal = parseFloat(oldValue) + 1;
+            if(oldValue >= productQuantity){
+                newVal = oldValue
+                $("#max-limit").text("out of stock!");
+            }
+            else if(oldValue >= 10){
+                newVal = 10
+                $("#max-limit").text("you hit your max limit!");
+            }else{
+                newVal = parseFloat(oldValue) + 1;
+            }
         } else {
             // not allowed below one
             if (oldValue > 1) {
                 newVal = parseFloat(oldValue) - 1;
+                $("#max-limit").text('')
             } else {
                 newVal = 1;
             }
@@ -187,35 +207,61 @@
 
     var proQty = $('.pro-qty-2');
 
- 
-
     proQty.prepend('<span class="fa fa-angle-left dec qtybtn"></span>');
     proQty.append('<span class="fa fa-angle-right inc qtybtn"></span>');
     
     proQty.on('click', '.qtybtn', function () {
         let $button = $(this);
+        console.log($button)
         let $input = $button.parent().find('input')
         console.log('input field',$input[0].outerHTML)
 
+        const availableStock = parseInt($input.data('stock'))
+        console.log('avalilabel stock',availableStock)
+
+        let itemId = $input.closest('td').find('p').attr('id');
+        let $errorMsg = $("#" + itemId);
+        console.log('eror path',$errorMsg)
+
         let oldValue = parseInt($input.val());
         let newVal;
+
         if ($button.hasClass('inc')) {
-             newVal = parseFloat(oldValue) + 1;
+            if(oldValue >= availableStock){
+                $errorMsg.text('out of stock!')
+                newVal = oldValue
+            }
+            else if(oldValue >= 10){
+                newVal = 10
+                $errorMsg.text("you hit your max limit!");
+            }else{
+                newVal = parseFloat(oldValue) + 1;
+            }
         } else {
             // not allowed below one
             if (oldValue > 1) {
                  newVal = parseFloat(oldValue) - 1;
-            } else {
+                 $errorMsg.text('')
+            } 
+            // not allowed above ten
+            else {
                 newVal = 1;
             }
         }
         $input.val(newVal).trigger('input')
         var itemPrice = parseFloat($button.closest('tr').find('#itemPrice').text().replace(/[^0-9.-]+/g, ""));
         var itemTotal = newVal * itemPrice
-        $button.closest('tr').find('#itemTotal').html('₹ ' + itemTotal)
 
         //getting item id
         var cartItemId = $button.closest('tr').attr('id').split('-')[2]
+
+        $(`#itemTotal-${cartItemId}`).html('₹ ' + itemTotal);
+
+        var addedItemTotal = $(`#itemTotal-${cartItemId}`).text().replace(/[^0-9.-]+/g, "")
+        var itemTotal = parseFloat(addedItemTotal)
+        
+        console.log('new value',newVal)
+
 
         fetch('/updatedCartItemQuantity',{
             method:'PUT',
@@ -224,13 +270,20 @@
             },
             body:JSON.stringify({
                 itemId: cartItemId,
-                quantity: newVal
+                quantity: newVal,
+                itemTotal:itemTotal,
             })
         })
         .then(response => response.json())
         .then(result =>{
             if(result.success){
-                console.log('quantity updated successfully')
+                //update total mrp
+                document.getElementById('cart-total-mrp').textContent ='₹' + result.updatedCartTotal 
+                //update cart total
+                const discoutAmount = document.getElementById('coupan-discout').textContent.match('/\d+/')
+                const coupanDiscout = document.getElementById('delevery-fee').textContent.match('/\d+/')
+                const total = result.updatedCartTotal + discoutAmount + coupanDiscout
+                const cartTotal = document.getElementById('cart-total').textContent = '₹' + total
             }else{
                 console.log('error updating quantity')
             }

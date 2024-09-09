@@ -4,6 +4,23 @@ body {
     background-color: #fbfbfb;
 }
 
+.fs-14{
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+.primary-btn {
+	display: inline-block;
+	font-size: 13px;
+	font-weight: 700;
+	text-transform: uppercase;
+	padding: 14px 30px;
+	color: #ffffff;
+	background: #000000;
+	letter-spacing: 4px;
+    border: none;
+}
+
 /* Sidebar */
 .sidebar {
     position: fixed;
@@ -94,9 +111,3 @@ body {
     width: 1.5rem;
 }
 
-.add-btn{
-    width: 10rem;
-    height: 2rem;
-    background: #000;
-    
-}

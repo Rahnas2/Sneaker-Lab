@@ -1,2 +1,57 @@
+.custom-ml{
+    margin-left: 3rem;
+}
+
+@media screen and (max-width: 765px) {
+    .custom-ml {
+      margin-left: 0.5rem;
+    }
+  }
+
+.user-details{
+    height: 14.375rem;
+    background: #F3F2EE;
+}
+  
+@media screen and (max-width: 765px) {
+    .user-details {
+      height: 10.5rem;
+    }
+  }
+
+.profile-pic{
+    height: 9.375rem;
+    width: 9.375rem;
+    background: #fff;
+  }
+
+  @media screen and (max-width: 765px) {
+    .profile-pic {
+      margin-left: 0.5rem;
+      height: 8.375rem;
+      width: 8.375rem;
+    }
+  }
+
+  .saved-address{
+    /* height: 9.375rem;
+    width: 37.5rem; */
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    
+  }
+
+  /* @media screen and (max-width: 765px) {
+    .saved-address {
+
+    }
+  } */
+
+  .new-address{
+    height: 3.5rem;
+    align-content: center; 
+    text-transform: uppercase;
+  }
 
   

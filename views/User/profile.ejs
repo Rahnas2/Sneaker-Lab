@@ -1,0 +1,234 @@
+<%- include('partials/header') %>
+
+<section>
+    <div class="container-fluid mt-1 mb-5 d-flex align-items-center user-details">
+        <div class="rounded-circle custom-ml" >
+            <img  class="profile-pic rounded-circle " src="/images/authbannercopy.jpg" alt="">
+        </div>
+        <ul class="list-unstyled ml-5 col-4" id="user-info-display">
+            <li class="text-uppercase font-weight-bold"><%= user.username %></li>
+            <li><%= user.email %></li>
+            <li><%= user.phone? user.phone: 'N/A' %></li>
+            <button class="mt-5 text-white bg-danger border-0" data-toggle="modal" data-target="#changePassword">Change Password</button>
+        </ul>
+        
+        <div type="button" class="fs-14 text-danger flex-grow-1 text-right mr-5 font-weight-bold" id="edit-button" data-toggle="modal" data-target="#editProfile" >Edit Profile</div>
+    </div>
+  
+  <!-- Modal -->
+  <div class="modal fade" id="editProfile" tabindex="-1" role="dialog" aria-labelledby="editProfileLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" class="font-weight-bold bg-danger" id="editProfileLabel">Edit Profile</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+        <form id="edit-profile-form">
+          <label for="user-name" class="d-block mb-1">Username</label>
+          <input type="text" class="d-block mb-2 form-control" name="username" value="<%= user.username %>">
+          <p id="username-notValid" class="text-danger d-none fs-14"></p>
+
+          <label for="email" class="d-block mb-1">Email</label>
+          <input type="email" class="d-block mb-2 form-control" name="email" value="<%= user.email %>" readonly>
+          <p id="email-noValid" class="text-danger d-none fs-14"></p>
+
+          <label for="phone" class="d-block mb-1">Mobile</label>
+          <input type="number" class="d-block mb-2 form-control" name="phone" value="<%= user.phone %>">
+          <p id="phone-notValid" class="text-danger d-none fs-14"></p>
+
+        </form>
+        <p id="no-change-msg" class="text-danger d-none fs-14 mt-3"></p>
+        </div>
+        <div class="modal-footer">
+          
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-danger" onclick="editProfile('/myProfile/editProfile')">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- changePassword -->
+  <div class="modal fade" id="changePassword" tabindex="-1" role="dialog" aria-labelledby="changePasswordLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title font-weight-bold " id="changePasswordLabel">Change Password</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="change-password-form">
+                    <label for="current-password" class="d-block mb-1">Current Password</label>
+                    <input type="password" class="d-block mb-2 form-control" name="currentPassword" id="current-password" required>
+                    <p id="current-password-notValid" class="text-danger d-none fs-14"></p>
+
+                    <label for="new-password" class="d-block mb-1">New Password</label>
+                    <input type="password" class="d-block mb-2 form-control" name="newPassword" id="new-password" required>
+                    <p id="new-password-notValid" class="text-danger d-none fs-14"></p>
+
+                    <label for="confirm-password" class="d-block mb-1">Confirm New Password</label>
+                    <input type="password" class="d-block mb-2 form-control" name="confirmPassword" id="confirm-password" required>
+                    <p id="confirm-password-notValid" class="text-danger d-none fs-14"></p>
+
+                    <button type="submit" class="btn btn-danger mt-3">Change Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    
+   <% if (address) { %>
+    <% address.addresses.forEach(address => { %>
+        <div id="currAddress-<%= address._id%>" class="mb-2 px-4 py-4 col-lg-6 col-12 saved-address  custom-ml">
+           <div class="d-flex justify-content-between mb-3"><span class="font-weight-bold text-uppercase"><%= address.fullName %></span><span class="text-right rounded  px-2 font-weight-bold" style="background: 	#e4e5f1;"><%= address.typeOfAddress %></span></div>
+           <div><%= address.localAddress %></div>
+           <div><%= address.city %></div>
+           <div><%= address.state %></div>
+           <div class="mt-2">mobile: <span class="font-weight-bold"><%= address.mobile %></span></div>
+           <div><%= address.email || '' %></div> 
+           <hr>
+           <div class="d-flex justify-content-between">
+               <div type="button" class="text-danger font-weight-bold"  onclick="editAddress('/myProfile/editAddres/<%= address._id %>?profile=1')">Edit</div>
+              <div class="bg-dark" style="max-height: 100%; width: 1px;"></div> 
+               <div type="button" onclick="deleteAddress('/myProfile/deleteAddress/<%= address._id %>')" class="text-danger font-weight-bold" >Remove</div>
+           </div>
+        </div>
+    <% }) %> 
+   <% } %>
+    
+    <div onclick="checkAccess('/myProfile/addAddress?profile=1')" class="custom-ml col-lg-6 col-12 saved-address text-uppercase px-4 py-4 text-danger font-weight-bold">+ add new address</div>
+
+    <div class="order-history custom-ml mt-5">
+      
+     <a href="/myProfile/orders" class="btn primary-btn mb-2">your orders</a>
+       
+    </div>
+</section>
+
+
+
+<script src="/js/addAddress.js"></script>
+<script>
+ 
+    function editProfile(url){
+      const userNameValidation = document.getElementById('username-notValid')
+      const emailValidation = document.getElementById('email-notValid')
+      const phoneValidation = document.getElementById('phone-notValid')
+
+      const noChange = document.getElementById('no-change-msg')
+
+        const editProfileForm = document.getElementById('edit-profile-form')
+        const formData = new FormData(editProfileForm)
+        const data = {
+            username:formData.get('username'),
+            email:formData.get('email'),
+            phone:formData.get('phone')
+        }
+        try {
+
+            fetch(url,{
+                method:'PUT',
+                headers:{
+                    'Content-Type': 'application/json'
+                },
+                body:JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result =>{
+
+              //clear previous errors
+              if (userNameValidation) userNameValidation.classList.add('d-none')
+              if (emailValidation) emailValidation.classList.add('d-none')
+              if (phoneValidation) phoneValidation.classList.add('d-none')
+              if(noChange)  noChange.classList.add('d-none')
+              console.log('result',result)
+                if(result.validationError){
+                    Object.entries(result.validationErrors).forEach(([field,message])=>{
+                      const validationFaild = document.getElementById(`${field}-notValid`)
+                      console.log('validation faild',validationFaild)
+                      if(validationFaild){
+                        validationFaild.classList.remove('d-none')
+                        validationFaild.textContent = message
+                      }
+                    })
+                }else if(result.noChange){
+                      noChange.classList.remove('d-none')
+                      noChange.textContent = result.message
+                }else if(result.success){
+                  $('#editProfile').modal('hide');
+                  
+                  localStorage.setItem('successMessage', result.message);
+                  location.reload()
+                }else{
+                  localStorage.setItem('errorMessage', 'something went wrong please try again later');
+                  location.reload()
+                }
+            })
+            .catch(error => console.error('error',error))
+
+        } catch (error) {
+            console.error('something went wrong',error)
+        }
+    }
+
+
+  const changePasswordForm = document.getElementById('change-password-form');
+
+    changePasswordForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const currentPassword = document.getElementById('current-password').value;
+        const newPassword = document.getElementById('new-password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+
+        // Client-side validation
+        let isValid = true;
+        if (newPassword !== confirmPassword) {
+            document.getElementById('confirm-password-notValid').textContent = 'Passwords do not match';
+            document.getElementById('confirm-password-notValid').classList.remove('d-none');
+            isValid = false;
+        } else {
+            document.getElementById('confirm-password-notValid').classList.add('d-none');
+        }
+
+        // Submit form if valid
+        if (isValid) {
+            fetch('/change-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    currentPassword,
+                    newPassword
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                  Swal.fire({
+                  icon:'success',
+                  title:'success',
+                  text: successMessage,
+                  confirmButtonText:'ok'
+                  })
+                    $('#changePassword').modal('hide');
+                } else {
+                    document.getElementById('current-password-notValid').textContent = data.message;
+                    document.getElementById('current-password-notValid').classList.remove('d-none');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    });
+
+
+</script>
+
+<%- include('partials/footer') %> 

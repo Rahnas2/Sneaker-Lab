@@ -1,0 +1,80 @@
+<%- include('partials/header') %>
+
+<div class="container">
+<form id='address-form'>
+    <div class="form-row">
+      <div class="form-group col-md-12">
+        <label for="inputName">Full Name<span class="text-danger">*</span></label>
+        <input type="text" name="fullName" value="<%= currAddress? currAddress.fullName: '' %>" class="form-control" id="inputName" placeholder="Full name">
+        <p id="fullName-notValid" class="text-danger d-none fs-14"></p>
+      </div>  
+    </div>
+
+    <div class="form-row">
+        <div class="form-group col-md-12">
+          <label for="inputCountry">country<span class="text-danger">*</span></label>
+          <input type="text" name="country" value="<%= currAddress? currAddress.country: '' %>"  class="form-control" id="inputCountry" placeholder="Country">
+          <p id="country-notValid" class="text-danger d-none fs-14"></p>
+        </div>
+    </div>   
+
+    <div class="form-group">
+      <label for="inputAddress">Address<span class="text-danger">*</span></label>
+      <input type="text" name="localAddress" value="<%= currAddress? currAddress.localAddress: '' %>"  class="form-control" id="inputAddress" placeholder="1234 Main St">
+      <p id="localAddress-notValid" class="text-danger d-none fs-14"></p>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group col-md-4">
+        <label for="inputCity">City<span class="text-danger">*</span></label>
+        <input type="text" name="city" value="<%= currAddress? currAddress.city: '' %>"  class="form-control" id="inputCity">
+        <p id="city-notValid" class="text-danger d-none fs-14"></p>
+      </div>      
+        <div class="form-group col-md-4">
+          <label for="input">State<span class="text-danger">*</span></label>
+          <input type="text" name="state" value="<%= currAddress? currAddress.state: '' %>"  class="form-control" id="inputState">
+          <p id="state-notValid" class="text-danger d-none fs-14"></p>
+        </div>
+        <div class="form-group col-md-4">
+          <label for="inputPin">pin code<span class="text-danger">*</span></label>
+          <input type="number" name="pincode" value="<%= currAddress? currAddress.pinCode: '' %>"  class="form-control" id="inputPin">
+          <p id="pincode-notValid" class="text-danger d-none fs-14"></p>
+        </div>  
+    </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="inputMobile">mobile<span class="text-danger">*</span></label>
+          <input type="number" name="mobile" value="<%= currAddress? currAddress.mobile: '' %>"  class="form-control" id="inputMobile">
+          <p id="mobile-notValid" class="text-danger d-none fs-14"></p>
+        </div>
+        <div class="form-group col-md-6">
+            <label for="inputEmail">Email</label>
+            <input type="email" name="email" value="<%= currAddress && currAddress.email? currAddress.email: '' %>"  class="form-control" id="inputEmail">
+            
+          </div>
+      </div>
+
+    <div class="form-group">
+        <div class="mb-2 font-weight-bold">Type of Address</div>
+
+        <input type="radio"  name="addressType" id="home" checked value="Home">
+        <label class="mr-4" for="home">Home</label>
+
+        <input type="radio" name="addressType" id="office" value="Office">
+        <label for="office">Office</label>
+        <p id="addressType-notValid" class="text-danger d-none fs-14"></p> 
+    </div>
+    <div class="form-group">
+      <label for="defaultAddressCheckbox">
+        <input type="checkbox" <%= currAddress && currAddress.isDefault?'checked': '' %> id="defaultAddressCheckbox" name="defaultAddress" value="true">
+        Make this as my defauld address
+    </label>
+    </div>
+    <div class="text-center mb-2"><button onclick="<%= currAddress ? `editAddressPut('/myProfile/editAddress/${currAddress._id}')` : `postAddress('/myProfile/addAddress')` %>" type="button" class="primary-btn"><%=currAddress? 'UPDATE': 'ADD ADDRESS' %></button></div> 
+  </form>
+</div>
+
+<script src="/js/addAddress.js"></script>
+
+<%- include('partials/footer') %> 

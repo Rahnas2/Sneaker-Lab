@@ -1,0 +1,123 @@
+
+
+<%- include('authHeader') %>
+<div class="text-center center-div">
+   <div class="container rounded col-9 col-sm-6 col-md-3 py-4 bg-light">
+      <div>
+       <h2>Enter the otp</h2>
+      </div>
+      <form id="forgotPasswordEmailVerifyForm" onsubmit="return false">
+       <div class="form-group hight-form">
+           <input type="number" class="form-control mt-5" id="otp" placeholder="otp" name="otp">
+       </div>
+       <button onclick="frgPassOtpVerify('/forgotPassword/postOtpVerify')" class="form-control mt-3" id='verify-button' style='background-color: #e53637;color:#fff'>Verify</button>
+      </form>
+
+      <form  class="mt-3" onsubmit="return false">
+        <button onclick="resendOtpFrg('/forgotPassword/resendOtp')" id="otp-resend-button" class="btn btn-danger d-none">Resend OTP </button>
+    </form>
+    <span id="timer"></span>
+       
+    
+     <p id="new-otp" class="text-success d-none fs-14"></p>
+      <p id="otp-notValid" class="text-danger d-none fs-14"></p>
+
+      
+   </div>
+   <script>
+    
+    let timerInterval;
+    let countdownTime = 30 * 1000; // Set initial countdown time (in seconds)
+    
+    function startTimer() {
+        const resendButton = document.getElementById('otp-resend-button');
+        const timerElement = document.getElementById('timer');
+        resendButton.classList.add('d-none');  
+    
+        timerInterval = setInterval(() => {
+            countdownTime -= 1000;
+    
+            const minutes = Math.floor((countdownTime / 1000) / 60);
+            const seconds = Math.floor((countdownTime / 1000) % 60);
+            timerElement.textContent = `Time left: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    
+            if (countdownTime <= 0) {
+                clearInterval(timerInterval); 
+                resendButton.classList.remove('d-none'); 
+                countdownTime = 30 * 1000; 
+            }
+        }, 1000);
+    }
+    
+    function frgPassOtpVerify(url){
+    
+            const otpInput = document.getElementById('otp');
+            const otp = otpInput.value.trim(); 
+    
+            const otpValidation = document.getElementById('otp-notValid');
+    
+            // Clear previous error messages
+            otpValidation.classList.add('d-none');
+    
+            if (otp === '') {
+                otpValidation.textContent = 'invalid otp';
+                otpValidation.classList.remove('d-none');
+                return;
+            }
+    
+            try {
+               fetch(url,{
+                   method:'POST',
+                   headers:{
+                       'Content-Type': 'application/json'
+                   },
+                   body: JSON.stringify({ otp })
+               })
+               .then(response => response.json())
+               .then(result =>{
+                if(result.success){
+                  window.location.href = '/changePassword'
+                }
+                else if(result.error){
+                    otpValidation.classList.add('d-none')
+                    otpValidation.textContent = result.message
+                }
+               })
+    
+            } catch (error) {
+               console.error('somethng went wrong',error)
+            }
+        }
+    
+        function resendOtpFrg(url) {
+
+           const newOtp = document.getElementById('new-otp')
+           const otpValidation = document.getElementById('otp-notValid');
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json' 
+            }
+        })
+        .then(response => response.json())
+        .then(result => {
+            newOtp.classList.add('d-none')
+            otpValidation.classList.add('d-none')
+            if (result.success) {
+                newOtp.classList.remove('d-none')
+                newOtp.textContent = result.message
+                startTimer(); // Start timer again after resending OTP
+            } else if(result.error) {
+                otpValidation.classList.remove('d-none')
+                otpValidation.textContent = result.message
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+            
+    startTimer();       
+    </script>
+    
+</body>
+</html>

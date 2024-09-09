@@ -3,11 +3,11 @@ const mongoose = require('mongoose')
 const verify_otp = new mongoose.Schema({
     email:{
         type:String,
-        require:true
+        required:true
     },
     otp:{
         type:String,
-        require:true
+        required:true
     },
     createdAt:{
         type:Date,
@@ -15,7 +15,7 @@ const verify_otp = new mongoose.Schema({
     },
     expiresAt:{
         type:Date,
-        require:true,
+        required:true,
         index:{expires:'30s'}
     }
 })

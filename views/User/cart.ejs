@@ -37,26 +37,28 @@
                             </thead>
                             <tbody>
                                 <% cart.items.forEach(item => { %>
-                                <tr id="cart-item-<%= item._id  %>"> 
+                                <tr id="cart-item-<%= item._id  %>">   
                                     <td class="product__cart__item">
                                         <div class="product__cart__item__pic">
-                                            <img src="<%= item.product.images[0] %>" alt="">
-
+                                            <img src="<%= item.product.variants[0].images[0] %>" alt="">
                                         </div>
                                         <div class="product__cart__item__text">
-                                            <h6><%= item.product.productName %></h6> 
+                                            <a href="/viewProduct/<%= item.product._id %>"><h6><%= item.product.productName %></h6></a>
                                             <h5 id="itemPrice">₹ <%= item.product.variants[0].price %></h5>
                                         </div>
                                     </td>
                                     <td class="quantity__item">
                                         <div class="quantity">
-                                            <div class="pro-qty-2">
-                                                <input id="itemQuantity" type="text" value="<%= item.quantity %>">
+                                            <div class="pro-qty-2">  
+                                                <% const stock = item.product.variants[0].sizes[0].stock %>
+                                                <input id="itemQuantity" data-stock="<%= stock %>" type="text" value="<%= item.quantity %>">
                                             </div>
+                                            <p id="max-limit-<%= item._id %>" class="text-danger fw-14"></p>
                                         </div>
                                     </td>
-                                    <td id="itemTotal" class="cart__price">₹ <%= (item.product.variants[0].price) * item.quantity %></td>
+                                    <td id="itemTotal-<%= item._id %>" class="cart__price">₹ <%= (item.product.variants[0].price) * item.quantity %></td>
                                     <td onclick="deleteCartItem('/deleteCartItem/<%= item._id %>')" class="cart__close"><i class="fa fa-close"></i></td>
+                                    
                                 </tr>
                                 <% }) %>    
                             </tbody>
@@ -86,14 +88,14 @@
                     <div class="cart__total">
                         <h6>Cart total</h6>
                         <ul>
-                            <li>Total MRP <span>₹ <%= cart.totalPrice %></span></li>
-                            <li>Discount on MRP <span>0</span></li>
-                            <li>Coupan Discount <span>0</span></li>
-                            <li>Shipping Fee <span>0</span></li>
+                            <li>Total MRP <span id="cart-total-mrp">₹ <%= cart.totalPrice %></span></li>
+                            <li>Discount on MRP <span id="discout-amout">0</span></li>
+                            <li>Coupan Discount <span id="coupan-discout">0</span></li>
+                            <li>Shipping Fee <span id="delevery-fee" class="text-success fs-14"><%= cart.shippingFee == 0 ? 'free':cart.shippingFee %></span></li>
                             <hr>
-                            <li class="text-dark font-weight-bold">Total Amount <span>$ 169.50</span></li>
+                            <li class="text-dark font-weight-bold">Total Amount <span id="cart-total">₹ <%= cart.totalPrice %></span></li>
                         </ul>
-                        <a href="#" class="primary-btn">Proceed to checkout</a>
+                        <a type="button" onclick="checkAccess('cart/checkOut')" class="primary-btn"><span class="text-white">Proceed to checkout</span></a>
                     </div>
                 </div>
             </div>      
@@ -146,6 +148,15 @@
                   .then(response => response.json())
                   .then(result =>{
                       if (result.success) {
+                         //update the total mrp
+                         const totalMrp = document.getElementById('cart-total-mrp').textContent ='₹' + result.updatedCartTotal
+                         //update cart total
+                         const discoutAmount = document.getElementById('coupan-discout').textContent.match('/\d+/')
+                         const coupanDiscout = document.getElementById('delevery-fee').textContent.match('/\d+/')
+                         const total = result.updatedCartTotal + discoutAmount + coupanDiscout
+                         const cartTotal = document.getElementById('cart-total').textContent = '₹' + total
+
+                         //remove the item from cart
                          const deletedCart = document.getElementById(`cart-item-${itemId}`)
                          deletedCart.remove()  
                          
@@ -170,6 +181,8 @@
                 console.log('something went wrong',error)
             }
         }
+
+        
     </script>
     
 

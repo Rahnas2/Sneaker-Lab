@@ -1742,24 +1742,28 @@ ol {
 	cursor: pointer;
 }
 
-.product__details__option__color label.c-1 {
+.product__details__option__color label.c-black {
 	background: #0b090c;
 }
 
-.product__details__option__color label.c-2 {
+.product__details__option__color label.c-blue {
 	background: #20315f;
 }
 
-.product__details__option__color label.c-3 {
+.product__details__option__color label.c-orange {
 	background: #f1af4d;
 }
 
-.product__details__option__color label.c-4 {
+.product__details__option__color label.c-red {
 	background: #ed1c24;
 }
 
-.product__details__option__color label.c-9 {
+.product__details__option__color label.c-white {
 	background: #ffffff;
+}
+
+.product__details__option__color label.c-green {
+	background: green;
 }
 
 .product__details__option__color label:after {
@@ -2568,9 +2572,15 @@ ol {
 .checkout__title {
 	color: #111111;
 	font-weight: 700;
-	text-transform: uppercase;
 	border-bottom: 1px solid #e1e1e1;
 	padding-bottom: 25px;
+	margin-bottom: 30px;
+}
+
+.checkout__type_title{
+	color: #111111;
+	font-weight: 600;
+	
 	margin-bottom: 30px;
 }
 
