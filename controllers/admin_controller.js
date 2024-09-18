@@ -481,40 +481,6 @@ exports.getEditProduct = async(req,res)=>{
    }
 }
 
-// exports.postUpdatedProduct = async (req,res)=>{
-//    const regex = /.*[\/\\]public[\/\\](.*)/;
-
-//    console.log('Full request body:', req.body);
-//    const {productName, category, brand,  description} = req.body
-
-//    const variants = req.body.variants
-//    console.log('variants',variants)
-
-//    const uploadedFiles = req.files?req.files.map(file =>{
-//       const match  = file.path.match(regex)
-//       return match ? match[1]:null
-//    }).filter(path => path !== null):[]
-//    console.log('images:',images)
-
-   
-//    try {
-//       const parsedVariants = typeof variants === 'string' ? JSON.parse(variants) : variants;
-//       const productId = req.params.id
-//       const updatedProduct ={  
-//          productName,
-//          category,
-//          brand,
-//          variants:parsedVariants,
-//          productDescription:description,
-//          images:images.length > 0 ? images : undefined
-//        }
-//        await productCollection.findByIdAndUpdate(productId,updatedProduct,{new:true})
-//        return res.json({success:true,message:'update product successfully'})
-//    } catch (error) {
-//       console.log(error)
-//       return res.json({success:false,message:'faild'})
-//    }
-// }
 
 exports.postUpdatedProduct = async (req,res) =>{
    try {
@@ -533,15 +499,24 @@ exports.postUpdatedProduct = async (req,res) =>{
     }
 
       const {productName , category, brand, description} = req.body
-      const variants = req.body.variants
+      const variants = req.body.variants 
 
       const productId = req.params.id  //product id      
       
       const existingProduct = await productCollection.findById(productId)
       if(!existingProduct){
-         return res.json({success:false,message:'sorry the product is not existed!'})
+         return res.json({success:false,message:'sorry, the product does not exist!'})
       }
       
+      // const duplicateProduct = await productCollection.findOne({
+      //    productName:productName,
+      //    _id:{$ne:productId}
+      // })
+
+      // if(duplicateProduct){
+      //    return res.json({success:false,message:'sorry, the product name is exist'})
+      // }
+
       //update product details
       existingProduct.productName = productName
       existingProduct.category = category
@@ -571,18 +546,20 @@ exports.postUpdatedProduct = async (req,res) =>{
         });
 
       //update variants  
-      for(i=0;i<variants.length;i++){
-         const variantId = existingProduct.variants[i]
-         const variant = variants[i]
-         const existingVariant = await variantCollection.findOne({product:productId,_id:variantId})
-         console.log('variant id',variantId)
+      // const updatedVariantIds = [];
+      for (let i = 0; i < variants.length; i++) {
+         const variant = variants[i]; // Get the current variant
+        
+         let existingVariant;
+     
+
+             // Find existing variant by ID and product association
+             existingVariant = await variantCollection.findOne({ color: variant.color, product: productId });
 
          if(existingVariant){
             //update existing variant
             existingVariant.color = variant.color
             existingVariant.price = variant.price
-            
-            // Update sizes
             existingVariant.sizes = variant.sizes.map(size => ({
                size: size.size,
                stock: size.stock
@@ -597,28 +574,29 @@ exports.postUpdatedProduct = async (req,res) =>{
             ].slice(0, 4);
         }
 
-            // existingVariant.images
 
             await existingVariant.save()
+            // updatedVariantIds.push(existingVariant._id);
          }else{
-            console.log('hello',uploadedFiles)
+           
            //add new variant
            const updateNewVariant = new variantCollection({
             product:productId,
             color:variant.color,
             price:variant.price,
             sizes:variant.sizes,
-            images:uploadedFiles 
+            images:variantImagesMap.get(i) || []
            })
            console.log('new variant',updateNewVariant)
            await updateNewVariant.save()  //add new variant
 
            existingProduct.variants.push(updateNewVariant._id)  //add the new variant reference to the product collection
          }
+         //saving the updated product
+         await existingProduct.save()
       }
 
-      //saving the updated product
-      await existingProduct.save()
+      
 
       return res.json({success:true,message:'successfully updated the product'})
    } catch (error) {
@@ -626,6 +604,9 @@ exports.postUpdatedProduct = async (req,res) =>{
    }
 }
 
+//Product managment start
+
+//order management start
 
 exports.loadOrderManagment = async (req,res) =>{
    try {
@@ -673,9 +654,11 @@ exports.cancelProductAdm = async (req,res) =>{
         console.log('quantity',quantity)
         console.log('variantid',variantId)
 
-        orders.items.splice(itemIndex, 1);
-        await orders.save()
-
+      await orderCollection.findOneAndUpdate(
+      {_id:orderId, 'items._id':itemId},
+      {$set:{'items.$.status':'canceled'}},
+      {new:true}
+     )
         
          const variant = await variantCollection.findOne({ _id: variantId });
         if (!variant) {
@@ -693,6 +676,28 @@ exports.cancelProductAdm = async (req,res) =>{
       console.error('something went wrong',error)
    }
 }
+
+exports.orderDelivered = async (req,res)=>{
+   try {
+      const {orderId, itemId} = req.body
+    
+      const orderDelivered = await orderCollection.findOneAndUpdate(
+         {_id:orderId, 'items._id':itemId},
+         {$set:{'items.$.status': 'delivered' }},
+         {new:true}
+        )
+        console.log('updated order',orderDelivered)
+        if(!orderDelivered){
+         return res.json({success:false,message:'something went wrong'})
+        }
+        return res.json({success:true,message:'order delivered successfully'})
+
+   } catch (error) {
+      console.error('something went wrong',error)
+   }
+}
+
+//order managment end
 
 
 exports.adminLogout = (req,res)=>{

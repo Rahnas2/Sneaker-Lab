@@ -219,8 +219,8 @@
         const availableStock = parseInt($input.data('stock'))
         console.log('avalilabel stock',availableStock)
 
-        let itemId = $input.closest('td').find('p').attr('id');
-        let $errorMsg = $("#" + itemId);
+        let itemId = $input.closest('td').find('p').attr('id').replace('max-limit-', '');  // Extract actual item ID
+        let $errorMsg = $("#max-limit-" + itemId);
         console.log('eror path',$errorMsg)
 
         let oldValue = parseInt($input.val());
@@ -249,16 +249,26 @@
             }
         }
         $input.val(newVal).trigger('input')
-        var itemPrice = parseFloat($button.closest('tr').find('#itemPrice').text().replace(/[^0-9.-]+/g, ""));
-        var itemTotal = newVal * itemPrice
 
-        //getting item id
-        var cartItemId = $button.closest('tr').attr('id').split('-')[2]
+        
 
-        $(`#itemTotal-${cartItemId}`).html('₹ ' + itemTotal);
-
-        var addedItemTotal = $(`#itemTotal-${cartItemId}`).text().replace(/[^0-9.-]+/g, "")
-        var itemTotal = parseFloat(addedItemTotal)
+        // Get the item price or offer price
+        let $priceElement = $button.closest('tr').find('#dicoutedPrice-' + itemId);
+        let itemPrice;
+        
+        if ($priceElement.length) {
+            // Use the offer price if it exists
+            itemPrice = parseInt($priceElement.text().replace(/[^0-9]/g, ''));
+        } else {
+            // Otherwise, use the regular price
+            itemPrice = parseInt($button.closest('tr').find('#mrp-' + itemId).text().replace(/[^0-9]/g, ''));
+        }
+    
+        // Calculate item total
+        var itemTotal = newVal * itemPrice;
+    
+        // Update the item total in the DOM
+        $('#itemTotal-' + itemId).html('₹ ' + itemTotal.toFixed(2));
         
         console.log('new value',newVal)
 
@@ -269,7 +279,7 @@
                 'Content-Type':'application/json'
             },
             body:JSON.stringify({
-                itemId: cartItemId,
+                itemId: itemId,
                 quantity: newVal,
                 itemTotal:itemTotal,
             })
@@ -277,13 +287,20 @@
         .then(response => response.json())
         .then(result =>{
             if(result.success){
-                //update total mrp
-                document.getElementById('cart-total-mrp').textContent ='₹' + result.updatedCartTotal 
-                //update cart total
-                const discoutAmount = document.getElementById('coupan-discout').textContent.match('/\d+/')
-                const coupanDiscout = document.getElementById('delevery-fee').textContent.match('/\d+/')
-                const total = result.updatedCartTotal + discoutAmount + coupanDiscout
-                const cartTotal = document.getElementById('cart-total').textContent = '₹' + total
+               // Update cart totals dynamically
+            let totalMrp = result.updatedCart[0].items.reduce((acc, curr) => {
+                let price = curr.product.variants[0].price;
+                return acc + (price * curr.quantity);
+            }, 0);
+            console.log('totalmrp',totalMrp)
+
+            let totalDiscount = totalMrp - result.updatedCart[0].totalPrice;
+            let totalAmount = result.updatedCart[0].totalPrice;
+
+            // Update Total MRP, Discount, and Total Amount in DOM
+            $('#cart-total-mrp').html('₹ ' + totalMrp.toFixed(2));
+            $('#discout-amout').html('₹ ' + totalDiscount.toFixed(2));
+            $('#cart-total').html('₹ ' + totalAmount.toFixed(2));
             }else{
                 console.log('error updating quantity')
             }

@@ -1,6 +1,8 @@
 const express = require('express')
 const router = express.Router()
 const admin_controller = require('../controllers/admin_controller')
+const coupon_controller = require('../controllers/coupon_controller')
+const offer_controller = require('../controllers/offer_controller')
 const auth = require('../middleware/adminAuth')
 const upload = require('../config/multerConfig')
 
@@ -8,6 +10,7 @@ const provalidation = require('../middleware/productValidation')
 const variantValid = require('../middleware/variantValidation')
 const catogoryValid = require('../middleware/categoryValidation')
 const brandValid = require('../middleware/brandValidation')
+const couponValid = require('../middleware/couponValidation')
 
 router.get('/',admin_controller.adminLogin)
 router.post('/login',admin_controller.adminLoginPost)
@@ -38,15 +41,30 @@ router.get('/productManagment',auth,admin_controller.productManagment)
 router.get('/addProduct',admin_controller.getaddProduct)
 router.post('/addProduct',upload.any(),provalidation,admin_controller.postaddproduct)  
 router.post('/softDeleteProduct/:id',auth,admin_controller.softDeleteProduct)    
-router.get('/editProduct/:id',upload.array('images'),admin_controller.getEditProduct)
+router.get('/editProduct/:id',upload.any(),admin_controller.getEditProduct)
 router.post('/editProduct/:id',upload.any(),provalidation,admin_controller.postUpdatedProduct) 
 //product managment end
 
 //order managment start
 router.get('/orderManagment',auth,admin_controller.loadOrderManagment)
 router.post('/cancelProductAdmin',auth,admin_controller.cancelProductAdm)
+router.post('/orderDelivered',auth,admin_controller.orderDelivered)
 //order managment end
 
+//coupan managment start
+router.get('/couponManagment',auth,coupon_controller.couponManagment)
+router.post('/addCoupon',auth,couponValid,coupon_controller.addCoupon)
+router.put('/editCoupon/:id',auth,couponValid,coupon_controller.editCoupon)
+router.delete('/couponDelete/:id',auth,coupon_controller.couponDelete)
+//coupan managment end
+
+//offer maangement start
+router.get('/offerManagment',auth,offer_controller.loadOfferManagment)
+router.post('/offerManagment/addProductOffer',auth,offer_controller.addProductOffer)
+router.post('/offerManagment/addCategoryOffer',auth,offer_controller.addCategoryOffer)
+router.delete('/deleteProductOffer/:id',auth,offer_controller.removeProductOffer)
+router.delete('/deleteCategoryOffer/:id',auth,offer_controller.removeCategoryOffer)
+//offer managemant end
 
 router.get('/logout',admin_controller.adminLogout) 
 

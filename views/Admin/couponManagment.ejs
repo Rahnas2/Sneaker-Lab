@@ -1,0 +1,331 @@
+<%- include('partials/header') %>  
+
+<div class="container-fluid pt-4">
+    <div class="mb-3">Coupon Managment</div>
+
+    <div class="d-flex justify-content-end">
+        <button class="mb-3 primary-btn border-0" data-bs-toggle="modal" data-bs-target="#addCouponModal" id="addCouponButton" onclick="resetModal()">
+            <a href="#" class="text-decoration-none text-white ">+ Add Coupon</a>
+            
+        </button>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="addCouponModal" tabindex="-1" aria-labelledby="addCouponModalLabel"  aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCouponModalLabel">Add New Coupon</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="add-coupon" action="/admin/addCoupon" method="post" >
+                <div class="modal-body">
+                    <input type="hidden" id="couponId" name="couponId">
+                    <div id="coupon-error" class="alert alert-danger d-none"></div>
+
+                    <label for="code" class="mb-1">Copon Code</label>
+                    <input id="code"  type="text" class="form-control mb-1" name="code" >
+                    <p id="code-notvalid" class="text-danger fs-14 d-none" ></p>
+
+                    <label for="discountPercentage" class="mb-1">Discount Percentage</label>
+                    <input id="discountPercentage" class="form-control mb-1" name="discountPercentage" type="text">
+                    <p id="discountPercentage-notvalid" class="text-danger fs-14 d-none" ></p>
+
+                    <label for="maxAmount" class="mb-1">Maximum Amount</label>
+                    <input id="maxAmount" type="text" class="form-control mb-1" name="maxAmount">
+                    <p id="maxAmount-notvalid" class="text-danger fs-14 d-none"></p>
+
+                    <label for="minimumSpend" class="mb-1">Minimum Spend</label>
+                    <input id="minimumSpend" type="text" class="form-control mb-1" name="minimumSpend" >
+                    <p id="minimumSpend-notvalid" class="text-danger fs-14 d-none"></p>
+
+                    <!-- <label for="startDate" class="mb-1">Start Date</label>
+                    <input id="startDate" type="datetime-local" class="form-control mb-1" name="startDate" >
+                    <p id="startDate-notvalid" class="text-danger fs-14 d-none"></p> -->
+
+                    <label for="endDate" class="mb-1">end Date</label>
+                    <input id="endDate" type="datetime-local" class="form-control mb-1" name="endDate" >
+                    <p id="endDate-notvalid" class="text-danger fs-14 d-none"></p>
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+
+     <!-- serach option -->
+     <div class="search-wrapper">
+        <input type="text" class="searchbar" id="searchCoupon" placeholder="Search for coupons..">
+        <i class="fa fa-search search-icon"></i>
+    </div>
+
+    <!-- coupon list -->
+    <div class="table-responsive  border mt-2 ">
+        <table class="table table-striped table">
+            <thead>
+            <tr>
+                <th class="checkbox-align">
+                    <input type="checkbox" id="selectAll"> 
+                <th scope="col">Code</th>
+                <th scope="col">Percentage(%)</th> 
+                <th scope="col">Maximum Amount</th> 
+                <th scope="col">Minimum Spend</th>
+                <!-- <th scope="col">Start Date</th>   -->
+                <th scope="col">End Date</th> 
+                <th scope="col">Status</th>
+                <th scope="col" class="text-end">Action</th>
+            </tr>
+        </thead>
+    
+        <tbody>
+            <% coupansList.forEach(coupon => { %>
+             <tr id="coupon-<%= coupon._id %>" class="align-middle">
+                 <th class="checkbox-align"> 
+                     <input type="checkbox" id="selectAll">
+                 </th>
+                  <td><%=coupon.code %></td>
+                  <td><%=coupon.discountPercentage %>%</td>
+                  <td><%=coupon.maxAmount %></td>
+                  <td><%=coupon.minimumSpend %></td>
+                  <% /* %>
+                  <td><%= new Date(coupon.startDate).toLocaleString('en-US', { 
+                    day: '2-digit', month: '2-digit', year: 'numeric', 
+                    hour: '2-digit', minute: '2-digit', second: '2-digit', 
+                    hour12: true 
+                  }) %></td>
+                  <% */ %>
+                  <td><%= new Date(coupon.endDate).toLocaleString('en-US', { 
+                    day: '2-digit', month: '2-digit', year: 'numeric', 
+                    hour: '2-digit', minute: '2-digit', second: '2-digit', 
+                    hour12: true 
+                  }) %></td> 
+                  <td class="<%= coupon.isActive? 'text-success': 'text-danger' %>"><%= coupon.isActive? 'active': 'expired' %></td>
+                  <td class="text-end">
+                    <button class="border-0" onclick="deleteCoupon('/admin/couponDelete/<%=coupon._id %>','<%=coupon._id %>')"><i class="fa-solid fa-trash text-danger fs-4"></i></button> 
+                    <button class="border-0" data-bs-toggle="modal" data-bs-target="#addCouponModal" 
+                            onclick="editCoupon('<%= coupon._id %>', '<%= coupon.code %>', '<%= coupon.discountPercentage %>', '<%= coupon.maxAmount %>', '<%= coupon.minimumSpend %>', '<%= coupon.endDate %>')">
+                        <i class="fas fa-edit text-primary fs-4"></i>
+                    </button>
+                 </td>
+                  
+             </tr>
+          <% }) %>
+         </tbody>
+        </table>
+    </div>
+
+</div>
+</main>
+
+<script>
+   function updateMinDateTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+
+            const minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+            
+            // const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+
+            // startDateInput.min = minDateTime;
+            endDateInput.min = minDateTime
+            
+
+        }
+
+        setInterval(updateMinDateTime, 60000);
+
+       
+        updateMinDateTime();
+
+        // document.getElementById('startDate').addEventListener('change', function(e) {
+        //     // validateDateInput(e.target);
+        // });
+
+        document.getElementById('endDate').addEventListener('change', function(e) {
+            // validateDateInput(e.target);
+        });
+
+        // Fetch validation elements
+        const codeValidation = document.getElementById('code-notvalid');
+        const percentageValidation = document.getElementById('discountPercentage-notvalid');
+        const maxAmountValidation = document.getElementById('maxAmount-notvalid');
+        const minimumSpendValidation = document.getElementById('minimumSpend-notvalid');
+        // const startDateValidation = document.getElementById('startDate-notvalid');
+        const endDateValidation = document.getElementById('endDate-notvalid');
+        
+        // Get coupon form and modal
+        const couponForm = document.getElementById('add-coupon');
+        const modalTitle = document.getElementById('addCouponModalLabel');
+        
+        // Reset the modal fields when adding a new coupon
+        function resetModal() {
+            couponForm.action = '/admin/addCoupon'; // Set to add action
+            modalTitle.textContent = 'Add Coupon';
+        
+            // Clear the form fields
+            document.getElementById('code').value = '';
+            document.getElementById('discountPercentage').value = '';
+            document.getElementById('maxAmount').value = '';
+            document.getElementById('minimumSpend').value = '';
+            // document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+        
+            // Clear previous error messages
+            clearValidationMessages(); // Call a function to hide all validation messages
+        }
+        
+        // Populate the modal fields when editing a coupon
+        function editCoupon(couponId, code, discountPercentage, maxAmount, minimumSpend, endDate) {
+            couponForm.action = `/admin/editCoupon/${couponId}`; // Set to edit action
+            modalTitle.textContent = 'Edit Coupon';
+        
+            // Populate form fields
+            document.getElementById('code').value = code;
+            document.getElementById('discountPercentage').value = discountPercentage;
+            document.getElementById('maxAmount').value = maxAmount;
+            document.getElementById('minimumSpend').value = minimumSpend;
+            // document.getElementById('startDate').value = new Date(startDate).toISOString().slice(0, 16);
+            document.getElementById('endDate').value = new Date(endDate).toISOString().slice(0, 16);
+        
+            // Clear previous error messages
+            clearValidationMessages();
+        }
+        
+        // Clear validation messages
+        function clearValidationMessages() {
+            codeValidation.classList.add('d-none');
+            percentageValidation.classList.add('d-none');
+            maxAmountValidation.classList.add('d-none');
+            minimumSpendValidation.classList.add('d-none');
+            // startDateValidation.classList.add('d-none');
+            endDateValidation.classList.add('d-none');
+        }
+        
+        // Handle coupon form submission
+        couponForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+        
+            const formData = new FormData(couponForm);
+        
+            const data = {
+                code: formData.get('code'),
+                discountPercentage: formData.get('discountPercentage'),
+                maxAmount: formData.get('maxAmount'),
+                minimumSpend: formData.get('minimumSpend'),
+                // startDate: formData.get('startDate'),
+                endDate: formData.get('endDate')
+            };
+        
+            const url = couponForm.action;
+            const method = url.includes('editCoupon') ? 'PUT' : 'POST';
+        
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                clearValidationMessages();
+        
+                if (result.validationError) {
+                    Object.entries(result.validationErrors).forEach(([field, message]) => {
+                        const validationFailed = document.getElementById(`${field}-notvalid`);
+                        if (validationFailed) {
+                            validationFailed.classList.remove('d-none');
+                            validationFailed.textContent = message;
+                        }
+                    });
+                } else if (result.existedCoupon) {
+                    codeValidation.classList.remove('d-none');
+                    codeValidation.textContent = result.message;
+                } else if (result.success) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addCouponModal'));
+                    modal.hide();
+        
+                    Swal.fire({
+                        icon: 'success',
+                        text: result.message,
+                        confirmButtonText: 'OK'
+                    }).then((res) => {
+                        if (res.isConfirmed) {
+                            location.reload();
+                        }
+                    });
+                }
+                else{
+                    Swal.fire({
+                        icon: 'error',
+                        text: result.message,
+                        confirmButtonText: 'OK'
+                    })
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+            });
+        });
+
+
+        //===========delete coupon===========//
+        function deleteCoupon(url,couponId){
+            try {
+                Swal.fire({
+                  title: "Are you sure?",
+                  text: "You want to remove the product",
+                  icon: "warning",
+                  showCancelButton: true,
+                  confirmButtonColor: "#3085d6",
+                  cancelButtonColor: "#d33",
+                  confirmButtonText: "Yes, delete it!"
+                })
+                .then(result =>{
+                    if(result.isConfirmed){
+
+                        fetch(url,{
+                            method:'DELETE',
+                            headers:{
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(result => {
+                            if(result.success){
+                                const deletedCoupon = document.getElementById(`coupon-${couponId}`)
+                                deletedCoupon.remove()
+                                  Swal.fire({
+                                  title: "Deleted!",
+                                  text: result.message,
+                                  icon: "success"
+                                  });
+                            }else{
+                            Swal.fire({
+                              text: result.message,
+                              icon: "error"
+                            });
+
+                            }
+                        })
+                    }
+                })
+            } catch (error) {
+               console.error('something went wrong',error) 
+            }
+        }
+
+
+</script>
+
+<%- include('partials/footer') %>

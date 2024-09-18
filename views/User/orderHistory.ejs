@@ -34,8 +34,8 @@
                     <td><%= item.quantity %></td>
                     <td><%= item.itemTotal %></td>
                     <td><%= order.paymentMethod %></td>
-                    <td class="<% if (order.orderStatus === 'pending') { %>text-primary<% } else if (order.orderStatus === 'delivered') { %>text-success<% } else if (order.orderStatus === 'canceled') { %>text-danger<% } %>">
-                      <%= order.orderStatus %> 
+                    <td class="<% if (item.status === 'Order Placed') { %>text-primary<% } else if (item.status === 'delivered') { %>text-success<% } else if (item.status === 'canceled') { %>text-danger<% } %>">
+                      <%= item.status %> 
                     </td> 
                     <td type="button" onclick="cancelProductUser('<%= order._id %>','<%= item._id %>')" class="btn-danger ">Cancel</td>
                 <% }) %>

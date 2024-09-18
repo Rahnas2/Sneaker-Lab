@@ -41,8 +41,8 @@
                                         <div class="card-body">
                                             <div class="shop__sidebar__categories">
                                                 <ul class="nice-scroll">   
-                                                    <% categories.forEach(category=>{ %>
-                                                       <li><a href="#"><%= category.categoryName%></a></li> 
+                                                    <% categories.forEach(category=>{ %>  
+                                                       <li><a href="#" onclick="categoryFilter(event, '<%= category.categoryName %>')" ><%= category.categoryName%></a></li> 
                                                    <% }) %>
                                                 </ul>
                                             </div>
@@ -58,7 +58,7 @@
                                             <div class="shop__sidebar__brand">
                                                 <ul>
                                                   <% brands.forEach(brand=>{ %>
-                                                      <li><a href="#"><%= brand.brandName%></a></li> 
+                                                      <li><a href="#" onclick="brandFilter(event, '<%= brand.brandName %>')" ><%= brand.brandName%></a></li> 
                                                   <% }) %>
                                                 </ul>
                                             </div>
@@ -119,7 +119,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="card">
+                                <!-- <div class="card">
                                     <div class="card-heading">
                                         <a data-toggle="collapse" data-target="#collapseFive">Colors</a>
                                     </div>
@@ -156,25 +156,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="card">
-                                    <div class="card-heading">
-                                        <a data-toggle="collapse" data-target="#collapseSix">Tags</a>
-                                    </div>
-                                    <div id="collapseSix" class="collapse show" data-parent="#accordionExample">
-                                        <div class="card-body">
-                                            <div class="shop__sidebar__tags">
-                                                <a href="#">Product</a>
-                                                <a href="#">Bags</a>
-                                                <a href="#">Shoes</a>
-                                                <a href="#">Fashio</a>
-                                                <a href="#">Clothing</a>
-                                                <a href="#">Hats</a>
-                                                <a href="#">Accessories</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>
@@ -206,17 +188,11 @@
                     <div class="row">
                         
                         <% products.forEach(product => { %>
-                            <a href="/viewProduct/<%= product._id %>">
+                        <a href="/viewProduct/<%= product._id %>">
                         <div class="col-lg-4 col-md-6 col-sm-6">
                             <div class="product__item">
                                 <div class=" " >
                                     <img src="<%= product.variants[0].images[0] %>" alt="">
-
-                                    <!-- <ul class="product__hover">
-                                        <li><a href="#"><img src="img/icon/heart.png" alt=""></a></li>
-                                       
-                                        <li><a href="#"><img src="img/icon/search.png" alt=""></a></li> 
-                                    </ul> -->
                                 </div>
                                 <div class="product__item__text"> 
                                     <h6><%= product.productName %></h6>
@@ -236,9 +212,17 @@
                                         <i class="fa fa-star-o"></i>
                                         <i class="fa fa-star-o"></i>
                                     </div>
-                        
-                                        <h5 id="productPrice-<%= product._id %>">₹ <%= product.variants[0].price%></h5>
-                                    
+                                        <% if (product.offer && product.offer.expirAt && new Date(product.offer.expirAt) >= new Date()) { %>
+
+                                            <% const originalPrice = product.variants[0].price %>
+                                            <% const offerPrice = Math.round(originalPrice - (originalPrice * product.offer.discountPercentage/100)) %>
+                                            <h5 class="d-inline mr-2" id="dicoutedPrice-<%= product._id %>">₹<%= offerPrice %></h5>
+                                            <h6 class="d-inline" id="mrp-<%= product._id %>" style="text-decoration: line-through;">₹ <%= product.variants[0].price%></h6>
+                                            <span class="ml-2 red">(<%= product.offer.discountPercentage %>%)off</span>
+    
+                                        <% }else { %>
+                                        <h5 id="mrp-<%= product._id %>">₹ <%= product.variants[0].price%></h5>
+                                        <% } %>
                                     
                                     <div class="product__color__select">
                                         <label for="pc-4">
@@ -283,6 +267,20 @@
         url.searchParams.set('filter', filterValue);
         window.location.href = url;
     }
+
+    //category filter
+    function categoryFilter(event, category){
+        event.preventDefault()
+        window.location.href = `/shop?category=${category}`
+    }
+
+    //brand filter
+    function brandFilter(event, brand){
+        event.preventDefault()
+        window.location.href = `/shop?brand=${brand}`
+    }
+    
+
     </script>
 
     <%- include('partials/footer') %> 

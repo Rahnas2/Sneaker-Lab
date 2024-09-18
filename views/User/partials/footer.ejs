@@ -114,15 +114,25 @@
     function addCart(url){
         const parts = url.split('/')
         const productId = parts[parts.length -1]
+        console.log('productid',productId)
 
         //product quantity
         const quantity = document.getElementById(`quantity-${productId}`)?
          document.getElementById(`quantity-${productId}`).value:1
 
-         //product price
-         const price = parseInt(document.getElementById(`productPrice-${productId}`).textContent.replace(/([^0-9])+/i, ""))
+         //product mrp
+         const mrp = parseInt(document.getElementById(`mrp-${productId}`).textContent.replace(/([^0-9])+/i, ""))
+        //  const itemTotal = mrp * quantity
 
-         const itemTotal = price * quantity
+         let itemTotal = 0
+         const discountedPriceElement = document.getElementById(`dicoutedPrice-${productId}`)
+         if(discountedPriceElement){
+            const discountedPrice = parseInt(discountedPriceElement.textContent.replace(/([^0-9])+/i, ""));
+            itemTotal = discountedPrice * quantity
+         }else{
+            itemTotal = mrp * quantity
+         }
+         
 
         try {
             fetch(url,{
@@ -173,6 +183,52 @@
             })
         }
             
+    }
+
+    //add products to wishlist
+    function addwishlist(event,url){
+        try {
+            event.preventDefault();
+            fetch(url,{
+                method:'POST',
+                headers:{
+                    'Content-Type':'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                if(result.userNotAuthenticated){
+                   Swal.fire({
+                   icon: 'error',
+                   title: 'Access Denied',
+                   html: result.message,
+                   confirmButtonText: 'OK'
+                   })  
+                }else if(result.alreadyExist || result.success){
+                    Swal.fire({
+                    text: result.message, 
+                    showConfirmButton: false,
+                    timer: 3000, 
+                    backdrop: false,
+                    customClass: {
+                        popup: 'swal2-popup-custom', 
+                    }
+                    });
+                }else{
+                    Swal.fire({
+                   icon: 'error',
+                   title: 'Access Denied',
+                   text: result.message,
+                   confirmButtonText: 'OK'
+                   })
+                }
+            })
+            .catch(err => {
+                console.error('error',err)
+            })
+        } catch (error) {
+           console.error('someting went wrong',error) 
+        }
     }
     
     const successMessage = localStorage.getItem('successMessage')

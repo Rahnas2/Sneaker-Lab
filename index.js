@@ -11,6 +11,9 @@ const PORT = process.env.PORT || 5050;
 
 connect_db()
 
+//for checing and updating the coupon status
+require('./jobs/couponStatusUpdater')
+
 //set view engine
 app.set('view engine','ejs')
    

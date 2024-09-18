@@ -72,8 +72,17 @@
                                 <span> - 5 Reviews</span>
                             </div>
                             
-                                <h3 id="productPrice-<%= product._id %>">₹ <%= product.variants[0].price %></h3>
-                            
+                            <% if (product.offer && product.offer.expirAt && new Date(product.offer.expirAt) >= new Date()) { %>
+
+                                <% const originalPrice = product.variants[0].price %>
+                                <% const offerPrice = Math.round(originalPrice - (originalPrice * product.offer.discountPercentage/100)) %>
+                                <h3 class="d-inline mr-2" id="dicoutedPrice-<%= product._id %>">₹<%= offerPrice %></h3>
+                                <h6 class="d-inline" id="mrp-<%= product._id %>" style="text-decoration: line-through;">₹ <%= product.variants[0].price%></h6>
+                                <span class="ml-2 red">(<%= product.offer.discountPercentage %>%)off</span>
+
+                            <% }else { %>
+                                <h3 id="mrp-<%= product._id %>">₹ <%= product.variants[0].price%></h3>
+                                <% } %>
                             
                             <p>Coat with quilted lining and an adjustable hood. Featuring long sleeves with adjustable
                                 cuff tabs, adjustable asymmetric hem with elastic side tabs and a front zip fastening
@@ -134,7 +143,7 @@
                                   <% } %>   
                             </div>
                             <div class="product__details__btns__option"> 
-                                <a href="#"><i class="fa fa-heart"></i> add to wishlist</a> 
+                                <a href="#" onclick="addwishlist(event, '/addWishlist/<%= product._id %>')"><i class="fa fa-heart"></i> add to wishlist</a> 
                                 <a href="#"><i class="fa fa-exchange"></i> Add To Compare</a>
                             </div>
                             <div class="product__details__last__option">

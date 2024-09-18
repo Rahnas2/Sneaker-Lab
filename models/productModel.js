@@ -31,6 +31,11 @@ const productSchema = new mongoose.Schema({
         userId:{type:mongoose.Schema.Types.ObjectId, ref:'users'}
         }
     ],
+    offer:{
+        offerType:{type:String},
+        discountPercentage:{type:Number},
+        expirAt:{type:Date}
+    },
     deleted:{
        type:Boolean,
        default:false

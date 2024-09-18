@@ -43,14 +43,18 @@
             <td><%= item.quantity %></td>
             <td><%= item.itemTotal %></td>
             <td><%= order.paymentMethod %></td>
-            <td class="<% if (order.orderStatus === 'pending') { %>text-primary<% } else if (order.orderStatus === 'delivered') { %>text-success<% } else if (order.orderStatus === 'canceled') { %>text-danger<% } %>">
-              <%= order.orderStatus %>
+            <td class="<% if (item.status === 'order placed') { %>text-primary<% } else if (item.status === 'delivered') { %>text-success<% } else if (item.status === 'canceled') { %>text-danger<% } %>">
+              <%= item.status %> 
             </td> 
             <td class="">
                 <div class="d-flex flex-row justify-content-end gap-4">
+                  <% if (item.status === 'canceled') { %>
+                   
+                  <% }else { %>
                     <button class="bg-warning border-0" onclick="productCancelAdm('<%=order._id %>','<%=item._id %>')">cancel</button> 
-                 
-                    <button class="bg-success text-white border-0" onclick="orderDelivered('<%=item._id %>')">delivered</button> 
+                    <button class="bg-success text-white border-0" onclick="orderDelivered('<%=order._id %>','<%=item._id %>')">delivered</button> 
+                  <% } %>
+                    
                  </td>
         <% }) %>
         
@@ -89,39 +93,109 @@
 </div>
 
 <script>
+  //cancel order 
     function productCancelAdm(orderId,itemId){
     try {
-      fetch('/admin/cancelProductAdmin',{
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json'
-        },
-        body:JSON.stringify({orderId,itemId})
-      })
-      .then(response => response.json())
-      .then(result =>{
-        if(result.success){
-        //   Swal.fire({
-        //     icon:'success',
-        //     title:'success',
-        //     text: result.message,
-        //     confirmButtonText:'ok'
-        //     })
-        alert('cancelled product')
-        }else{
-          Swal.fire({
-            icon:'error',
-            title:'error',
-            text: result.message,
-            confirmButtonText:'ok'
-            })
-        }
-      })
-      .catch(error => console.error('error',error))
+      Swal.fire({
+      title: "Are you sure?",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch("/admin/cancelProductAdmin/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json", 
+          },
+          body: JSON.stringify({ orderId, itemId }),
+        })
+          .then((response) => response.json())
+          .then((result) => {
+            if (result.success) {
+              Swal.fire({
+                title: "cancelled",
+                text: result.message,
+                icon: "success",
+              }).then(() => { 
+                location.reload();
+              });
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: result.message, 
+                confirmButtonText: "OK",
+              });
+            }
+          })
+          .catch((error) => {
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              confirmButtonText: "OK",
+            });
+          });
+      }
+    });
     } catch (error) {
       console.error('someting went wrong',error)
     }
   }
+
+//order delivered
+function orderDelivered(orderId, itemId) {
+  try {
+    Swal.fire({
+      title: "Are you sure?",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delivered",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch("/admin/orderDelivered/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json", 
+          },
+          body: JSON.stringify({ orderId, itemId }),
+        })
+          .then((response) => response.json())
+          .then((result) => {
+            if (result.success) {
+              Swal.fire({
+                title: "delivered!",
+                text: result.message,
+                icon: "success",
+              }).then(() => { 
+                location.reload();
+              });
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: result.message, 
+                confirmButtonText: "OK",
+              });
+            }
+          })
+          .catch((error) => {
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              confirmButtonText: "OK",
+            });
+          });
+      }
+    });
+  } catch (error) {
+    console.error("Something went wrong", error);
+  }
+}
+
+
 </script>
 
 <%- include('partials/footer') %>

@@ -48,30 +48,32 @@ const orderSchema = new mongoose.Schema({
         itemTotal: { 
             type: Number,
             required: true
+        },
+        status:{
+            type:String,
+            default:'Order Placed'
+        },
+        cancelReson:{
+            type:String
         }
     }],
     paymentMethod: {
         type: String,
         required: true
     },
-    paymentStatus: {
-        type: Boolean,
-        default: false
-    },
-    orderStatus: {
-        type: String,
-        enum: ['pending', 'canceled', 'delivered'],
-        default: 'pending'
-    },
     totalAmount:{
-        type:String,
+        type:Number,
         required:true
+    },
+    paymentStatus:{
+        type:String,
+        default:'pending'
     },
     expectedDelivery: {
         type: Date,
         default: () => Date.now() + 7 * 24 * 60 * 60 * 1000
     }
-},{timeStamps:true})
+},{timestamps:true})
 
 
 module.exports = mongoose.model('orders',orderSchema)  

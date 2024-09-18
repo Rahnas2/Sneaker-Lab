@@ -51,7 +51,7 @@
                 <div id="variants-container">
                     <% if (product && product.variants.length > 0) { %>
                         <% product.variants.forEach((variant, index) => { %>
-                    <div class="variant-group">
+                    <div class="variant-group" >
                     <div class="row form-group mb-2 ">
                         <h5>Variant <span class="variant-index"></span></h5>
                         <div class="col">
@@ -459,6 +459,9 @@
             //appenting variants
             variants.forEach((variant, index)=>{
                 //appenting color & price
+                if (variant.id) {
+                   newFormData.append(`variants[${index}][id]`, variant.id);
+                }
                 newFormData.append(`variants[${index}][color]`,variant.color)
                 newFormData.append(`variants[${index}][price]`,variant.price)
 
@@ -471,7 +474,14 @@
 
                 //appending images
                 variant.images.forEach((image , imageIndex)=>{
-                    newFormData.append(`variants[${index}][images]`,image,`variant${index}_image${imageIndex}`)
+                    if (image instanceof File) {
+                    // This is a new file upload
+                    newFormData.append(`variants[${index}][images][${imageIndex}]`, image, `variant${index}_image${imageIndex}`);
+                } else if (image) {
+                    // This is an existing image path
+                    newFormData.append(`variants[${index}][images][${imageIndex}]`, image);
+                }
+                
                 })
             })
 

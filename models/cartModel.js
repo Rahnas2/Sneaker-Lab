@@ -14,10 +14,18 @@ const cartSchema = new mongoose.Schema({
         type:Number,
         default:0
     },
-    coupanDiscount:{
-        type:Number,
-        default:0
-    },
+    // mrpDiscount:{
+    //     type:Number,
+    //     default:0
+    // },
+    // couponDiscount:{
+    //     type:Number,
+    //     default:0
+    // },
+    // couponId:{
+    //   type:mongoose.Schema.Types.ObjectId,
+    //   ref:'coupons'
+    // },
     totalQuantity:{
         type:Number,
         default:0 
@@ -25,8 +33,11 @@ const cartSchema = new mongoose.Schema({
     totalPrice:{
         type:Number,
         default:0.00
-
     }
+    // discountedTotal:{
+    //     type:Number,
+    //     default:0
+    // }
 },{timestamps:true})
 
 cartSchema.pre('save', async function(next){
@@ -40,6 +51,10 @@ cartSchema.pre('save', async function(next){
         });
     
         this.totalPrice = total
+
+        //calculating discounted total
+        // let discountedTotal = total - this.mrpDiscount - this.couponDiscount
+        // this.discountedTotal = discountedTotal
     
         this.totalQuantity = this.items.length
     

@@ -1,6 +1,8 @@
 const express = require('express') 
 const passport = require('passport')
 const users_controller = require('../controllers/users_controller')
+const wishlist_controller = require('../controllers/wishlist_controller')
+const coupon_controller = require('../controllers/coupon_controller')
 const userAuth = require('../middleware/userAuth')
 const validater = require('../middleware/formValidation')
 const addressValidation = require('../middleware/addressValidation')
@@ -51,11 +53,19 @@ router.put('/updatedCartItemQuantity',userAuth,users_controller.updatedCartQuant
 router.delete('/deleteCartItem/:id',userAuth,users_controller.deleteCartItem)
 //cart end
 
+//coupon start
+router.post('/cart/applyCoupon',userAuth,coupon_controller.applyCoupon)
+//coupon end
+
+//wishlist start
+router.get('/wishlist',userAuth,wishlist_controller.getWishlist)
+router.post('/addWishlist/:id',userAuth,wishlist_controller.postWishlist)
+router.put('/removeWishlist/:id',userAuth,wishlist_controller.removeWishlist)
 
 //checkout start
 router.get('/cart/checkOut',userAuth,users_controller.getCheckOut)
 router.post('/cart/checkOut/placeOrder',userAuth,users_controller.placeOrder)
-
+router.post('/verifyPayment',userAuth,users_controller.verifyPayment)
 //checkout end
 
 //profile

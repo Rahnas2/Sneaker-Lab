@@ -13,6 +13,10 @@ const categorySchema = new mongoose.Schema({
     deleted:{
         type:Boolean,
         default:false
+    },
+    offer:{
+        discountPercentage:{type:Number},
+        expirAt:{type:Date}
     }
 },{timestamps:true})
 

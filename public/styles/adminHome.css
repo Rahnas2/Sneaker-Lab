@@ -111,3 +111,32 @@ body {
     width: 1.5rem;
 }
 
+
+.nav-tabs .nav-link.custom-tab {
+    color: #555; /* Default text color */
+    font-weight: 600; /* Make text bold */
+    font-size: 16px; /* Font size */
+    border: none; 
+    padding: 10px 20px; /* Padding for more space around the text */
+  
+    transition: background-color 0.3s, color 0.3s; /* Smooth transition for hover effects */
+}
+
+/* Style active tab */
+.nav-tabs .nav-link.active.custom-tab {
+    border-bottom: 3px solid #007bff; /* Add bottom border to active tab */
+    color: #000000; /* Active tab text color */
+    
+}
+
+/* Hover effects */
+.nav-tabs .nav-link.custom-tab:hover {
+    border-bottom: 3px solid #007bff; 
+    cursor: pointer; /* Change cursor to pointer */
+}
+
+/* Hover effect for nav-item (optional, but makes the interaction feel smooth) */
+.nav-item:hover {
+
+    /* color: #007bff; Change color on hover */
+}

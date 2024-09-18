@@ -54,4 +54,34 @@
     text-transform: uppercase;
   }
 
+  .nav-tabs .nav-link.custom-tab {
+    color: #555; /* Default text color */
+    font-weight: 600; /* Make text bold */
+    font-size: 16px; /* Font size */
+    border: none; /* Remove default borders */
+    padding: 10px 20px; /* Padding for more space around the text */
+    background-color: #f8f9fa; /* Light background */
+    border-radius: 10px; /* Rounded corners */
+    transition: background-color 0.3s, color 0.3s; /* Smooth transition for hover effects */
+}
+
+/* Style active tab */
+.nav-tabs .nav-link.active.custom-tab {
+    background-color: #007bff; /* Active tab background color */
+    color: white; /* Active tab text color */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for active tab */
+}
+
+/* Hover effects */
+.nav-tabs .nav-link.custom-tab:hover {
+    background-color: #007bff; /* Change background color on hover */
+    color: white; /* Change text color on hover */
+    cursor: pointer; /* Change cursor to pointer */
+}
+
+/* Hover effect for nav-item (optional, but makes the interaction feel smooth) */
+.nav-item:hover {
+    text-shadow: 0px 0px 5px rgba(0, 123, 255, 0.8); /* Subtle shadow on hover */
+    color: #007bff; /* Change color on hover */
+}
   

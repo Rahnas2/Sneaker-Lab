@@ -86,6 +86,18 @@ img {
 	max-width: 100%;
 }
 
+
+.img-hover-zoom img {
+	transition: transform .5s, filter 1.5s ease-in-out;
+	
+  }
+  
+  /* The Transformation */
+  .img-hover-zoom:hover img {
+	
+	transform: scale(1.1);
+  }
+
 input:focus,
 select:focus,
 button:focus,
@@ -101,14 +113,17 @@ a:hover,
 a:focus {
 	text-decoration: none;
 	outline: none;
-	
-	
+		
 }
 
 ul,
 ol {
 	padding: 0;
 	margin: 0;
+}
+
+.red{
+	color: #e53637;
 }
 
 /* sweet-alert */
@@ -262,6 +277,12 @@ ol {
 		border: 4px solid #f44336;
 		border-left-color: transparent;
 	}
+}
+
+.cart__discount{
+	border: 1px dashed #b8b6ab;;
+    padding: 20px 10px 10px;
+	
 }
 
 .spacial-controls {
@@ -767,6 +788,21 @@ ol {
   Categories
 -----------------------*/
 
+.full-width-image {
+	width: 100%; /* Ensure the section takes up full width of the parent */
+	padding: 0; /* Remove any default padding */
+	margin: 0; /* Remove any default margin */
+  }
+  
+  
+  
+  .full-width {
+	width: 100%; /* Make the image full width */
+	/* height: auto; Maintain the image's aspect ratio */
+	max-height: 750px;
+	display: block; /* Prevents the image from being treated as an inline element */
+  }
+
 .categories {
 	background: #f3f2ee;
 	overflow: hidden;
@@ -895,6 +931,7 @@ ol {
 /*---------------------
   Instagram
 -----------------------*/
+
 
 .instagram {
 	padding-bottom: 0;
@@ -1964,6 +2001,12 @@ ol {
 	text-align: center;
 }
 
+.remove-icon{
+	right: 10px;
+	font-size: 23px;
+	color: #aa1a1ae6;
+}
+
 /*---------------------
   Footer
 -----------------------*/
@@ -2961,19 +3004,19 @@ ol {
 
 .blog-hero {
 	background: #f3f2ee;
-	padding-top: 125px;
-	padding-bottom: 190px;
+	padding-top: 50px;
+	padding-bottom: 50px;
 }
 
-.blog__hero__text h2 {
+/* .blog__hero__text h2 {
 	color: #111111;
 	font-size: 42px;
 	font-weight: 700;
 	line-height: 50px;
 	margin-bottom: 18px;
-}
+} */
 
-.blog__hero__text ul li {
+/* .blog__hero__text ul li {
 	list-style: none;
 	font-size: 15px;
 	color: #3d3d3d;
@@ -2995,7 +3038,7 @@ ol {
 
 .blog__hero__text ul li:last-child:after {
 	display: none;
-}
+} */
 
 /*---------------------
   Blog Details

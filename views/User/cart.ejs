@@ -44,7 +44,18 @@
                                         </div>
                                         <div class="product__cart__item__text">
                                             <a href="/viewProduct/<%= item.product._id %>"><h6><%= item.product.productName %></h6></a>
-                                            <h5 id="itemPrice">₹ <%= item.product.variants[0].price %></h5>
+                                            <% let offer = false %>
+                                            <% if (item.product.offer && item.product.offer.expirAt && new Date(item.product.offer.expirAt) >= new Date()) { %>
+                                                <% offer = true %>
+                                                <% const originalPrice = item.product.variants[0].price %>
+                                                <% const offerPrice = Math.round(originalPrice - (originalPrice * item.product.offer.discountPercentage/100)) %>
+                                                <h5 class="d-inline mr-2" id="dicoutedPrice-<%= item._id %>">₹<%= offerPrice %></h5>
+                                                <h6 class="d-inline" id="mrp-<%= item._id %>" style="text-decoration: line-through;">₹ <%= item.product.variants[0].price%></h6>
+                                                <span class="ml-2 red">(<%= item.product.offer.discountPercentage %>%)off</span>
+                
+                                            <% }else { %>
+                                                <h5 id="mrp-<%= item._id %>">₹ <%= item.product.variants[0].price%></h5>
+                                                <% } %>
                                         </div>
                                     </td>
                                     <td class="quantity__item">
@@ -56,7 +67,7 @@
                                             <p id="max-limit-<%= item._id %>" class="text-danger fw-14"></p>
                                         </div>
                                     </td>
-                                    <td id="itemTotal-<%= item._id %>" class="cart__price">₹ <%= (item.product.variants[0].price) * item.quantity %></td>
+                                    <td id="itemTotal-<%= item._id %>" class="cart__price">₹ <%= item.itemTotal %></td>
                                     <td onclick="deleteCartItem('/deleteCartItem/<%= item._id %>')" class="cart__close"><i class="fa fa-close"></i></td>
                                     
                                 </tr>
@@ -70,27 +81,61 @@
                                 <a href="/shop">Continue Shopping</a>
                             </div>
                         </div>
-                        <!-- <div class="col-lg-6 col-md-6 col-sm-6">
-                            <div class="continue__btn update__btn">
-                                <a href="#"><i class="fa fa-spinner"></i> Update cart</a>
-                            </div>
-                        </div> -->
                     </div>
                 </div>
-                <div class="col-lg-4">
-                    <div class="cart__discount">
+                <div  class="col-lg-4 ">
+                    <% /* %>
+                    <% if (appliedCoupon) { %>
+                        <div class="applied-coupon-container p-3 mb-4" style="background-color: #f0f8ff; border: 1px solid #ccc;">
+                            <h6 class="font-weight-bold text-success">Coupon Applied Successfully!</h6>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <div class="font-weight-bold">Coupon Code:</div>
+                                <div class="coupon-code text-uppercase  text-success font-weight-bold p-2" style="font-size: 1rem;"><%= appliedCoupon.code %></div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <div class="font-weight-bold">You Saved:</div>
+                                <div class="saved-amount text-success font-weight-bold">RS <%= cart.couponDiscount %></div>
+                            </div>
+                            <button type="button" class="btn btn-danger mt-3 w-100" id="remove-coupon">Remove Coupon</button>
+                        </div>
+                    <% } else { %>
+                    <div id="coupon-parent">
+                    <div id="coupons-container" class="cart__discount">
                         <h6>Discount codes</h6>
-                        <form action="#">
-                            <input type="text" placeholder="Coupon code">
+                        <form id="coupon-form">
+                            <input id="coupon-code-input" class="text-dark font-weight-bolder text-uppercase" type="text"  placeholder="Coupon code">
                             <button type="submit">Apply</button>
                         </form>
+                        <p id="coupon-notvalid" class="text-danger d-none fs-14"></p>
+
+                        <div id="coupons-container" class="overflow-auto mt-3" style="max-height: 200px;">
+                        <h6 class=" mb-3">Applicable Coupon</h6>
+                        <% coupons.forEach(coupon => { %>
+                           <% if (cart.totalPrice >= coupon.minimumSpend) { %> 
+                            <ul class="list-group list-unstyled overflow-auto">
+                                <li class="list-item p-2 " style="background: #f3f2ee;">
+                                    <input type="radio" name="coupon" class="coupon-radio" value="<%= coupon.code %>"> 
+                                    <span class="font-weight-bold ml-2"><%= coupon.code %></span><br>
+                                    <div><%= coupon.description %></div>
+                                </li>
+                            </ul>
+                           <% } %>
+                        <% }) %>
                     </div>
+                    </div>
+                </div>
+                <% } %>
+                <% */ %>
                     <div class="cart__total">
                         <h6>Cart total</h6>
-                        <ul>
-                            <li>Total MRP <span id="cart-total-mrp">₹ <%= cart.totalPrice %></span></li>
-                            <li>Discount on MRP <span id="discout-amout">0</span></li>
-                            <li>Coupan Discount <span id="coupan-discout">0</span></li>
+                        <ul> 
+                            <% const totalMrp = cart.items.reduce((acc,curr) =>{ %>
+                                <% acc += curr.product.variants[0].price * curr.quantity%>
+                                <% return acc %>
+                            <% },0) %> 
+                            <li>Total MRP <span id="cart-total-mrp">₹ <%= totalMrp %></span></li> 
+                            <li>Discount on MRP <span id="discout-amout" class="text-success fs-14 " style="font-family: cursive; font-size: 14px;"><%= totalMrp - cart.totalPrice %></span></li>
+                            <% /* %><li>Coupan Discount <span id="coupan-discout"><%= cart.couponDiscount %></span></li> <% */ %>
                             <li>Shipping Fee <span id="delevery-fee" class="text-success fs-14"><%= cart.shippingFee == 0 ? 'free':cart.shippingFee %></span></li>
                             <hr>
                             <li class="text-dark font-weight-bold">Total Amount <span id="cart-total">₹ <%= cart.totalPrice %></span></li>
@@ -148,13 +193,19 @@
                   .then(response => response.json())
                   .then(result =>{
                       if (result.success) {
-                         //update the total mrp
-                         const totalMrp = document.getElementById('cart-total-mrp').textContent ='₹' + result.updatedCartTotal
-                         //update cart total
-                         const discoutAmount = document.getElementById('coupan-discout').textContent.match('/\d+/')
-                         const coupanDiscout = document.getElementById('delevery-fee').textContent.match('/\d+/')
-                         const total = result.updatedCartTotal + discoutAmount + coupanDiscout
-                         const cartTotal = document.getElementById('cart-total').textContent = '₹' + total
+                           // Update cart totals dynamically
+                            let totalMrp = result.updatedCart[0].items.reduce((acc, curr) => {
+                                let price = curr.product.variants[0].price;
+                                return acc + (price * curr.quantity);
+                            }, 0);
+                            console.log('totalmrp',totalMrp)
+                
+                            let totalDiscount = totalMrp - result.updatedCart[0].totalPrice;
+                            let totalAmount = result.updatedCart[0].totalPrice
+
+                            document.getElementById('cart-total-mrp').innerHTML = '₹ ' + totalMrp.toFixed(2);
+                            document.getElementById('discout-amout').innerHTML =totalDiscount.toFixed(2);
+                            document.getElementById('cart-total').innerHTML = '₹ ' + totalAmount.toFixed(2);
 
                          //remove the item from cart
                          const deletedCart = document.getElementById(`cart-item-${itemId}`)
@@ -181,9 +232,9 @@
                 console.log('something went wrong',error)
             }
         }
-
         
     </script>
     
+<script src="/js/applyCoupon.js"></script>
 
     <%- include('partials/footer') %> 

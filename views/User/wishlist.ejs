@@ -1,0 +1,99 @@
+
+<%- include('partials/header') %>
+
+    <!-- Breadcrumb Section Begin -->
+    <section class="breadcrumb-option">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="breadcrumb__text">
+                        <h4>Shopping Cart</h4>
+                        <div class="breadcrumb__links">
+                            <a href="/">Home</a>
+                            <a href="/shop">shop</a>
+                            <span>wishlist</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Breadcrumb Section End -->
+
+    <% if (!wishlist || wishlist.productId.length < 1) { %>
+     <!-- Empty Wishlist -->
+    <div class="container mt-5 mb-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h4 class="card-title">Your Wishlist is Empty</h4>
+                        <p class="card-text">It looks like you haven't added any items to your wishlist yet.</p>
+                        <p class="card-text">Start adding items to your wishlist to keep track of your favorite products.</p>
+                        <a href="/shop" class="primary-btn bg-danger">Browse Products</a>
+                    </div>
+                    <div class="card-footer text-muted">
+                        You can always come back here to view your saved items.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% }else{ %>
+        <div class="row m-5 ">
+       <% wishlist.productId.forEach(product => { %> 
+        
+            <div id="wishlist-card-<%= product._id %>" class="card p-0 col-lg-2 col-md-4 col-6 m-5" style="width: 15rem !important;">  
+                <div class="img-hover-zoom  overflow-hidden">
+                <a href="/viewProduct/<%=product._id %>"><img src="<%= product.variants[0].images[0] %>" class="card-img-top" alt="..."></a>
+            </div>
+                <!-- Remove Icon --> 
+                <span onclick="removeWishlist('/removeWishlist/<%=product._id %>','<%= product._id %>')" class="remove-icon position-absolute text-right btn">
+                    <i class="fas fa-times"></i> <!-- Font Awesome Icon for 'X' -->
+                </span>
+                <div class="card-body">
+                  <h5 class="card-title"><%= product.productName %></h5> 
+                  <p class="card-text">₹ <%= product.variants[0].price %></p>
+                </div>
+                <div class="d-flex justify-content-center border p-3 btn">
+                    <% if ((product.variants[0].sizes[0].stock) === 0) { %>
+                        <span class="text-warning fs-14 ">OUT OF STOCK</span>
+                      <% } else { %> 
+                          <span>ADD TO CART</span>
+                      <% } %>
+                </div>
+            </div>
+        
+       <% }) %>
+    </div>
+    <% } %>
+
+    <script>
+        function removeWishlist(url,productId){
+            try {
+                fetch(url,{
+                    method:'PUT',
+                    headers:{
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(result =>{
+                    if(result.success){
+                      const card = document.getElementById(`wishlist-card-${productId}`)
+                      card.remove()
+                    }else{
+                        Swal.fire({
+                        icon:'error',
+                        text:result.message,
+                        confirmButtonText:'ok'
+                        })
+                    }
+                })
+            } catch (error) {
+                console.error('something went wrong')
+            }
+        }
+    </script>
+
+    <%- include('partials/footer') %> 
