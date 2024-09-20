@@ -106,6 +106,50 @@
                                <div onclick="checkAccess('/myProfile/addAddress?profile=0')" class="saved-address text-uppercase px-4 py-4 text-danger font-weight-bold">+ add new address</div>                     
                             </div> 
                         <div class="col-lg-4 col-md-6 ">
+                            <% if (appliedCoupon && appliedCoupon.isActive) { %>
+                                <div class="applied-coupon-container p-3 mb-4" style="background-color: #f0f8ff; border: 1px solid #ccc;">
+                                    <h6 class="font-weight-bold text-success">Coupon Applied Successfully!</h6>
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <div class="font-weight-bold">Coupon Code:</div>
+                                        <div class="coupon-code text-uppercase  text-success font-weight-bold p-2" style="font-size: 1rem;"><%= appliedCoupon.code %></div>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <div class="font-weight-bold">You Saved:</div>
+                                        <div class="saved-amount text-success font-weight-bold">RS <%= couponDiscount %></div> 
+                                    </div>
+                                    <button type="button" class="btn btn-danger mt-3 w-100" onclick="userRemoveCoupon('/checkout/removeCoupon','<%= appliedCoupon._id %>')" id="remove-coupon">Remove Coupon</button>
+                                </div>
+                            <% } else { %>
+                                <div id="coupon-parent">
+                                    <div id="coupons-container" class="cart__discount">
+                                        <h6>Discount codes</h6>
+                                        <div id="coupon-form-container">
+                                            <input id="coupon-code-input" class="text-dark font-weight-bolder text-uppercase" type="text"  placeholder="Coupon code" />
+                                            <button type="button" id="apply-coupon-btn">Apply</button>
+                                        </div>
+                            
+                                <p id="coupon-notvalid" class="text-danger d-none fs-14"></p>
+                               
+                                <% if (coupons) { %>
+                                    <div id="" class="overflow-auto mt-3" style="max-height: 200px;">
+                                        <h6 class=" mb-3">Applicable Coupon</h6>
+                                        <% coupons.forEach(coupon => { %>
+                                           <% if (cart.totalPrice >= coupon.minimumSpend) { %> 
+                                            <ul class="list-group list-unstyled overflow-auto">
+                                                <li class="list-item p-2 " style="background: #f3f2ee;">
+                                                    <input type="radio" name="coupon" class="coupon-radio" value="<%= coupon.code %>"> 
+                                                    <span class="font-weight-bold ml-2"><%= coupon.code %></span><br>
+                                                    <div><%= coupon.description %></div>
+                                                </li>
+                                            </ul>
+                                           <% } %>
+                                        <% }) %>
+                                    </div>
+                                <% } %>     
+                        </div>
+                    </div>
+                        <% } %>
+                   
                             <div class="checkout__order">
                                 <h4 class="order__title">Your order</h4>
                                 <div class="checkout__order__products">Product <span>Total</span></div>
@@ -117,8 +161,8 @@
                                     <% }) %>
                                 </ul>
                                 <ul class="checkout__total__all">
-                                    <li>Total MRP <span id="cart-total-mrp">₹ <%= cart.totalPrice %></span></li>
-                                    <li>Coupan Discount <span id="coupan-discout">₹ <%= cart.coupanDiscount %></span></li>
+                                    <li>Total MRP <span id="cart-total-mrp">₹ <%= cart.totalPrice + couponDiscount %></span></li>
+                                    <li>Coupan Discount <span id="coupan-discout"><%= couponDiscount %></span></li>
                                     <li>Shipping Fee <span id="delevery-fee" class="text-success fs-14"><%= cart.shippingFee == 0 ? 'free':cart.shippingFee %></span></li>
                                     <hr>
                                     <li class="text-dark font-weight-bold">Total Amount <span id="cart-total">₹ <%= cart.totalPrice %></span></li>
@@ -148,9 +192,15 @@
     </section>
     <!-- Checkout Section End -->
 
+    <script src="/js/applyCoupon.js"></script>
+
     <script src="/js/addAddress.js"></script>
+
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
+    
+
     <script src="/js/placeOrder.js"></script>
+    
 
 <%- include('partials/footer') %> 

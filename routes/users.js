@@ -3,6 +3,7 @@ const passport = require('passport')
 const users_controller = require('../controllers/users_controller')
 const wishlist_controller = require('../controllers/wishlist_controller')
 const coupon_controller = require('../controllers/coupon_controller')
+const wallet_controller = require('../controllers/wallet_controller')
 const userAuth = require('../middleware/userAuth')
 const validater = require('../middleware/formValidation')
 const addressValidation = require('../middleware/addressValidation')
@@ -54,13 +55,15 @@ router.delete('/deleteCartItem/:id',userAuth,users_controller.deleteCartItem)
 //cart end
 
 //coupon start
-router.post('/cart/applyCoupon',userAuth,coupon_controller.applyCoupon)
+router.post('/checkOut/applyCoupon',userAuth,coupon_controller.applyCoupon)
+router.post('/checkout/removeCoupon',userAuth,coupon_controller.userRemoveCoupon)
 //coupon end
 
 //wishlist start
 router.get('/wishlist',userAuth,wishlist_controller.getWishlist)
 router.post('/addWishlist/:id',userAuth,wishlist_controller.postWishlist)
 router.put('/removeWishlist/:id',userAuth,wishlist_controller.removeWishlist)
+//wishlist end
 
 //checkout start
 router.get('/cart/checkOut',userAuth,users_controller.getCheckOut)
@@ -79,8 +82,11 @@ router.get('/myProfile/editAddres/:id',userAuth,users_controller.getEditAddress)
 router.put('/myProfile/editAddress/:id',userAuth,addressValidation,users_controller.editAddressPost)
 router.delete('/myProfile/deleteAddress/:id',userAuth,users_controller.deleteAddress)
 
+router.get('/myProfile/wallet',userAuth,wallet_controller.getWallet)
+
 router.get('/myProfile/orders',userAuth,users_controller.loadOrderHistory)
 router.post('/cancelProductUser',userAuth,users_controller.cancelProduct)
+router.put('/returnProduct',userAuth,users_controller.returnProduct)
 
 
 

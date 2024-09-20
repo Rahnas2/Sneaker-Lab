@@ -53,10 +53,18 @@ const orderSchema = new mongoose.Schema({
             type:String,
             default:'Order Placed'
         },
-        cancelReson:{
+        returnReson:{
             type:String
         }
     }],
+    couponId:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref:'coupons'
+    },
+    couponDiscound:{
+        type:Number,
+        default:0
+    },
     paymentMethod: {
         type: String,
         required: true

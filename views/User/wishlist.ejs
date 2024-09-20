@@ -53,13 +53,27 @@
                 </span>
                 <div class="card-body">
                   <h5 class="card-title"><%= product.productName %></h5> 
-                  <p class="card-text">₹ <%= product.variants[0].price %></p>
+                  
+                  <% if (product.offer && product.offer.expirAt && new Date(product.offer.expirAt) >= new Date()) { %>
+
+                    <% const originalPrice = product.variants[0].price %>
+                    <% const offerPrice = Math.round(originalPrice - (originalPrice * product.offer.discountPercentage/100)) %>
+                    <h5 class="d-inline mr-2" id="dicoutedPrice-<%= product._id %>">₹<%= offerPrice %></h5>
+                    <h6 class="d-inline" id="mrp-<%= product._id %>" style="text-decoration: line-through;">₹ <%= product.variants[0].price%></h6>
+                    <span class="ml-2 red">(<%= product.offer.discountPercentage %>%)off</span>
+
+                <% }else { %>
+                <h5 id="mrp-<%= product._id %>">₹ <%= product.variants[0].price%></h5>
+                <% } %>
+                  
                 </div>
                 <div class="d-flex justify-content-center border p-3 btn">
                     <% if ((product.variants[0].sizes[0].stock) === 0) { %>
                         <span class="text-warning fs-14 ">OUT OF STOCK</span>
                       <% } else { %> 
-                          <span>ADD TO CART</span>
+                        <span id="cart-action-<%= product._id %>"  onclick="<%= productsInCart[product._id]? `checkAccess('/cart')`:`addCart('/addToCart/${product._id}')` %>">
+                            <%- productsInCart[product._id]? '<i class="fa-solid fa-arrow-right"></i>  GO TO CART': '+ ADD TO CART'%>
+                        </span>
                       <% } %>
                 </div>
             </div>

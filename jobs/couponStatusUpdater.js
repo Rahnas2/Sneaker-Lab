@@ -13,6 +13,7 @@ cron.schedule('* * * * *', async () => {
                 {endDate:{$lt:now},isActive:true},
                 {$set:{isActive:false}}
             )
+
             console.log(`updated ${expiredCoupon.length} expired coupon to inactive`)
         }
     } catch (error) {

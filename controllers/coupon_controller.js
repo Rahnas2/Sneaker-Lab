@@ -106,11 +106,11 @@ exports.couponDelete = async (req,res)=>{
 exports.applyCoupon = async (req,res) =>{
     try {
         const {couponCode} = req.body
+        console.log('coupon code',req.body)
         const userId = req.session.user
 
         const coupon = await couponCollection.findOne({code:couponCode})
-        const couponId = coupon._id
-        console.log('coupon id',couponId)
+        
         const cart = await cartCollection.findOne({userId})
 
 
@@ -125,6 +125,7 @@ exports.applyCoupon = async (req,res) =>{
              }
 
              const maxAmount = coupon.maxAmount
+             
              const minimumSpend = coupon.minimumSpend
 
              if(cart.totalPrice < minimumSpend){
@@ -137,27 +138,92 @@ exports.applyCoupon = async (req,res) =>{
              let couponDiscount = subTotal * (discountPercentage/100)
 
              if(couponDiscount > maxAmount){
-                couponDiscount = subTotal - maxAmount
+                couponDiscount = maxAmount
              }
 
-             discountedTotal = subTotal - couponDiscount
 
-             await cartCollection.updateOne(
-                {userId},
-                {
-                    $set:{
-                        couponDiscount:couponDiscount,
-                        couponId:couponId
-                    }
-                }
-            )
+            let remainigDiscount = couponDiscount
+            cart.items.forEach(item => {
+                //proportional discount per items using the subtotal
+                const itemProportionalDiscount = (item.itemTotal / subTotal) * couponDiscount
 
-            return res.json({success:true,couponDiscount,couponCode})
+                const discountToApply = Math.min(item.itemTotal, itemProportionalDiscount)
+                console.log('discounted price',discountToApply)
+
+                item.itemTotal -= discountToApply
+
+                remainigDiscount -= discountToApply
+                item.markModified('itemTotal');
+            });
+
+            if(remainigDiscount > 0){
+               let maxItem = cart.items.reduce((prev,curr)=> prev.itemTotal > curr.itemTotal ? prev : curr)
+               maxItem.itemTotal -= remainigDiscount
+            }
+
+            
+
+            try {
+                await cart.save();
+                console.log('Cart updated and saved successfully.');
+            } catch (error) {
+                console.error('Error saving the cart:', error);
+                return res.json({ success: false, message: 'Error saving the cart' });
+            }
+            
+            req.session.coupon = {
+                code:couponCode,
+                couponDiscount:couponDiscount,
+                cartTotal:subTotal
+            }
+
+            
+
+            return res.json({success:true,message:'coupon applied successfully'})
              
         }else{
             return res.json({notValid:true,message:'sorry, invlalid coupon'})
         }
     } catch (error) {
         console.error('something went wrong',error)
+    }
+}
+
+exports.userRemoveCoupon = async (req,res) => {
+    try {
+        const userId = req.session.user
+        const couponCode = req.session.coupon.code
+        const couponDiscount = req.session.coupon.couponDiscount
+        console.log('type of discount',couponDiscount)
+        const appliedCoupon = await couponCollection.findOne({code:couponCode})
+        
+        const cart = await cartCollection.findOne({userId:userId})
+
+        let remainingDiscount = couponDiscount
+        const orignalCartTotal = req.session.coupon.cartTotal
+
+        cart.items.forEach(item => {
+            const itemProportionalDiscount = (item.itemTotal / orignalCartTotal) * couponDiscount
+
+            const appliedDiscount = Math.min(item.itemTotal, itemProportionalDiscount)
+
+            item.itemTotal += appliedDiscount
+
+            remainingDiscount -= appliedDiscount
+        });
+
+        if(remainingDiscount > 0){
+            let maxItem = cart.items.reduce((prev,curr)=> prev.itemTotal > curr.itemTotal ? prev: curr)
+            maxItem.itemTotal += remainingDiscount
+        }
+
+        delete req.session.coupon
+
+        await cart.save()
+
+        return res.json({success:true,message:'coupon removed'})
+
+    } catch (error) {
+        console.log('something went wrong',error)
     }
 }

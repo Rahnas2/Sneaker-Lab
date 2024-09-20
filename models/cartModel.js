@@ -14,18 +14,6 @@ const cartSchema = new mongoose.Schema({
         type:Number,
         default:0
     },
-    // mrpDiscount:{
-    //     type:Number,
-    //     default:0
-    // },
-    // couponDiscount:{
-    //     type:Number,
-    //     default:0
-    // },
-    // couponId:{
-    //   type:mongoose.Schema.Types.ObjectId,
-    //   ref:'coupons'
-    // },
     totalQuantity:{
         type:Number,
         default:0 
@@ -34,16 +22,12 @@ const cartSchema = new mongoose.Schema({
         type:Number,
         default:0.00
     }
-    // discountedTotal:{
-    //     type:Number,
-    //     default:0
-    // }
 },{timestamps:true})
 
 cartSchema.pre('save', async function(next){
     try {
         let total = 0
-        const populatedProduct = await this.populate('items.product')
+        // const populatedProduct = await this.populate('items.product')
     
         this.items.forEach(item => {
             const cartTotal = item.itemTotal
@@ -51,10 +35,6 @@ cartSchema.pre('save', async function(next){
         });
     
         this.totalPrice = total
-
-        //calculating discounted total
-        // let discountedTotal = total - this.mrpDiscount - this.couponDiscount
-        // this.discountedTotal = discountedTotal
     
         this.totalQuantity = this.items.length
     

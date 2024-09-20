@@ -1,9 +1,12 @@
 
 const wishlistCollection = require('../models/wishlistModel')
 
+const cartCollection = require('../models/cartModel')
+
 exports.getWishlist = async (req,res) =>{
     try {
         const user = req.session.user
+
         const wishlist = await wishlistCollection
         .findOne({ userId:user })
         .populate({
@@ -13,10 +16,23 @@ exports.getWishlist = async (req,res) =>{
           }
         });
 
+        let productsInCart = {}
+        for(let product of wishlist.productId){
+           let productId = product._id
+
+           const cart = await cartCollection.findOne({userId:user,'items.product':productId})
+
+           productsInCart[productId] = cart ? true : false
+        }
+
+        
+
+
         res.render('User/wishlist',{
             user,
             page:null,
             wishlist,
+            productsInCart
             
         })
     } catch (error) {
@@ -27,16 +43,21 @@ exports.getWishlist = async (req,res) =>{
 exports.postWishlist = async (req,res) =>{
     try {
         const productId = req.params.id
+
         const userId = req.session.user
+
         const wishlist = await wishlistCollection.findOne({userId})
+
         console.log('wishlist',wishlist)
         if(!wishlist){
             await wishlistCollection.create({userId,productId:[productId]})
             return res.json({success:true,message:'Added Successfully'})
         }
+
         if(wishlist.productId.length > 10){
             return res.json({success:false,message:'sorry, your wishlist is full'})
         }
+
         if(!wishlist.productId.includes(productId)){
             wishlist.productId.push(productId)
             await wishlist.save()
@@ -44,6 +65,7 @@ exports.postWishlist = async (req,res) =>{
         }else{
             return res.json({alreadyExist:true,message:'Already Exist'})
         }
+
     } catch (error) {
        console.error('something went wrong',error) 
     }
