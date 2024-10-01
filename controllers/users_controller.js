@@ -13,12 +13,17 @@ const addressCollection =require('../models/addressModel')
 const orderCollection = require('../models/orderModel')
 const couponCollection = require('../models/couponModel')
 const walletCollection = require('../models/walletModel')
+
+const shippingService = require('../services/applyShippingCharge')
+const invoiceService = require('../services/invoiceDownload')
+
 const mongoose = require('mongoose')
 const { render } = require('ejs')
 const { set } = require('../config/email')
 const { json } = require('body-parser')
 
 const Razorpay = require('razorpay')
+const { error } = require('console')
 
 const razorpayInstance = new Razorpay ({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -30,18 +35,38 @@ const razorpayInstance = new Razorpay ({
 
 exports.home = async (req,res)=>{
     try {
+    //user id
     const userId = req.session.user
-    const products = await productCollection.find()
+
     if(userId){
     const status = await usersCollection.findById(userId)
         if(status && status.isBlock){
            return res.redirect('/signup')  
         }
     } 
+
+    const products = await productCollection.find()
+
+    let productsInCart = {}
+
+        for(let product of products){
+           let productId = product._id
+           const cart = await cartCollection.findOne({userId,'items.product':productId})
+
+           productsInCart[productId] = cart ? true : false
+        }
+
+    //new arrivels 
+    const newArrivals = await productCollection.find().populate('variants')
+    .sort({createdAt: -1}).limit(4)
+    console.log('new arrivels',newArrivals)
+    
+
     return res.render("User/index",{
         user:req.session.user,
         page:'home',
-        products
+        newArrivals,
+        productsInCart
     }) 
     } catch (error) {
         console.error('something went wrong',error)
@@ -114,8 +139,11 @@ exports.postsignup = async (req,res)=>{
         email:req.body.email,
         phone:req.body.phone,
         password:req.body.password,
-        cfpassword:req.body.cfpassword //This is for checking the password not store into database 
+        cfpassword:req.body.cfpassword, //This is for checking the password not store into database 
+        refereeCode:req.body.referralCode
     }
+
+    //validation
     const errors = validationResult(req)
     if(!errors.isEmpty()){
         console.log('iam here')
@@ -125,7 +153,6 @@ exports.postsignup = async (req,res)=>{
             acc[error.path]=error.msg
             return acc
         },{})
-        console.log(validationErrors)
         return res.json({validationError:true,validationErrors})
     }else{
     const user_check = await usersCollection.findOne({email:data.email})
@@ -138,7 +165,8 @@ exports.postsignup = async (req,res)=>{
             username: data.username,
             email: data.email,
             phone: data.phone,
-            password: data.password
+            password: data.password,
+            refereeCode: data.refereeCode
         };
         return res.json({success:true})
     }
@@ -167,7 +195,9 @@ exports.getsignupVerification = async (req,res)=>{
 
 exports.signupVerification = async (req,res)=>{
     const {email , otp} = req.body
+
     const otpCheck = await otpCollection.findOne({email,otp})
+
     if(otpCheck && new Date() < otpCheck.expiresAt){
         const userData = req.session.tempUser
         if(!userData){
@@ -177,12 +207,52 @@ exports.signupVerification = async (req,res)=>{
             email:email 
            })
         }
+        //hahsPassword
         const hashedPassword = await bcrypt.hash(userData.password,10)
         userData.password = hashedPassword
         
+        //generate referal code
+        const userName = userData.username.slice(0,3)
+
+        const code = auth_controller.generateReferralCode()
+
+        const referralCode = userName + code
+
+        userData.referralCode = referralCode
+
+
+        const refereeCode = userData.refereeCode //store referee code before delete
+
+        delete userData.refereeCode  //delete the refereee code before save userData to database
+
+
        const newUser = await usersCollection.create(userData)
-       console.log(newUser._id)
        req.session.user = newUser._id
+
+       // add referal bonus to referal user
+       const findReferraUser = await usersCollection.findOne({referralCode:refereeCode})
+       if(findReferraUser){
+        referalUserId = findReferraUser._id
+        const referralUserWallet = await walletCollection.findOne({userId:referalUserId})
+        if(!referralUserWallet){
+            await walletCollection.create({
+                userId: referalUserId,
+                balance: 100,
+                history: [{ amount:100, status: 'credit', description: `Credited ${100} via referral` }]
+            })
+        }else{
+            await walletCollection.updateOne(
+                { userId: referalUserId },
+                {
+                    $inc: { balance: 100 }, // Increment the wallet balance
+                    $push: {
+                        history: { amount:1000, status: 'credit', description: `Credited ${100} via referral` }
+                    }
+                }
+            )
+        }
+       }
+
        res.redirect('/')
     }else{
         const reminingTime = otpCheck ? Math.ceil((otpCheck.expiresAt - new Date())/1000):0;
@@ -339,11 +409,16 @@ exports.getShop = async(req,res)=>{
         const categories = await categoryCollection.find({deleted:false})
         const brands = await brandCollection.find({deleted:false})
         
-        const userId = req.session.user
+        const userId = req.session.user          //users id
 
-        const filter = req.query.filter
+        const filter = req.query.filter          //filter type
 
-        const search = req.query.search || ''
+        const search = req.query.search || ''    //search
+
+        //for pagination
+        const page = parseInt(req.query.page) || 1
+        const limit = parseInt(req.query.limit) || 10
+        const skip = (page - 1)* limit
 
         //category filtering start
         const selectedCategory = req.query.category || ''
@@ -421,8 +496,13 @@ exports.getShop = async(req,res)=>{
             aggregationPipeline.push({ $sort: sortOption });
         }
 
-        const products = await productCollection.aggregate(aggregationPipeline)
 
+        const allProducts = await productCollection.aggregate(aggregationPipeline)
+        const totalProducts = allProducts.length
+        
+        const products = await productCollection.aggregate(aggregationPipeline).skip(skip).limit(limit)
+
+        const totalPages = Math.ceil(totalProducts/limit)
 
         let productsInCart = {}
         for(let product of products){
@@ -440,7 +520,12 @@ exports.getShop = async(req,res)=>{
             products,
             productsInCart,
             filter,
-            search
+            search,
+            selectedCategory, 
+            selectedBrand,
+            totalPages,
+            page,
+            limit,
             // selectedCategory
         })
 
@@ -478,7 +563,9 @@ exports.getViewProduct = async(req,res)=>{
 exports.getCart = async(req,res)=>{
     try {
 
-        userId = req.session.user
+        userId = req.session.user //user id
+
+        //cart
         const cart = await cartCollection.findOne({userId:userId}).populate({
             path:'items.product',
             populate:{
@@ -486,10 +573,8 @@ exports.getCart = async(req,res)=>{
             }
             })
 
-            console.log('cart f',cart)
-            // console.log('variant',cart.items[0].product.variant[0])
-
-        const couponDiscount = req.session.coupon ? req.session.coupon.couponDiscount : 0    
+    
+        const couponDiscount = req.session.coupon ? req.session.coupon.couponDiscount : 0    //coupon
 
         if (cart && cart.items.length > 0) {
             cart.items.forEach(item => {
@@ -507,7 +592,7 @@ exports.getCart = async(req,res)=>{
             });
             await cart.save()
         }
-        console.log('cart l',cart)
+
         
         res.render('User/cart',{
         user:req.session.user,
@@ -544,15 +629,21 @@ exports.addToCart = async(req,res)=>{
             }else{  
                 cart.items.push({product, quantity, itemTotal})
                 await cart.save()
+
+                //apply shipping fee
+                await shippingService.applyShippingCharge(userId,cart.totalPrice)
+
                 return res.json({success:true,message:'Added to cart'})
             }
 
         }else{
             //if user dont have cart, so create new cart
-            await cartCollection.create({
+            const newCart = await cartCollection.create({
                 userId,
                 items:[{product, quantity,itemTotal}],
             })
+
+            await shippingService.applyShippingCharge(userId,newCart.totalPrice)
              
             return res.json({success:true,message:'Added to cart'})
         }
@@ -591,6 +682,9 @@ exports.deleteCartItem = async(req,res)=>{
             acc += curr.itemTotal
             return acc
         },0)
+
+        //apply shipping fee
+        await shippingService.applyShippingCharge(userId,updatedCartTotal)
         
 
         // const discountedTotal = updatedCartTotal - couponDiscount 
@@ -651,6 +745,9 @@ exports.updatedCartQuantity = async(req,res)=>{
             {
                 $set:{totalPrice:updatedCartTotal}
             })
+
+        //apply shipping fee
+        await shippingService.applyShippingCharge(userId,updatedCartTotal)
         
         const updatedCart = await cartCollection.find({userId:userId}).populate({
                 path:'items.product',
@@ -681,9 +778,13 @@ exports.getProfile = async (req,res)=>{
 
         const address = await addressCollection.findOne({userId:userId})
 
-        const orders = await orderCollection.find({userId:user})
+        const orders = await orderCollection.find({userId:user}).sort({createdAt:-1})
 
         const wallet = await walletCollection.findOne({userId:userId})
+
+        if(wallet){
+            wallet.history.reverse()
+        }
 
         return res.render('User/profile',{
             user,
@@ -929,20 +1030,32 @@ exports.deleteAddress = async (req,res)=>{
 }
 
 
-exports.loadOrderHistory = async (req,res)=>{
+exports.orderDetail = async (req,res) =>{
     try {
-        const user = req.session.user 
-        const orders = await orderCollection.find({userId:user})
-        console.log('server side',orders)
-       
-        res.render('User/orderHistory',{
-            user,
-            orders,
+        orderId = req.params.id
+        const order = await orderCollection.findOne({_id:orderId})
+        // console.log('order',order)
+        res.render('User/orderDetail',{
+            order,
+            user:true,
             page:null
-           
         })
     } catch (error) {
-       console.error('something went wrong ') 
+        console.error('error',error)
+        return res.status(500).json({success:false,message:'error',error})
+    }
+}
+
+exports.downloadInvoice = (req,res) =>{
+    try {
+        console.log('invoice')
+        console.log('req.query',req.query.orderId)
+        // const { orderId } = req.query
+        console.log('orderId',orderId)
+        invoiceService.invoiceDownload(res, orderId)
+    } catch (error) {
+        console.error('something went wrong',error)
+        return res.status(500).json({success:false,message:'somethng went wrong',error})
     }
 }
 
@@ -964,10 +1077,9 @@ exports.cancelProduct = async (req,res)=>{
 
         
         const { variantId, quantity } = orders.items[itemIndex];
-        console.log('quantity',quantity)
-        console.log('variantid',variantId)
+
         
-         const variant = await variantCollection.findOne({ _id: variantId });
+        const variant = await variantCollection.findOne({ _id: variantId });
         if (!variant) {
             return res.status(500).json({ success: false, message: 'Variant not found' });
         }
@@ -978,11 +1090,19 @@ exports.cancelProduct = async (req,res)=>{
         // Save the updated variant
         await variant.save();
 
+        const { status } = orders.items[itemIndex]
+        console.log('status',status)
+
+        if(status === 'order placed' || status === 'pending'){
+
         await orderCollection.findOneAndUpdate(
             {_id:orderId, 'items._id':itemId},
             {$set:{'items.$.status':'canceled'}},
             {new:true}
         )
+        }else{
+            return res.status.json({success:false,message:'sorry, please make sure your product is not delivered'})
+        }
 
         // handinling wallet refunds for online or wallet payment methods
         if (orders.paymentMethod === 'RAZORPAY' || orders.paymentMethod === 'WALLET') {
@@ -1019,7 +1139,7 @@ exports.cancelProduct = async (req,res)=>{
 
     } catch (error) {
         console.error('somethig went wrong',error)
-        return res.status(500).json({success:true,message:'something went wrong'})
+        return res.status(500).json({success:false,message:'something went wrong'})
     }
 }
 
@@ -1029,7 +1149,27 @@ exports.returnProduct = async (req,res) => {
         const {orderId, itemId, returnReason} = req.body
         console.log('req.body',req.body)
 
+        const orders = await orderCollection.findOne({_id:orderId})
 
+        if (!orders) {
+            return res.json({ success: false, message: 'Order not found' });
+        }
+
+        const itemIndex = orders.items.findIndex(item => item._id.toString() === itemId);
+        if (itemIndex === -1) {
+            return res.json({ success: false, message: 'Item not found in order' });
+        }
+
+        await orderCollection.findOneAndUpdate(
+            {_id:orderId, 'items._id':itemId},
+            {
+                $set:{'items.$.status':'return requested'},
+                'items.$.returnReson': returnReason
+            },
+            {new:true}
+        )
+        
+        return res.json({success:true,message:'return requested'})
         
     } catch (error) {
         console.error('something went wrong',error)
@@ -1081,7 +1221,7 @@ exports.getCheckOut = async (req,res) =>{
 
                     let remainingDiscount = couponDiscount;
                     cart.items.forEach(item => {
-                        const itemProportionalDiscount = (item.itemTotal / subTotal) * couponDiscount;
+                        const itemProportionalDiscount = Math.round((item.itemTotal / subTotal) * couponDiscount);
                         const discountToApply = Math.min(item.itemTotal, itemProportionalDiscount);
                         item.itemTotal -= discountToApply;
                         remainingDiscount -= discountToApply;
@@ -1116,7 +1256,7 @@ exports.getCheckOut = async (req,res) =>{
         const appliedCoupon = req.session.coupon ? await couponCollection.findOne({ code: req.session.coupon.code }) : false;
         
         const couponDiscount = req.session.coupon ? req.session.coupon.couponDiscount : 0
-        console.log('applied coupon')
+        console.log('checkout coupon discount',couponDiscount)
 
         res.render('User/checkout',{
             user,
@@ -1137,18 +1277,23 @@ exports.placeOrder = async (req,res)=>{
         const userId = req.session.user
         const {deliveryAddress, paymentMethod} = req.body
         
+        //address
         const address = await addressCollection.findOne({userId})
         if(!address){
             return res.json({error:true,message:'sorry address not found'})
         }
-        
 
         const userAddress = address.addresses.find(addr => addr._id.toString() === deliveryAddress)
         if(!userAddress){
             return res.json({error:true, message:'sorry address not found'})
         }
 
+        //payment method
+        if(!paymentMethod){
+            return res.json({error:true,message:'plese select a payment option'})
+        }
         
+        //cart
         const cart = await cartCollection.findOne({userId:userId}).populate({
             path:'items.product',
             populate:{
@@ -1167,6 +1312,8 @@ exports.placeOrder = async (req,res)=>{
                     // Calculate the offer price
                     const originalPrice = product.variants[0].price;
                     const discount = product.offer.discountPercentage;
+                    const offerPrice = Math.round(originalPrice - (originalPrice * discount / 100))
+                    item.offerPrice = offerPrice
                     item.itemTotal = Math.round(originalPrice - (originalPrice * discount / 100)) * item.quantity;
                 } else {
                     // No offer, use the original price
@@ -1191,7 +1338,7 @@ exports.placeOrder = async (req,res)=>{
 
                     let remainingDiscount = couponDiscount;
                     cart.items.forEach(item => {
-                        const itemProportionalDiscount = (item.itemTotal / subTotal) * couponDiscount;
+                        const itemProportionalDiscount = Math.round((item.itemTotal / subTotal) * couponDiscount);
                         const discountToApply = Math.min(item.itemTotal, itemProportionalDiscount);
                         item.itemTotal -= discountToApply;
                         remainingDiscount -= discountToApply;
@@ -1214,7 +1361,7 @@ exports.placeOrder = async (req,res)=>{
 
             await cart.save();
         }
-        
+
         const orderItems = cart.items.map(item => ({
             productId: item.product._id,
             productName: item.product.productName,   
@@ -1222,13 +1369,20 @@ exports.placeOrder = async (req,res)=>{
             size: item.product.variants[0].sizes[0].size, 
             image:item.product.variants[0].images[0],
             price: item.product.variants[0].price,
-            quantity: item.quantity,
+            offerPrice: item.offerPrice || item.product.variants[0].price,
+            quantity: item.quantity, 
             itemTotal: item.itemTotal,
             status: 'order placed'
         }));
 
         const totalAmount = cart.totalPrice
 
+        //delete offer price session
+        // if(req.session.offerPrice){
+        //     offerPrice = req.session.offerPrice
+        //     delete req.session.offerPrice
+        // }
+        // console.log('coupon',req.session.hello)
 
         //store order details
         const orderDetails ={
@@ -1244,10 +1398,20 @@ exports.placeOrder = async (req,res)=>{
                 typeOfAddress: userAddress.typeOfAddress,
                 email: userAddress.email || null,
             },
-            items: orderItems,
+            items: orderItems,  
+            couponCode:req.session.coupon ? req.session.coupon.code : null,
+            couponDiscount:req.session.coupon ? req.session.coupon.couponDiscount : 0,
+            shippingFee:cart.shippingFee,
             paymentMethod,
-            paymentStatus:'pending',
+            // paymentStatus:'pending', 
             totalAmount
+        }
+        console.log('place order coupon check begining',req.session.coupon)
+        console.log('added coupon discount to the order detail object',orderDetails.couponDiscount)
+
+        if(req.session.coupon){
+            //delete the coupon session
+            delete req.session.coupon
         }
         
 
@@ -1260,7 +1424,13 @@ exports.placeOrder = async (req,res)=>{
         // }
 
         if(paymentMethod === 'RAZORPAY'){
+
+            // const createdOrder = await orderCollection.create(orderDetails)
+            // req.session.orderId = createdOrder._id
             req.session.tempOrderDetails = orderDetails
+
+            // await processOrderPostPayment(orderDetails, orderItems)
+
             const options ={
                amount: totalAmount * 100,
                currency: 'INR',
@@ -1283,14 +1453,13 @@ exports.placeOrder = async (req,res)=>{
         }
 
         if(paymentMethod === 'COD'){
-            await orderCollection.create(orderDetails)
+            //COD Not allowed for above 1000
+            if(orderDetails.totalAmount > 1000){
+               return res.json({error:true,message:'sorry cash on delivery is not allowed for above 1000,plese go with another methods'})
+            }
+            const createdOrder = await orderCollection.create(orderDetails)
             await processOrderPostPayment(orderDetails, orderItems)
             return res.json({success:true,message:'order placed successfully'})
-        }
-
-        if(req.session.coupon){
-            //delete the coupon session
-            delete req.session.coupon
         }
 
     } catch (error) {
@@ -1311,44 +1480,175 @@ async function processOrderPostPayment(order, orderItems){
       }
 
       //clear user cart
-      await  cartCollection.findOneAndUpdate({userId:userId }, { $set: { items: [] } });
+      await  cartCollection.findOneAndUpdate({userId:order.userId }, { $set: { items: [] } });
 
 }
 
 exports.verifyPayment = async (req,res) => {
+    console.log('here')
     try {
-        const {paymentId, orderId, signature} = req.body
-        console.log('req.body',req.body)
+        const {paymentId, orderId, signature, failed, isRetry} = req.body
 
-        const generatedSignature = crypto.createHmac('sha256',process.env.RAZORPAY_KEY_SECRET)
-        .update(orderId + '|' + paymentId)
-        .digest('hex')
-
-        console.log('geneareted signature',generatedSignature)
-
-        if(generatedSignature === signature){
-            const orderDetails = req.session.tempOrderDetails
+        const orderDetails = req.session.tempOrderDetails
             if(!orderDetails){
                 console.log('order details not found in the session')
                 return res.json({success:false,message:'order details not found in the session'})
             }
 
-            const order = await orderCollection.create(orderDetails)
-            const orderIdOg = order._id
+        let paymentStatus = 'faild'
+        let status = 'pending'
+        let paymentSuccess = false
 
-            await orderCollection.updateOne({_id:orderIdOg},{$set:{paymentStatus:'paid'}})
+        if(!failed){
 
-            const orderItems = orderDetails.items
-            console.log('orderitems',orderItems)
-            await processOrderPostPayment(orderDetails, orderItems)
+            const generatedSignature = crypto.createHmac('sha256',process.env.RAZORPAY_KEY_SECRET)
+            .update(orderId + '|' + paymentId)
+            .digest('hex')
+           
+            if(generatedSignature === signature){   
+                paymentStatus = 'paid'
+                status = 'order placed'
+                paymentSuccess = true
+            }
+            
 
-            return res.json({success:true})
         }
 
-        return res.json({success:false})
+        //retrying from order detail page
+        if(isRetry){
+            await orderCollection.updateOne(
+                {_id:orderDetails},
+                {
+                    $set:{
+                        'items.$[].paymentStatus':paymentStatus,
+                        'items.$[].status': status
+                    }
+                }
+            )
+
+            delete req.session.tempOrderDetails
+
+            if(paymentSuccess){
+                return res.json({success:true,message:'payment successfull'})
+            }else{
+                return res.json({success:false,message:'payment faild'})
+            }
+
+        }
+        
+        //update payment status
+        orderDetails.items.forEach(item => {
+            item.paymentStatus = paymentStatus,
+            item.status = status 
+        })
+
+        //create order
+        const createdOrder = await orderCollection.create(orderDetails)
+
+
+        //newly created order id
+        const newOrderId = createdOrder._id
+
+        //update the quantity
+        const orderItems = orderDetails.items;
+        await processOrderPostPayment(orderDetails, orderItems);
+
+        delete req.session.tempOrderDetails
+
+        if(paymentSuccess){
+           
+            console.log('order placed successfully')
+            return res.json({success:true,message:'order placed successfully',orderId:newOrderId})
+        }else{
+            console.log('payment faild order createed with pending status')
+            return res.json({success:true,messagae:'payment faild , order created with pending status',orderId:newOrderId})
+        }
+        
 
     } catch (error) {
        console.error('someting went wrong',error) 
+    }
+}
+
+exports.payAfter = async (req,res)=>{
+    console.log('hello')
+    try {
+        const {orderId, paymentMethod} = req.body
+        const userId = req.session.user
+
+        console.log('req.body',req.body)
+
+        //order 
+        const order = await orderCollection.findOne({_id:orderId})
+        console.log('order',order)
+
+        //payment method
+        if(!paymentMethod){
+           return res.json({success:false,message:'plese select a payment method'})
+        }
+
+        if(paymentMethod === 'wallet'){
+           const wallet = await walletCollection.findOne({userId:userId})
+           if(!wallet){
+            return res.json({success:false,message:'sorry wallet not found'})
+           }
+           
+
+           //wallet balance checking
+           if(order.totalAmount > wallet.balance){
+            return res.json({success:false,message:'Insufficient balance in wallet'})
+           }
+
+           //update wallet balance
+           await walletCollection. updateOne(
+            {userId:userId},
+            {
+                $inc:{balance:- order.totalAmount},
+                $push:{
+                    history:{amount:order.totalAmount, status:'debit', description:`${order.totalAmount} debited from wallet`}
+                }
+            }
+           )
+
+           //update status
+           await orderCollection.updateOne(
+            {_id:orderId},
+            {
+                $set:{
+                    'items.$[].paymentStatus': 'paid',
+                    'items.$[].status': 'order placed',
+                    paymentMethod: paymentMethod
+                }
+            }
+           )
+           return res.json('success')
+        }
+        
+        req.session.tempOrderDetails = order
+
+        const options = {
+            amount: order.totalAmount * 100,
+            currency: 'INR',
+            receipt: `${userId}_${Date.now()}`,
+            payment_capture: 1
+        }
+        const razorpayOrder = await razorpayInstance.orders.create(options)
+
+        return res.json({
+            success:true,
+            message:'please complete the payment',
+            razorpayOrderId: razorpayOrder.id,
+            amount: order.totalAmount,
+            razorpay: true,
+            key: process.env.RAZORPAY_KEY_ID
+        })
+
+
+
+
+    } catch (error) {
+        console.log('something went wrong',error)
+        return res.status(500).json('something wnet wrong',error)
     }
 }
 

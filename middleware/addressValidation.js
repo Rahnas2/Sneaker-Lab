@@ -24,11 +24,13 @@ const addressValidation = [
 
     body('pincode')
     .trim()
-    .isLength({min:6,max:6}).withMessage('invalid'),
+    .isLength({min:6,max:6}).withMessage('invalid')
+    .isInt({min:0,max:10}).withMessage('invalid'),
 
     body('mobile')
     .trim()
-    .isLength({min:10,max:10}).withMessage('invalid mobile number'),
+    .isLength({min:10,max:10}).withMessage('invalid mobile number')
+    .isInt({min:0,max:10}).withMessage('invalid'),
 
     body('email')
     .trim(),

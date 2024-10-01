@@ -41,7 +41,7 @@
                                     </a>
 
                                     <!-- logout option -->
-                                    <a href="#" class="list-group-item list-group-item-action border-0">Logout</a>
+                                    <a href="/logout" class="list-group-item list-group-item-action border-0" onclick=" return Confirm()">Logout</a>
 
                                 </div>
                             </div>
@@ -53,7 +53,18 @@
                     <div  id="orderDetails" class="order_card" style="display: none;">
                     <% orders.forEach(order => { %>
                         <div class="card mb-4">
+                            <% let viewButton = false %>
+                        <div class="d-flex justify-content-between">
+
                           <h6 class="p-3 mb-0"><span class="font-weight-bold">Order Id:</span><%= order._id %></h6>
+                          
+                          <% if (!viewButton) { %>
+                           <a href="/orderDetail/<%= order._id %>"><span class="btn btn-primary m-2 p-2">View Detail</span></a>
+                           <% viewButton = true %>
+                          <% } %>
+
+                        </div>
+
                           <% order.items.forEach(item => { %>
 
                             <div class="card-body p-0 table-responsive">
@@ -84,8 +95,10 @@
                                                     badge-success 
                                                   <% } else if (item.status === 'canceled') { %> 
                                                     badge-danger 
-                                                  <% } else { %> 
-                                                    badge-warning 
+                                                  <% } else if(item.status === 'order placed') { %> 
+                                                    badge-primary 
+                                                   <% } else { %>
+                                                     badge-danger
                                                   <% } %>">
                                                   <%= item.status %>
                                                 </span>
@@ -96,12 +109,14 @@
                                             <th colspan="3">
                                                 <span>Status:</span>
                                                 <span class="badge 
-                                                  <% if (order.paymentStatus === 'paid') { %> 
+                                                  <% if (item.paymentStatus === 'paid') { %> 
                                                     badge-success 
-                                                  <% } else { %> 
+                                                  <% } else if(item.paymentStatus === 'pending') { %> 
                                                     badge-warning 
+                                                  <% } else { %>
+                                                     badge-danger
                                                   <% } %>">
-                                                  <%= order.paymentStatus %>
+                                                  <%= item.paymentStatus %>
                                                 </span>
                                             </th>
                                             
@@ -110,7 +125,7 @@
 
                                                     <span type="button" id="returnButton" onclick="openReturnModal('<%= order._id %>','<%= item._id %>')" class="text-danger font-weight-bold ">Return?</span>
 
-                                                <% } else if(item.status === 'order placed') { %>
+                                                <% } else if(item.status === 'order placed' || item.status === 'pending') { %>
                                                     <span type="button" onclick="cancelProductUser('<%= order._id %>','<%= item._id %>')" class="text-danger font-weight-bold">Cancel?</span>
                                                 <% } %>  
                                             </td>
@@ -138,6 +153,7 @@
                                 <p><strong>Name:</strong> <%= user.username %></p>
                                 <p><strong>Email Address:</strong> <%= user.email %></p>
                                 <p><strong>Contact:</strong> <%= user.phone? user.phone: 'N/A' %></p>
+                                <p><strong>Referral Code: </strong><span class="text-primary"><%= user.referralCode %></span></p>
                                 <p><strong>Role:</strong> <%= user.isAdmin ? 'Admin': 'User' %></p>
 
                                 <button class="mt-5 text-danger  border-0" data-toggle="modal" data-target="#changePassword">Change Password</button>
@@ -236,7 +252,7 @@
                          <input type="hidden" name="itemId" id="itemIdInput">
 
                         <label for="returnReasonSelect" class=" mb-1">Reason</label>
-                        <select class="d-block mb-2 form-control" name="reason" id="returnReasonSelect" required>
+                        <select class="d-block mb-2 form-control" name="reason" id="returnReasonSelect">
                             <option value="">Select Reason</option>
                             <option value="ordered_by_mistake">Ordered by mistake</option>
                             <option value="wrong_size">Size is not correct</option>
@@ -303,15 +319,15 @@
               <div class="modal-body">
                   <form id="change-password-form">
                       <label for="current-password" class="d-block mb-1">Current Password</label>
-                      <input type="password" class="d-block mb-2 form-control" name="currentPassword" id="current-password" required>
+                      <input type="password" class="d-block mb-2 form-control" name="currentPassword" id="current-password" >
                       <p id="current-password-notValid" class="text-danger d-none fs-14"></p>
   
                       <label for="new-password" class="d-block mb-1">New Password</label>
-                      <input type="password" class="d-block mb-2 form-control" name="newPassword" id="new-password" required>
+                      <input type="password" class="d-block mb-2 form-control" name="newPassword" id="new-password" >
                       <p id="new-password-notValid" class="text-danger d-none fs-14"></p>
   
                       <label for="confirm-password" class="d-block mb-1">Confirm New Password</label>
-                      <input type="password" class="d-block mb-2 form-control" name="confirmPassword" id="confirm-password" required>
+                      <input type="password" class="d-block mb-2 form-control" name="confirmPassword" id="confirm-password" >
                       <p id="confirm-password-notValid" class="text-danger d-none fs-14"></p>
   
                       <button type="submit" class="btn btn-danger mt-3">Change Password</button>
@@ -382,9 +398,40 @@
         function setActiveLink(index) {
             document.querySelector('.list-group-item.active').classList.remove('active');
             document.querySelectorAll('.list-group-item')[index].classList.add('active');
+
+            sessionStorage.setItem("activeSection", index);
         }
 
-        showProfileDetails();
+        function showStoredSection() {
+            const activeSection = sessionStorage.getItem('activeSection');
+            if (activeSection !== null) {
+                const index = parseInt(activeSection, 10);
+                hideAllSections();
+                switch(index) {
+                    case 0:
+                        showProfileDetails();
+                        break;
+                    case 1:
+                        showOrderDetails();
+                        break;
+                    case 2:
+                        showAddressBook();
+                        break;
+                    case 3:
+                        showWallet();
+                        break;
+                    default:
+                        showProfileDetails();
+                }
+            } else {
+                showProfileDetails();
+            }
+        }
+
+        window.onload = showStoredSection
+
+        
+        
     </script>
         
     <script src="/js/addAddress.js"></script>

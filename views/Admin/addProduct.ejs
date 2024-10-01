@@ -12,7 +12,7 @@
                 <div class="col">
                 <label for="productName">Product Name</label>
                 <input type="text" class="form-control" value="<%=product?product.productName:'' %>" placeholder="product name" name="productName" >
-                <p id="name-notValid" class="text-danger d-none fs-14"></p>
+                <p id="productName-notValid" class="text-danger d-none fs-14"></p>
                 </div>
     
                 </div>
@@ -24,7 +24,7 @@
                 <div class="col">
                     <label for="category">Category</label>
                     <select class="form-select" id="category" name="category">    
-                        <option value="" disabled selected>category</option>
+                        <option value="" selected>category</option>
                         <% categories.forEach(category => { %>
                             <option value="<%= category._id %>" <%= product && product.category.toString() === category._id.toString() ? 'selected' : '' %>><%= category.categoryName %></option>
                         <% }) %>
@@ -37,7 +37,7 @@
                 <div class="col">
                     <label for="brand">Brand</label>
                     <select class="form-select" id="brand" name="brand"> 
-                        <option value="" disabled selected>brand</option>  
+                        <option value="" selected>brand</option>  
                         <% brands.forEach(brand => { %>
                             <option value="<%= brand._id %>" <%= product && product.brand.toString() === brand._id.toString() ? 'selected' : ''  %>><%= brand.brandName %></option>
                         <% }) %> 
@@ -57,13 +57,13 @@
                         <div class="col">
                             <!-- Color selection with price update -->
                             <select class="form-select" id="" name="variants[<%= index%>][color]">    
-                                <option value="" disabled selected>color</option>
+                                <option value="">color</option>
                                 <option value="white" <%= variant.color === 'white' ? 'selected' : '' %>>white</option>
                                 <option value="black" <%= variant.color === 'black' ? 'selected' : '' %>>black</option>
                                 <option value="blue" <%= variant.color === 'blue' ? 'selected' : '' %>>blue</option>
                                 <option value="green" <%= variant.color === 'green' ? 'selected' : '' %>>green</option>
                             </select>
-                            <p id="color-notValid" class="text-danger d-none fs-14"></p>
+                            <p id="variants[<%= index%>][color]" class="text-danger d-none fs-14"></p>
                         </div>
                         <div class="col">
                             <!-- Price display based on color selection -->
@@ -89,7 +89,7 @@
                             <% }); %>
                             <div id="size-stock-container">
                                 <!-- Container for dynamically adding size and stock inputs -->
-                                <button type="button" class="bg-dark text-white border-0" onclick="addSizeStock(this)">Add Size & Stock</button>
+                                <button type="button" class="bg-dark text-white border-0"  onclick="addSizeStock(this)">Add Size & Stock</button>
                                 <p id="sizes-notValid" class="text-danger d-none fs-14"></p>
                             </div>
                         </div>
@@ -423,11 +423,7 @@
                 const color = formData.get(`variants[${index}][color]`)
                 const price = parseFloat(formData.get(`variants[${index}][price]`))
 
-                //colecting sizes & stock
-                // const sizes = Array.from(group.querySelectorAll('.size-stock-group')).map(ssGroup=>({
-                //     size: parseInt(ssGroup.querySelector('input[name="size"]').value),
-                //     stock: parseInt(ssGroup.querySelector('input[name="stock"]').value)
-                // }))
+                
                 const sizes = Array.from(group.querySelectorAll('.size-stock-group')).map(ssGroup =>{
                     return {
                     size: parseInt(ssGroup.querySelector('input[name^="sizes"][name$="[size]"]').value),
@@ -504,17 +500,17 @@
                 .then(response => response.json())
                 .then(result => {
                     console.log('result', result)
-                    if(result.valdationError){
+                    if(result.validationError){
                         console.log('validatoin error',result.validationErrors)
-                        // Object.entries(result.validationErrors).forEach(([field,message])=>{
-                        //       const validationFaild = document.getElementById(`${field}-valid`)
-                        //       if(validationFaild){
-                        //         validationFaild.classList.remove('d-none')
-                        //         validationFaild.textContent = message
-                        //       }
-                        // })
+                        Object.entries(result.validationErrors).forEach(([field,message])=>{
+                              const validationFaild = document.getElementById(`${field}-notValid`)
+                              if(validationFaild){
+                                validationFaild.classList.remove('d-none')
+                                validationFaild.textContent = message
+                              }
+                        })
                     }
-                    if (result.success) {
+                    else if(result.success) {
                         Swal.fire({
                             icon: "success",
                             title: result.message,

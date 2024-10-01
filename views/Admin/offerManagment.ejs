@@ -10,9 +10,9 @@
         <li class="nav-item me-5">
             <a class="nav-link custom-tab " id="categoryOffersTab" href="javascript:void(0)" onclick="showOfferSection('categoryOffers')">Category Offers</a>
         </li>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a class="nav-link custom-tab " id="referralOffersTab" href="javascript:void(0)" onclick="showOfferSection('referralOffers')">Referral Offers</a>
-        </li>
+        </li> -->
     </ul>
 
      <!-- Offer sections -->
@@ -59,7 +59,7 @@
                           <td class="<%= offerProduct.status? 'text-success': 'text-danger' %>"><%= offerProduct.status? 'active': 'expired' %></td>
                           <td class="text-end">
                             <button class="border-0" onclick="deleteProductOffer('/admin/deleteProductOffer/<%=offerProduct.productId %>','<%=offerProduct.productId %>')"><i class="fa-solid fa-trash text-danger fs-4"></i></button> 
-                            <button class="border-0"><i class="fas fa-edit text-primary fs-4"></i></button>
+                            <!-- <button class="border-0"><i class="fas fa-edit text-primary fs-4"></i></button> -->
                          </td>
                           
                      </tr>
@@ -150,7 +150,7 @@
                           <td class="<%= offerCategory.status? 'text-success': 'text-danger' %>"><%= offerCategory.status? 'active': 'expired' %></td>
                           <td class="text-end">
                             <button class="border-0" onclick="deleteCategoryOffer('/admin/deleteCategoryOffer/<%=offerCategory.categoryId %>','<%=offerCategory.categoryId %>')"><i class="fa-solid fa-trash text-danger fs-4"></i></button> 
-                            <button class="border-0"><i class="fas fa-edit text-primary fs-4"></i></button>
+                            <!-- <button class="border-0"><i class="fas fa-edit text-primary fs-4"></i></button> -->
                          </td>
                           
                      </tr>
@@ -203,7 +203,7 @@
 
 
         <!-- Referral Offers (hidden by default) -->
-        <div id="referralOffers" class="offer-section" style="display: none;">
+        <!-- <div id="referralOffers" class="offer-section" style="display: none;">
             <h4>Referral Offers</h4>
             <div class="d-flex justify-content-end">
                 <button class="mb-3 primary-btn border-0" data-bs-toggle="modal" data-bs-target="#addReferelOfferModal">
@@ -212,7 +212,7 @@
             </div>
             <p>Here you can manage your referral offers.</p>
 
-        </div>
+        </div> -->
     </div>
     
 </div>        

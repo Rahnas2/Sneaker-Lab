@@ -24,7 +24,6 @@ function placeOrder(url){
             console.log('result',result)
             if(result.success){
                 if(result.razorpay){
-                    console.log('razorpay')
                     const options = {
                         key: result.key,
                         amount: result.amount * 100,
@@ -33,49 +32,29 @@ function placeOrder(url){
                         description: 'make your payment',
                         order_id: result.razorpayOrderId,
                         handler: function(response){
-
-                            fetch('/verifyPayment',{
-                                method:'POST',
-                                headers:{
-                                    'Content-Type': 'application/json'
-                                },
-                                body:JSON.stringify({
-                                    paymentId: response.razorpay_payment_id,
-                                    orderId: response.razorpay_order_id,
-                                    signature: response.razorpay_signature
-                                })
-                            })  
-                            .then(response => response.json())
-                            .then(result => {
-                                if (result.success) {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        text: 'Payment verified successfully!',
-                                        confirmButtonText: 'OK'
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        text: 'Payment verification failed.',
-                                        confirmButtonText: 'OK'
-                                    });
-                                }
-                            })  
-
+                            verifyPayment(response)     
                         },
                         theme: {
                             color: "#0000"
                         }
                     }
                     const rzp = new Razorpay(options)
+                    rzp.on('payment.failed', function(response){
+                        console.log('faild response',response)
+                        handlePaymentFailure(response);
+                    })
                     rzp.open()
-                }else{
-                    console.log('cash on delivery')
+                }else if(result.error){
+                    console.log('error')
                     Swal.fire({
-                    icon: 'success',
+                    icon: 'error',
                     text: result.message,
                     confirmButtonText: 'OK'
                 }) 
+                }
+                else{
+                    console.log('cash on delivery')
+                    handleSuccess(result.message)
                 }
       
             }else if(result.error){
@@ -95,6 +74,69 @@ function placeOrder(url){
         console.error('something went wrong',error)
         
     }
+}
+
+//payment verify
+function verifyPayment(response){
+    fetch('/verifyPayment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            paymentId: response.razorpay_payment_id,
+            orderId: response.razorpay_order_id,
+            signature: response.razorpay_signature
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            handleSuccess('Payment successful. Order placed successfully.',result.orderId);
+        } else {
+            handlePaymentFailure(result);
+        }
+    })
+    .catch(err => {
+        console.error('Error verifying payment:', err);
+        handleError('An error occurred while verifying the payment.');
+    })
+}
+
+// handle failure
+function handlePaymentFailure(response) {
+    fetch('/verifyPayment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            paymentId: response.error.metadata.payment_id,
+            orderId: response.error.metadata.order_id,
+            signature: null,
+            failed:true
+        })
+    })
+    .then(() => {
+        Swal.fire({
+            icon: 'warning',
+            text: 'Payment failed. Your order has been created with a pending status.',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            window.location.href = '/myProfile'
+        });
+    })
+}
+
+//handle success payment 
+function handleSuccess(message,orderId){
+    Swal.fire({
+        icon: 'success',
+        text: message,
+        confirmButtonText: 'OK'
+    }).then(() => {
+        window.location.href = `/orderDetail/${orderId}`; 
+    })
 }
 
 
@@ -160,8 +202,15 @@ function cancelProductUser(orderId,itemId){
     const itemId = document.getElementById('itemIdInput').value
     const returnReason = document.getElementById('returnReasonSelect').value
 
+    const reasonErr = document.getElementById('returnReasonError')
+
+    if(returnReason === ''){
+      reasonErr.classList.remove('d-none')
+      return
+    }
+
     fetch('/returnProduct',{
-        method:JSON.stringify({orderId, itemId, returnReason}),
+        method:'PUT',
         headers:{
             'Content-Type': 'application/json'
         },
@@ -170,10 +219,24 @@ function cancelProductUser(orderId,itemId){
     .then(response => response.json())
     .then(result => {
         if(result.success){
-
+            Swal.fire({
+                icon:'success',
+                title:'success',
+                text: result.message,
+                confirmButtonText:'ok'
+            })
+            $('#returnReason').modal('hide');
         }else{
-            
+            Swal.fire({
+                icon:'error',
+                title:'error',
+                text: result.message,
+                confirmButtonText:'ok'
+            }) 
         }
+    })
+    .catch(error =>{
+        console.error('error',error)
     })
 
   })

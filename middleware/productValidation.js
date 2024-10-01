@@ -11,7 +11,6 @@ const proValidation = [
     body('category')
     .notEmpty().withMessage('plese select the category'),
     
-    
 
     body('brand')
     .notEmpty().withMessage('please select brand'),
@@ -19,32 +18,25 @@ const proValidation = [
     body('description')
     .notEmpty().withMessage('description is required!'),
 
-    //brand validate 
-    // body('brand')
-    // .notEmpty().withMessage('brand is required')
-    // .custom((value)=>{
-    //     if(value == null){
-    //         throw new Error('please select valid brand')
-    //     }
-    //     return true
-    // }),
-
-    // variants array validate(color, size, stock, price)
-    // body('variants.*.color')
-    // .notEmpty().withMessage('color is required!'),
+    body('variants.*.color')
+    .notEmpty().withMessage('color is required!')
+    .custom((value) => {
+        if(value === 'null'){
+            throw new Error('plese select a valid color')
+        }
+        return true
+    }),
     
+    body('variants.*.price')
+    .trim()
+    .notEmpty().withMessage('price is required!')
+    .isFloat({min:0}).withMessage('price should be positive'),
 
-    // body('variants.*.price')
-    // .trim()
-    // .notEmpty().withMessage('price is required!')
-    // .isFloat({min:1}).withMessage('price should be positive'),
+    body('variants.*.sizes.*.size')
+    .isInt({min:1}).withMessage('invalid'),
 
-    // body('sizes.*.size')
-    // .notEmpty().withMessage('size is required'),
-
-    // body('sizes.*.stock')
-    // .notEmpty().withMessage('stock is required')
-    // .isInt({min:1}).withMessage('stock should be positive'),
+    body('variants.*.sizes.*.stock')
+    .isInt({min:1}).withMessage('invalid'),
     
       
 ]

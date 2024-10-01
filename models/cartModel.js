@@ -8,6 +8,7 @@ const cartSchema = new mongoose.Schema({
     items:[{
         product:{type:mongoose.Schema.Types.ObjectId,ref:'products'},
         quantity:{type:Number,default:1},
+        offerPrice: {type:String},
         itemTotal:{type:Number}
     }],
     shippingFee:{
@@ -27,6 +28,7 @@ const cartSchema = new mongoose.Schema({
 cartSchema.pre('save', async function(next){
     try {
         let total = 0
+        let ShippingCharge = this.shippingFee
         // const populatedProduct = await this.populate('items.product')
     
         this.items.forEach(item => {
@@ -34,7 +36,7 @@ cartSchema.pre('save', async function(next){
             total += cartTotal
         });
     
-        this.totalPrice = total
+        this.totalPrice = total + ShippingCharge
     
         this.totalQuantity = this.items.length
     

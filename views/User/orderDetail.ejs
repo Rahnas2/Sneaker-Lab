@@ -1,0 +1,271 @@
+
+<%- include('partials/header') %>
+
+
+<!-- addres -->
+  <div class=" mb-4 container"> <h5 class="font-weight-bold mb-2 text-danger">Delivery Address</h5>
+  <div id="currAddress" class="col-lg-5 mb-2 px-4 py-4 saved-address ">
+     <div class="d-flex justify-content-between mb-3"><span class="font-weight-bold text-uppercase"><%= order.deliveryAddress.fullName %></span><span class="text-right rounded  px-2 font-weight-bold" style="background: 	#e4e5f1;"><%= order.deliveryAddress.typeOfAddress %></span></div>
+     <div><%= order.deliveryAddress.localAddress %></div>
+     <div><%= order.deliveryAddress.city %></div>
+     <div><%= order.deliveryAddress.state %></div>
+     <div class="mt-2">mobile: <span class="font-weight-bold"><%= order.deliveryAddress.mobile %></span></div>
+     <div><%= order.deliveryAddress.email || '' %></div> 
+     <hr>
+    </div> 
+  </div>
+
+
+
+
+
+
+      <!-- Order Details Section -->
+      <h5 class="font-weight-bold mb-1 text-danger container">Order Detail</h5>
+      <% order.items.forEach((item,index) => { %>
+      <div class="box-shadow col-lg-12 d-flex container p-0 my-4">
+        
+         <div class="col-lg-4 p-0 "><img class="" src="\<%= item.image %>" alt=""></div>
+
+         <div class="col-lg-8 ">
+
+          <h5 class="mt-5 text-center font-weight-bold text-danger"><%= item.productName %></h5>
+          <div class="d-flex my-5 mx-3 font-weight-bold justify-content-between">
+              <div class="">Amount</div>
+              <div>Quantity</div>
+              <div>Total</div>
+              <div>Order Status</div>
+          </div>
+
+          <div class="d-flex my-5 mx-3 font-weight-bold justify-content-between">
+            <div class=""><% if (item.offerPrice !== item.price) { %>
+             <span class="mr-2">₹<%= item.offerPrice %></span>
+             <span class=" fs-14 text-danger" style="text-decoration: line-through;">₹<%= item.price %></span>
+            <% }else{ %>
+             <span>₹<%= item.price %></span>
+            <% } %>
+            </div>
+            <div><%= item.quantity %></div>
+            <div><%= item.itemTotal %></div>
+            <div class="badge
+            <% if (item.status === 'delivered') { %> 
+              badge-success 
+            <% } else if (item.status === 'canceled') { %> 
+              badge-danger 
+            <% } else if (item.status === 'pending') { %> 
+              badge-danger
+            <% } else { %> 
+              badge-primary 
+            <% } %>">
+              <%= item.status %></div>
+        </div>
+        <hr>
+        <!-- <div class="d-flex justify-content-between"> -->
+        <div class="mx-3 font-weight-bold ">
+          <div class="mt-3 mb-2">paymentStatus: 
+            <span class="badge 
+              <% if (item.paymentStatus === 'paid') { %> 
+                badge-success 
+              <% } else if(item.paymentStatus === 'pending') { %> 
+                badge-warning 
+              <% } else { %>
+                badge-danger
+              <% } %>">
+              <%= item.paymentStatus %> 
+            </span>
+          </div>
+          
+          
+          <!-- invoice -->
+        <!-- <div class="text-right"><button class="border-0 p-2" onclick="downloadInvoice('<%= order._id, item._id %>')"><i class="fa-solid fa-file-invoice text-primary"></i> Download Invoice</button></div>   -->
+
+
+        </div>
+        </div>
+
+      </div>
+
+         </div>
+
+         <div>
+
+         <!-- </div> -->
+      </div>
+      <% }) %>
+
+      <div class="d-flex justify-content-end container ">
+      <div class=" checkout__order mb-4"> 
+        <h4 class="order__title">Your Order</h4>
+        <ul class=" checkout__total__all border-top-0 ">
+          <% const totalMrp = order.items.reduce((acc,curr) =>{ %>
+            <% acc += curr.price * curr.quantity%>
+            <% return acc %>
+          <% },0) %>   
+
+          <% const soldPrice = order.items.reduce((acc,curr) =>{ %>
+            <%  acc += curr.offerPrice * curr.quantity %>
+            <%  return acc %>
+          <% },0) %>
+    
+          <% const discountOnMrp = totalMrp - soldPrice %>
+          
+          <li class="">Total Mrp <span class="order_summary" id="">₹ <%= totalMrp %></span></li>
+          <li class="">Discound On MRP <span class="text-success" id=""> <%= discountOnMrp %></span></li>
+          <li class="">Coupon Discound <span class="text-success" id="cart-total"> <%= order.couponDiscount %></span></li>
+          <li class="">shippingFee <span class="fs-14 <% order.shippingFee === 0 ? 'text-success': '' %>" id="cart-total"><%= order.shippingFee === 0 ? 'free': order.shippingFee %></span></li>
+          <li class="">Total Amound <span id="cart-total">₹ <%= order.totalAmount %></span></li>
+      </ul>
+      
+      <div class="mt-3 mb-2">paymentStatus: 
+        <span class="badge 
+          <% if (order.items[0].paymentStatus === 'paid') { %> 
+            badge-success 
+          <% } else if(order.items[0].paymentStatus === 'pending') { %> 
+            badge-warning 
+          <% } else { %>
+             badge-danger
+          <% } %>">
+          <%= order.items[0].paymentStatus %>
+        </span>
+      </div>
+        <% if (order.items[0].paymentStatus === 'faild' && order.items[0].status === 'pending') { %>
+          <div class="mt-3"> 
+            <button onclick="repay('<%= order._id %>','razorpay')" class="  btn-primary text-white border-0 mr-2"><i class="fas fa-money-check"></i>&nbsp;&nbsp;&nbsp;Online</button>
+            <!-- <button onclick="repay('<%= order._id %>','wallet')" class="  btn-dark text-white border-0 "><i class="fas fa-money-check"></i>&nbsp;&nbsp;&nbsp;wallet</button> -->
+          </div>
+        <% } else if(order.items[0].paymentStatus === 'paid') { %>
+          <!-- invoice -->
+        <div class=""><button class="border-0 p-2 " onclick="downloadInvoice('<%= order._id %>')" style="background: #ffffff;"><i class="fa-solid fa-file-invoice text-primary"></i> Download Invoice</button></div>  
+        <% } %>
+        
+      </div>
+    </div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <script>
+      function repay(orderId, paymentMethod){
+          try {
+            fetch('/payAfter',{
+              method:'PUT',
+              headers:{
+                'Content-Type': 'application/json'
+              },
+              body:JSON.stringify({
+                orderId,
+                paymentMethod
+              })
+            })
+            .then(response => response.json())
+            .then(result => {
+                  if(result.success){
+                    if(result.razorpay){
+                      const options = {
+                        key: result.key,
+                        amount: result.amount * 100,
+                        currency: 'INR',
+                        name:'SNEAKER LAB',
+                        description: 'make your payment',
+                        order_id: result.razorpayOrderId,
+                        handler: function(response){
+                            verifyPayment(response)     
+                        },
+                        theme: {
+                            color: "#0000"
+                        }
+                    }
+                    const rzp = new Razorpay(options)
+                    rzp.on('payment.failed', function(response){
+                        handlePaymentFailure(response);
+                    })
+                    rzp.open()
+                    }else{
+
+                    }
+                  } 
+            })
+          } catch (error) {
+            console.error('something went wrong',error)
+          }
+      }
+
+      
+//payment verify
+function verifyPayment(response){
+    fetch('/verifyPayment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            paymentId: response.razorpay_payment_id,
+            orderId: response.razorpay_order_id,
+            signature: response.razorpay_signature,
+            isRetry:true
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            handleSuccess('Payment successful',result.orderId);
+        } else {
+            handlePaymentFailure(result);
+        }
+    })
+    .catch(err => {
+        console.error('Error verifying payment:', err);
+        handleError('An error occurred while verifying the payment.');
+    })
+}
+
+//handle failure
+function handlePaymentFailure(response) {
+    fetch('/verifyPayment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            paymentId: response.error.metadata.payment_id,
+            orderId: response.error.metadata.order_id,
+            signature: null,
+            failed:true,
+            isRetry:true
+        })
+    })
+    .then(() => {
+        Swal.fire({
+            icon: 'error',
+            text: 'Payment failed.',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            // window.location.href = '/shop';  
+            location.reload()
+        });
+    })
+}
+
+//handle success payment 
+function handleSuccess(message,orderId){
+    Swal.fire({
+        icon: 'success',
+        text: message,
+        confirmButtonText: 'OK'
+    }).then(() => {
+        // window.location.href = `/orderDetail/${orderId}`; 
+        location.reload()
+    })
+}
+
+// invoice download
+
+function downloadInvoice(orderId){
+  console.log('order id',orderId)
+  const url = `/downloadInvoice?orderId=${orderId}`
+   window.open(url, '_blank');
+
+}
+
+    </script>
+
+<%- include('partials/footer') %> 

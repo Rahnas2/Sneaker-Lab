@@ -5,6 +5,9 @@ const brandCollection = require('../models/brandModel')
 const productCollection = require('../models/productModel')
 const variantCollection = require('../models/variantModel')
 const orderCollection = require('../models/orderModel')
+const walletCollection = require('../models/walletModel')
+
+
 
 //validation
 const { validationResult } = require('express-validator')
@@ -19,7 +22,7 @@ exports.adminLogin = (req,res)=>{
    if(!req.session.admin){
       res.render('Admin/signin')
    }else{
-      res.redirect('/admin/home')
+      res.redirect('/admin/dashBoard')
    }
    
 }
@@ -48,9 +51,40 @@ exports.adminLoginPost = async(req,res)=>{
  
 }
 
-exports.home = (req,res)=>{
-   res.render('Admin/adminHome')
-}
+// exports.dashBoard = async (req,res)=>{
+//    try {
+      
+   
+//    res.render('Admin/dashBoard')
+
+//    } catch (error) {
+//       console.error('something went wrong',error)
+//    }
+// }
+
+// exports.downloadSalesReport = async (req,res) =>{
+//    try {
+//       const {format, filterType, startDate, endDate} = req.query
+//       console.log('req.query',req.query)
+//       console.log('filter in admin side',filterType)
+      
+//       const {orders, totalSales, totalDiscount, totalOrders, startedDate, endingDate} = await salesReportService.getSalesData(filterType, startDate, endDate)
+      
+
+//       if(format === 'pdf'){
+
+//          salesReportService.generateSalesReportPDF(res, orders, totalSales, totalDiscount, totalOrders, startedDate, endingDate ); 
+
+//       }else if(format === 'excel'){
+
+//          salesReportService.generateSalesReportEXCEL(res, orders, totalSales, totalDiscount, totalOrders,  endDate)
+
+//       }
+
+//    } catch (error) {
+//       console.error('something went wrong',error)
+//    }
+// }
 
 //user mangment start 
 
@@ -341,9 +375,12 @@ exports.getaddProduct = async(req,res)=>{
 exports.postaddproduct = async(req,res)=>{
    try {
       const {productName, category, brand, description} = req.body
-      
 
+     console.log('req.body',req.body)
+      
       const variants = req.body.variants
+      console.log('varaints',variants)
+
 
       //  checking validation error
         const errors = validationResult(req)
@@ -371,6 +408,10 @@ exports.postaddproduct = async(req,res)=>{
       const match = file.path.match(regex)
       return match ? match[1] : null 
      }).filter(path => path !== null): []
+
+     if(uploadedFiles.length < 3){
+      return res.json({success:false,message:'all images are required'})
+     }
 
      const variantImagesMap = new Map();
 
@@ -401,6 +442,12 @@ exports.postaddproduct = async(req,res)=>{
              console.error('file or file.fieldname is undefined', file);
          }
      });
+
+     variants.forEach(variant => {
+      if(!variant.sizes){
+         return res.json({success:false,message:'please select atleast one size and the stock'})
+      }
+   })
 
      //create new Product
      const newProduct = new productCollection({
@@ -650,15 +697,16 @@ exports.cancelProductAdm = async (req,res) =>{
         }
 
         
-        const { variantId, quantity } = orders.items[itemIndex];
+        const {itemTotal, variantId, quantity } = orders.items[itemIndex];
+        const userId = orders.userId
         console.log('quantity',quantity)
         console.log('variantid',variantId)
 
-      await orderCollection.findOneAndUpdate(
-      {_id:orderId, 'items._id':itemId},
-      {$set:{'items.$.status':'canceled'}},
-      {new:true}
-     )
+         await orderCollection.findOneAndUpdate(
+         {_id:orderId, 'items._id':itemId},
+         {$set:{'items.$.status':'canceled'}},
+         {new:true}
+         )
         
          const variant = await variantCollection.findOne({ _id: variantId });
         if (!variant) {
@@ -670,8 +718,34 @@ exports.cancelProductAdm = async (req,res) =>{
 
         // Save the updated variant
         const updatedVariant = await variant.save();
-        console.log('Updated variant:', updatedVariant);
-            return res.json({success:true,message:'order cancel successfully'})
+
+        if (orders.paymentMethod === 'RAZORPAY' || orders.paymentMethod === 'WALLET') {
+ 
+
+         const wallet = await walletCollection.findOne({ userId: userId})
+
+         // if user dont have wallet create a new one
+         if (!wallet) {
+             await walletCollection.create({
+                 userId: userId,
+                 balance: itemTotal,
+                 history: [{ amount:itemTotal, status: 'credit', description: `Credited ${itemTotal} for canceled order` }]
+             });
+         } else {
+             // Update the existing wallet
+             await walletCollection.updateOne(
+                 { userId: userId },
+                 {
+                     $inc: { balance: itemTotal }, // Increment the wallet balance
+                     $push: {
+                        history: { amount:itemTotal, status: 'credit', description: `Credited ${itemTotal} for canceled order` }
+                     }
+                 }
+             );
+         }
+      }
+
+         return res.json({success:true,message:'order cancel successfully'})
    } catch (error) {
       console.error('something went wrong',error)
    }
@@ -691,6 +765,80 @@ exports.orderDelivered = async (req,res)=>{
          return res.json({success:false,message:'something went wrong'})
         }
         return res.json({success:true,message:'order delivered successfully'})
+
+   } catch (error) {
+      console.error('something went wrong',error)
+   }
+}
+
+
+exports.returnApprovel = async (req,res) =>{
+   try {
+      const {orderId, itemId, status} = req.body
+
+      //rejected the return request
+      if(status === 'return rejected'){
+         await orderCollection.findOneAndUpdate(
+            {_id:orderId, 'items._id':itemId},
+            {$set:{'items.$.status':status}},
+            {new:true}
+         )
+         return res.json({success:true,message:'return rejected'})
+      }
+
+      const orders = await orderCollection.findOne({_id:orderId})
+
+      const itemIndex = orders.items.findIndex(item => item._id.toString() === itemId);
+        if (itemIndex === -1) {
+            return res.json({ success: false, message: 'Item not found in order' });
+        }
+      
+
+      const {itemTotal, variantId, quantity} = orders.items[itemIndex]
+      const userId = orders.userId
+
+      //incriment the stock
+      const variant = await variantCollection.findOne({ _id: variantId });
+        if (!variant) {
+            return res.status(500).json({ success: false, message: 'Variant not found' });
+        }
+
+        variant.sizes[0].stock += quantity;
+
+        // Save the updated variant
+        await variant.save()
+
+        
+        const wallet = await walletCollection.findOne({ userId: userId })  //user wallet
+
+            // if user dont have wallet create a new one
+            if (!wallet) {
+                await walletCollection.create({
+                    userId: userId,
+                    balance: itemTotal,
+                    history: [{amount:itemTotal, status: 'credit', description: `Credited ${itemTotal} for return order` }]
+                });
+            } else {
+                // Update the existing wallet
+                await walletCollection.updateOne(
+                    { userId: userId },
+                    {
+                        $inc: { balance: itemTotal }, // Increment the wallet balance
+                        $push: {
+                           history: {amount:itemTotal, status: 'credit', description: `Credited ${itemTotal} for return order` }
+                        }
+                    }
+                );
+            }
+
+            //update status
+            await orderCollection.findOneAndUpdate(
+               {_id:orderId, 'items._id':itemId},
+               {$set:{'items.$.status':status}},
+               {new:true}
+           )
+
+           return res.json({success:true,message:'order approved successfull and the amout credited to the users wallet'})
 
    } catch (error) {
       console.error('something went wrong',error)

@@ -131,7 +131,7 @@
                                 <div class="quantity">
                                     <p id="max-limit" class="text-danger fw-14"></p>
                                     <div class="pro-qty">
-                                        <input type="number" id="quantity-<%= product._id %>" name="quantity" value="1" />
+                                        <input type="number" id="quantity-<%= product._id %>" name="quantity" value="1" readonly/>
                                     </div>
                                 </div>
                                 <% if ((product.variants[0].sizes[0].stock) === 0) { %>

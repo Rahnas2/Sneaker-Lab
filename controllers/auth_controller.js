@@ -32,3 +32,7 @@ exports.sendOtp = async (email,otp)=>{
     
 }
 
+exports.generateReferralCode = () => {
+    return crypto.randomInt(10000, 99999)
+}
+

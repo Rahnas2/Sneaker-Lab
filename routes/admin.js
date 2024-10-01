@@ -3,6 +3,8 @@ const router = express.Router()
 const admin_controller = require('../controllers/admin_controller')
 const coupon_controller = require('../controllers/coupon_controller')
 const offer_controller = require('../controllers/offer_controller')
+const sales_controller = require('../controllers/sales_controller')
+const dashboard_controller = require('../controllers/dashboard_controller')
 const auth = require('../middleware/adminAuth')
 const upload = require('../config/multerConfig')
 
@@ -14,7 +16,9 @@ const couponValid = require('../middleware/couponValidation')
 
 router.get('/',admin_controller.adminLogin)
 router.post('/login',admin_controller.adminLoginPost)
-router.get('/home',auth,admin_controller.home)
+
+router.get('/dashBoard',auth,dashboard_controller.dashBoard)
+
 
 //user managment start 
 router.get('/userManagment',auth,admin_controller.userManagment)
@@ -49,6 +53,7 @@ router.post('/editProduct/:id',upload.any(),provalidation,admin_controller.postU
 router.get('/orderManagment',auth,admin_controller.loadOrderManagment)
 router.post('/cancelProductAdmin',auth,admin_controller.cancelProductAdm)
 router.post('/orderDelivered',auth,admin_controller.orderDelivered)
+router.put('/returnApprovel',auth,admin_controller.returnApprovel)
 //order managment end
 
 //coupan managment start
@@ -65,6 +70,13 @@ router.post('/offerManagment/addCategoryOffer',auth,offer_controller.addCategory
 router.delete('/deleteProductOffer/:id',auth,offer_controller.removeProductOffer)
 router.delete('/deleteCategoryOffer/:id',auth,offer_controller.removeCategoryOffer)
 //offer managemant end
+
+
+//sales report start
+router.get('/salesManagment',auth,sales_controller.salesManagment)
+router.get('/salesReportDownload',auth,sales_controller.downloadSalesReport)
+//sales report end
+
 
 router.get('/logout',admin_controller.adminLogout) 
 

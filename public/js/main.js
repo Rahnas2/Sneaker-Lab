@@ -268,7 +268,7 @@
         var itemTotal = newVal * itemPrice;
     
         // Update the item total in the DOM
-        $('#itemTotal-' + itemId).html('₹ ' + itemTotal.toFixed(2));
+        $('#itemTotal-' + itemId).html('₹ ' + itemTotal);  //.toFixed(2)
         
         console.log('new value',newVal)
 
@@ -295,12 +295,14 @@
             console.log('totalmrp',totalMrp)
 
             let totalDiscount = totalMrp - result.updatedCart[0].totalPrice;
+            let shippingFee = result.updatedCart[0].shippingFee
             let totalAmount = result.updatedCart[0].totalPrice;
 
             // Update Total MRP, Discount, and Total Amount in DOM
-            $('#cart-total-mrp').html('₹ ' + totalMrp.toFixed(2));
-            $('#discout-amout').html('₹ ' + totalDiscount.toFixed(2));
-            $('#cart-total').html('₹ ' + totalAmount.toFixed(2));
+            $('#cart-total-mrp').html('₹ ' + totalMrp); //.toFixed(2)
+            $('#discout-amout').html('₹ ' + totalDiscount); //.toFixed(2)
+            $('#delevery-fee').html(shippingFee)
+            $('#cart-total').html('₹ ' + totalAmount);  //.toFixed(2)
             }else{
                 console.log('error updating quantity')
             }

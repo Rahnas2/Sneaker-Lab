@@ -1,12 +1,26 @@
 body {
     padding: 0;
     margin: 0;
-    background-color: #fbfbfb;
+    background-color: #fbfffb;
+    font-family: "Nunito Sans", sans-serif;
+	-webkit-font-smoothing: antialiased;
 }
 
 .fs-14{
     font-size: 14px;
     margin-bottom: 0;
+}
+
+.red{
+	color: #e53637;
+}
+
+.custom-white{
+    color: #f3f2ee;
+}
+
+select:focus{
+    outline: none;
 }
 
 .primary-btn {
@@ -31,7 +45,7 @@ body {
     box-shadow: 0 2px 5px 0 rgb(0 0 0 / 5%), 0 2px 10px 0 rgb(0 0 0 / 5%);
     width: 250px; /* Adjusted sidebar width */
     z-index: 600;
-    background: #d9d9d9;
+    background: #121212;
 }
 
 @media (min-width: 991.98px) {
@@ -73,6 +87,7 @@ body {
     background: none;
     border: 0;
 }
+
 
 .search-wrapper{
     position: relative;

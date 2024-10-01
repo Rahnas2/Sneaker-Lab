@@ -17,21 +17,20 @@ exports.getWishlist = async (req,res) =>{
         });
 
         let productsInCart = {}
-        for(let product of wishlist.productId){
-           let productId = product._id
-
-           const cart = await cartCollection.findOne({userId:user,'items.product':productId})
-
-           productsInCart[productId] = cart ? true : false
+        if(wishlist){
+            for(let product of wishlist.productId){
+               let productId = product._id
+    
+               const cart = await cartCollection.findOne({userId:user,'items.product':productId})
+    
+               productsInCart[productId] = cart ? true : false
+            }
         }
-
         
-
-
         res.render('User/wishlist',{
             user,
             page:null,
-            wishlist,
+            wishlist: wishlist ? wishlist : null,
             productsInCart
             
         })

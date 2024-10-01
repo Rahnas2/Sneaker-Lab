@@ -15,6 +15,6 @@ const walletSchema = new mongoose.Schema({
         status:{type:String, required:true, enum: ['credit', 'debit']},
         description:{type:String}
     }]
-})
+},{timestamps:true})
 
 module.exports = mongoose.model('wallet',walletSchema)

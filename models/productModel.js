@@ -33,7 +33,7 @@ const productSchema = new mongoose.Schema({
     ],
     offer:{
         offerType:{type:String},
-        discountPercentage:{type:Number},
+        discountPercentage:{type:Number}, 
         expirAt:{type:Date}
     },
     deleted:{

@@ -29,11 +29,15 @@
         <p id="password-valid" class="text-danger d-none fs-14"></p>
         
     </div>
-    <div class="form-group mb-4">
+    <div class="form-group">
         <label for="password" class="label mb-1">Confirm Password</label>
         <input type="password" class="form-control form-modify" placeholder="********" name="cfpassword" >
         <p id="cfpassword-valid" class="text-danger d-none fs-14"></p>
         <p class='text-danger fs-14 d-none' id='pass-not-match'></p>
+    </div>
+    <div class="form-group mt-2 mb-4">
+        <label for="referralCode" class="label mb-1 text-primary font-weight-light">Have a referralCode ?</label>
+        <input type="text" class="form-control form-modify" placeholder="Refferal Code" name="referralCode" >
     </div>
        <button type="submit" class="label btn-modify mb-2">Sign up</button>
         </form>
@@ -65,7 +69,8 @@
                     email: formData.get('email'),
                     phone: formData.get('phone'),
                     password: formData.get('password'),
-                    cfpassword: formData.get('cfpassword')
+                    cfpassword: formData.get('cfpassword'),
+                    referralCode: formData.get('referralCode')
                 };
                 
                 console.log(data); // For debugging purposes

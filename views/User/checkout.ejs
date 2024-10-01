@@ -161,8 +161,8 @@
                                     <% }) %>
                                 </ul>
                                 <ul class="checkout__total__all">
-                                    <li>Total MRP <span id="cart-total-mrp">₹ <%= cart.totalPrice + couponDiscount %></span></li>
-                                    <li>Coupan Discount <span id="coupan-discout"><%= couponDiscount %></span></li>
+                                    <li>Sub Total <span id="cart-total-mrp">₹ <%= cart.totalPrice + couponDiscount - cart.shippingFee %></span></li>
+                                    <li>Coupon Discount <span id="coupan-discout"><%= couponDiscount %></span></li>
                                     <li>Shipping Fee <span id="delevery-fee" class="text-success fs-14"><%= cart.shippingFee == 0 ? 'free':cart.shippingFee %></span></li>
                                     <hr>
                                     <li class="text-dark font-weight-bold">Total Amount <span id="cart-total">₹ <%= cart.totalPrice %></span></li>
@@ -172,14 +172,19 @@
                                     <div class="mb-2 font-weight-bold">Choose payment option</div>
                                     <label for="payment">
                                         COD
-                                        <input type="radio" checked value="COD" name="paymentType" id="payment">
+                                        <input type="radio" value="COD" name="paymentType" id="payment">
                                         <span class="checkmark"></span>
                                     </label>
-                                    <label for="paypal">
-                                        razorpay
-                                        <input type="radio"  value="RAZORPAY" name="paymentType" id="paypal">
+                                    <label for="razorpay">
+                                        Online
+                                        <input type="radio"  value="RAZORPAY" name="paymentType" id="razorpay">
                                         <span class="checkmark"></span>
                                     </label>
+                                    <!-- <label for="wallet">
+                                        wallet
+                                        <input type="radio" value="WALLET" name="paymentType" id="wallet">
+                                        <span class="checkmark"></span>
+                                    </label> -->
                                 </div>
                                 <button onclick="placeOrder('/cart/checkOut/placeOrder')" class="site-btn">PLACE ORDER</button>
                             </div>

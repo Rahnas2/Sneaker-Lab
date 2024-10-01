@@ -48,13 +48,16 @@
             </td> 
             <td class="">
                 <div class="d-flex flex-row justify-content-end gap-4">
-                  <% if (item.status === 'canceled') { %>
-                   
-                  <% }else { %>
+                  <% if (item.status === 'order placed') { %>
                     <button class="bg-warning border-0" onclick="productCancelAdm('<%=order._id %>','<%=item._id %>')">cancel</button> 
                     <button class="bg-success text-white border-0" onclick="orderDelivered('<%=order._id %>','<%=item._id %>')">delivered</button> 
-                  <% } %>
+                  <% } else if (item.status === 'return requested') { %>
+                    <button class="bg-success border-0" onclick="returnApprovel('<%=order._id %>','<%=item._id %>','returned')">Approved</button> 
+                    <button class="bg-danger text-white border-0" onclick="returnApprovel('<%=order._id %>','<%=item._id %>','return rejected')">Rejected</button> 
+                    <button class="bg-secondary text-white border-0" onclick="viewReason('<%=order._id %>','<%=item._id %>')">View Reason</button>
+                  <% } else {%>
                     
+                  <% } %>
                  </td>
         <% }) %>
         
@@ -192,6 +195,46 @@ function orderDelivered(orderId, itemId) {
     });
   } catch (error) {
     console.error("Something went wrong", error);
+  }
+}
+
+function returnApprovel(orderId, itemId, status){
+  try {
+    Swal.fire({
+      title: "Are you sure?",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delivered",
+    }).then(result =>{
+      if(result.isConfirmed){
+        fetch('/admin/returnApprovel',{
+          method:'PUT',
+          headers:{
+            'Content-Type': 'application/json'
+          },
+          body:JSON.stringify({orderId, itemId, status})
+        })
+        .then(response => response.json())
+        .then(result => {
+          if(result.success){
+            Swal.fire({
+                text: result.message,
+                icon: "success",
+            }).then(() => { 
+                location.reload();
+            });
+          }else{
+            Swal.fire({
+                text: result.message,
+                icon: "error",
+            })
+          }
+        })
+      }
+    })
+  } catch (error) {
+    console.error('error',error)
   }
 }
 

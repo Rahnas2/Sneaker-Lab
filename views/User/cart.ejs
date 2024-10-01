@@ -62,7 +62,7 @@
                                         <div class="quantity">
                                             <div class="pro-qty-2">  
                                                 <% const stock = item.product.variants[0].sizes[0].stock %>
-                                                <input id="itemQuantity" data-stock="<%= stock %>" type="text" value="<%= item.quantity %>">
+                                                <input id="itemQuantity" data-stock="<%= stock %>" type="text" value="<%= item.quantity %>" readonly>
                                             </div>
                                             <p id="max-limit-<%= item._id %>" class="text-danger fw-14"></p>
                                         </div>
@@ -94,7 +94,7 @@
                                 <% return acc %>
                             <% },0) %> 
                             <li>Total MRP <span id="cart-total-mrp">₹ <%= totalMrp %></span></li> 
-                            <li>Discount on MRP <span id="discout-amout" class="text-success fs-14 " style="font-family: cursive; font-size: 14px;"><%= totalMrp - cart.totalPrice - couponDiscount %></span></li>
+                            <li>Discount on MRP <span id="discout-amout" class="text-success fs-14 " style="font-family: cursive; font-size: 14px;"><%= totalMrp - (cart.totalPrice - cart.shippingFee - couponDiscount )%></span></li>
                             <% /* %><li>Coupan Discount <span id="coupan-discout"><%= couponDiscount %></span></li> <% */ %>
                             <li>Shipping Fee <span id="delevery-fee" class="text-success fs-14"><%= cart.shippingFee == 0 ? 'free':cart.shippingFee %></span></li>
                             <hr>
@@ -145,10 +145,12 @@
                             console.log('totalmrp',totalMrp)
                 
                             let totalDiscount = totalMrp - result.updatedCart[0].totalPrice;
+                            let shippingFee = result.updatedCart[0].shippingFee
                             let totalAmount = result.updatedCart[0].totalPrice
 
                             document.getElementById('cart-total-mrp').innerHTML = '₹ ' + totalMrp.toFixed(2);
-                            document.getElementById('discout-amout').innerHTML =totalDiscount.toFixed(2);
+                            document.getElementById('discout-amout').innerHTML = totalDiscount.toFixed(2);
+                            document.getElementById('delevery-fee').innerHTML = shippingFee
                             document.getElementById('cart-total').innerHTML = '₹ ' + totalAmount.toFixed(2);
 
                          //remove the item from cart

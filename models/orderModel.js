@@ -40,6 +40,9 @@ const orderSchema = new mongoose.Schema({
             type: Number,
             required: true
         },
+        offerPrice:{
+            type:Number
+        },
         quantity: { 
             type: Number,
             required: true,
@@ -53,17 +56,23 @@ const orderSchema = new mongoose.Schema({
             type:String,
             default:'Order Placed'
         },
+        paymentStatus:{
+            type:String,
+            default:'pending'
+        },
         returnReson:{
             type:String
         }
     }],
-    couponId:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref:'coupons'
+    couponCode:{
+        type:String
     },
-    couponDiscound:{
+    couponDiscount:{
         type:Number,
         default:0
+    },
+    shippingFee: {
+        type:Number
     },
     paymentMethod: {
         type: String,
@@ -72,10 +81,6 @@ const orderSchema = new mongoose.Schema({
     totalAmount:{
         type:Number,
         required:true
-    },
-    paymentStatus:{
-        type:String,
-        default:'pending'
     },
     expectedDelivery: {
         type: Date,
