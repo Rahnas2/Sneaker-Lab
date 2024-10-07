@@ -52,7 +52,21 @@
                     <i class="fas fa-times"></i> <!-- Font Awesome Icon for 'X' -->
                 </span>
                 <div class="card-body">
-                  <h5 class="card-title"><%= product.productName %></h5> 
+                  <h5 class="card-title" style="margin-bottom: 6px;"><%= product.productName %></h5> 
+
+                  <!-- rating -->
+
+                <div class="rating" style="margin-bottom: 5px;">
+
+                <% const avgRating = averageRating[product._id] %>  
+                    <% for( let index = 1; index <= 5; index++ ) { %>
+                        <% if (avgRating >= index) { %>
+                            <i class="fa-solid fa-star text-warning"></i>
+                        <% } else { %>
+                        <i class="fa-regular fa-star text-warning"></i> 
+                        <% } %>
+                    <% } %>                   
+                </div>
                   
                   <% if (product.offer && product.offer.expirAt && new Date(product.offer.expirAt) >= new Date()) { %>
 

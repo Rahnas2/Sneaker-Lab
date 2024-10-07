@@ -60,6 +60,9 @@ const orderSchema = new mongoose.Schema({
             type:String,
             default:'pending'
         },
+        rating:{
+            type:Number
+        },
         returnReson:{
             type:String
         }

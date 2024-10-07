@@ -4,7 +4,7 @@ const session = require('express-session')
 require('dotenv').config()
 const nocache = require('nocache')
 const connect_db = require('./config/db')
-const passport = require('./config/passport')
+// const passport = require('./config/passport')
 const adminroute = require('./routes/admin')
 const userroute = require('./routes/users')
 const PORT = process.env.PORT || 5050;

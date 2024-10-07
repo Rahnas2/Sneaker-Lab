@@ -57,18 +57,18 @@
                         <div class="col">
                             <!-- Color selection with price update -->
                             <select class="form-select" id="" name="variants[<%= index%>][color]">    
-                                <option value="">color</option>
+                                <option value="" >color</option>
                                 <option value="white" <%= variant.color === 'white' ? 'selected' : '' %>>white</option>
                                 <option value="black" <%= variant.color === 'black' ? 'selected' : '' %>>black</option>
                                 <option value="blue" <%= variant.color === 'blue' ? 'selected' : '' %>>blue</option>
                                 <option value="green" <%= variant.color === 'green' ? 'selected' : '' %>>green</option>
                             </select>
-                            <p id="variants[<%= index%>][color]" class="text-danger d-none fs-14"></p>
+                            <p id="variants[<%= index%>].color-notValid" class="text-danger d-none fs-14"></p>
                         </div>
                         <div class="col">
                             <!-- Price display based on color selection -->
                             <input type="number" placeholder="price" value="<%= variant.price %>" class="form-control price-input" name="variants[<%= index %>][price]">
-                            <p id="price-notValid" class="text-danger d-none fs-14"></p>
+                            <p id="variants[0].price-notValid" class="text-danger d-none fs-14"></p>
                         </div>
                         <div class="col">
                             <!-- Size and stock management section -->
@@ -76,20 +76,20 @@
                                 <div class="row size-stock-group mb-2">
                                     <div class="col">
                                         <input type="number" class="form-control" name="sizes[<%= sizeIndex %>][size]" value="<%= sizeStock.size %>" placeholder="Size">
-                                        <p id="size-notValid" class="text-danger d-none fs-14"></p>
+                                        <p id="variants[<%= index%>].sizes[<%= sizeIndex %>].size-notValid" class="text-danger d-none fs-14"></p>
                                     </div>
                                     <div class="col">
                                         <input type="number" class="form-control" name="sizes[<%= sizeIndex %>][stock]" value="<%= sizeStock.stock %>" placeholder="Stock">
-                                        <p id="stock-notValid" class="text-danger d-none fs-14"></p>
+                                        <p id="variants[<%= index%>].sizes[<%= sizeIndex %>].stock-notValid" class="text-danger d-none fs-14"></p>
                                     </div>
                                     <div class="col">
-                                        <button type="button" class="btn btn-danger" onclick="removeSizeStock(this)">Remove</button>
+                                        <button type="button" class="btn btn-danger" onclick="removeSizeStock(this)">Remove</button> 
                                     </div>
                                 </div>
                             <% }); %>
                             <div id="size-stock-container">
                                 <!-- Container for dynamically adding size and stock inputs -->
-                                <button type="button" class="bg-dark text-white border-0"  onclick="addSizeStock(this)">Add Size & Stock</button>
+                                <button type="button" class="bg-dark text-white border-0 add-size-stock-btn"  onclick="addSizeStock(this,'<%=index %>')">Add Size & Stock</button>
                                 <p id="sizes-notValid" class="text-danger d-none fs-14"></p>
                             </div>
                         </div>
@@ -159,24 +159,24 @@
                                 <div class="col">
                                     <!-- Color selection with price update -->
                                     <select class="form-select" name="variants[0][color]">    
-                                        <option value="" disabled selected>color</option>
+                                        <option value="" >color</option>
                                         <option value="white">white</option>
                                         <option value="black">black</option>
                                         <option value="blue">blue</option>
                                         <option value="green">green</option>
                                     </select>
-                                    <p id="color-notValid" class="text-danger d-none fs-14"></p>
+                                    <p id="variants[0].color-notValid" class="text-danger d-none fs-14"></p>
                                 </div>
                                 <div class="col">
                                     <!-- Price display based on color selection -->
                                     <input type="number" placeholder="price" class="form-control price-input" name="variants[0][price]">
-                                    <p id="price-notValid" class="text-danger d-none fs-14"></p>
+                                    <p id="variants[0].price-notValid" class="text-danger d-none fs-14"></p>
                                 </div>
                                 <div class="col">
                                     <!-- Size and stock management section -->
                                     <div id="size-stock-container">
                                         <!-- Container for dynamically adding size and stock inputs -->
-                                        <button type="button" class="bg-dark text-white border-0" onclick="addSizeStock(this)">Add Size & Stock</button>
+                                        <button type="button" class="bg-dark text-white border-0 add-size-stock-btn"  onclick="addSizeStock(this,0)">Add Size & Stock</button>
                                         <p id="sizes-notValid" class="text-danger d-none fs-14"></p>
                                     </div>
                                 </div>
@@ -232,10 +232,10 @@
                     <% } %>
                 </div>
             
-                
+                <button type="button" class="primary-btn" onclick="addVariant()">Add Variant</button>
             
             
-        <button type="button" class="primary-btn" onclick="addVariant()">Add Variant</button>
+        <!-- <button type="button" class="primary-btn" onclick="addVariant()">Add Variant</button> -->
 
             <!-- product description -->
             <div class="row form-group mb-3"> 
@@ -244,6 +244,7 @@
                 <textarea type="text" class="w-100" placeholder="" name="description"  style="height:9.25rem;">
                     <%= product?product.productDescription: ''  %>
                 </textarea>
+                <p id="description-notValid" class="text-danger d-none fs-14"></p>
             </div>
             </div>
            
@@ -291,7 +292,11 @@
     let currentImageId;
 
     // Function to add size and stock inputs
-    function addSizeStock(button) {
+    function addSizeStock(button,variantIndex) {
+
+        const index = variantIndex             //varaint index
+        console.log('varaint index',index)
+
         const sizeStockContainer = button.parentElement;
         const sizeIndex = sizeStockContainer.querySelectorAll('.size-stock-group').length;
         // Creating size and stock inputs dynamically
@@ -300,11 +305,11 @@
         sizeStockGroup.innerHTML = `
             <div class="col">
                 <input type="number" class="form-control" name="sizes[${sizeIndex}][size]" placeholder="Size" >
-                <p id="size-notValid" class="text-danger d-none fs-14"></p>
+                <p id="variants[${index}].sizes[${sizeIndex}].size-notValid" class="text-danger d-none fs-14"></p>
             </div>
             <div class="col">
                 <input type="number" class="form-control" name="sizes[${sizeIndex}][stock]" placeholder="Stock" >
-                <p id="stock-notValid" class="text-danger d-none fs-14"></p>
+                <p id="variants[${index}].sizes[${sizeIndex}].stock-notValid" class="text-danger d-none fs-14"></p>
             </div>
             <div class="col">
                 <button type="button" class="btn btn-danger" onclick="removeSizeStock(this)">Remove</button>
@@ -322,11 +327,14 @@
         const container = document.getElementById('variants-container');
         const variantGroup = document.querySelector('.variant-group').cloneNode(true);
 
+        //change varaint count from select tag
         variantGroup.querySelectorAll('select').forEach(element => {
             let name = element.name.replace(/\d+/, variantsCount);
             element.name = name;
             element.value = '';
         });
+
+        //change varaint count from input tag
         variantGroup.querySelectorAll('input').forEach(element => {
             let name = element.name.replace(/\d+/, variantsCount);
             element.name = name;
@@ -342,16 +350,34 @@
                 element.value = ''
             }
         });
+
+        //cahnge varaint count when doing image cropping
         variantGroup.querySelectorAll('.fuCropper').forEach(element =>{
             let newOnclick = element.getAttribute('onclick').replace(/variant\d+/,`variant${variantsCount}`)
             element.setAttribute('onclick',newOnclick)
         })
+        
+        //change varaint count from image
         variantGroup.querySelectorAll('.img-thumbnail').forEach(element=>{
             let newId = element.id.replace(/variant\d+/,`variant${variantsCount}`)
             element.id = newId
             element.style.display = 'none'
             element.src = ''
         })
+
+        //change varaint count for error message
+        variantGroup.querySelectorAll('p').forEach(element =>{
+            let newId = element.id.replace(/\d+/, variantsCount)
+            element.id = newId
+        })
+
+        //change variant count from adding size and stock button
+        variantGroup.querySelectorAll('.add-size-stock-btn').forEach(element =>{
+            let changeOnClick = element.getAttribute('onclick').replace(/\d+/, variantsCount)
+            element.setAttribute('onclick',changeOnClick)
+        })
+
+
         variantsCount++;
         container.appendChild(variantGroup);
     }
@@ -569,56 +595,3 @@
 
     <%- include('partials/footer') %>
 
-
-<% /* %>
-    <div class="row form-group mb-4">
-        <div class="col">
-            <label for="image1">Image 1</label>
-            <div class="image-preview">
-                <% if (product && product.images[0]) { %>
-                 <img src="<%= product.images[0] %>" id="preview-image1" alt="Image 1" class="img-thumbnail w-100 h-100" />
-                <% } else { %>
-                         <img id="preview-image1" alt="Image 1" class="img-thumbnail w-100 h-100" style="display: none;" />
-                <% } %>
-            </div>
-            <input type="file" id="image1" class="form-control" name="images" accept="image/*" onchange="handleFileChange(event,'image1')" >
-            <button type="button" class="btn btn-dark mt-2" data-bs-toggle="modal" data-bs-target="#cropModal" onclick="initCropper('image1')">Crop</button>
-        </div>
-        <div class="col">
-            <label for="image2">Image 2</label>
-            <div class="image-preview">
-                <% if (product && product.images[1]) { %>
-                    <img src="<%= product.images[1] %>" id="preview-image2" alt="Image 2" class="img-thumbnail w-100 h-100" />
-                   <% } else { %>
-                            <img id="preview-image2" alt="Image 2" class="img-thumbnail w-100 h-100" style="display: none;" />
-                   <% } %>
-               </div>
-               <input type="file" id="image2" class="form-control" name="images" accept="image/*" onchange="handleFileChange(event,'image2')">
-               <button type="button" class="btn btn-dark mt-2" data-bs-toggle="modal" data-bs-target="#cropModal" onclick="initCropper('image2')">Crop</button>  
-        </div>
-        <div class="col">
-            <label for="image3">Image 3</label>
-            <div class="image-preview">
-                <% if (product && product.images[2]) { %>
-                    <img src="<%= product.images[2] %>" id="preview-image3" alt="Image 3" class="img-thumbnail w-100 h-100" />
-                   <% } else { %>
-                            <img id="preview-image3" alt="Image 3" class="img-thumbnail w-100 h-100" style="display: none;" />
-                   <% } %>
-               </div>
-               <input type="file" id="image3" class="form-control" name="images" accept="image/*" onchange="handleFileChange(event,'image3')">
-               <button type="button" class="btn btn-dark mt-2" data-bs-toggle="modal" data-bs-target="#cropModal" onclick="initCropper('image3')">Crop</button>
-        </div>
-        <div class="col">
-            <label for="image4">Image 4</label>
-            <div class="image-preview">
-                <% if (product && product.images[3]) { %>
-                    <img src="<%= product.images[3] %>" id="preview-image4" alt="Image 4" class="img-thumbnail w-100 h-10" />
-                   <% } else { %>
-                            <img id="preview-image4" alt="Image 4" class="img-thumbnail w-100 h-100" style="display: none;" />
-                   <% } %>
-               </div>
-               <input type="file" id="image4" value="" class="form-control" name="images" accept="image/*" onchange="handleFileChange(event,'image4')">
-               <button type="button" class="btn btn-dark mt-2" data-bs-toggle="modal" data-bs-target="#cropModal" onclick=" initCropper('image4')">Crop</button>
-        </div>
-    </div>
-    <% */ %>

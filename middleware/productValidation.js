@@ -38,6 +38,9 @@ const proValidation = [
     body('variants.*.sizes.*.stock')
     .isInt({min:1}).withMessage('invalid'),
     
+    body('description')
+    .trim()
+    .notEmpty().withMessage('discription is required')
       
 ]
 

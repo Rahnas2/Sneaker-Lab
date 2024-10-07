@@ -22,6 +22,10 @@ function generateCustomReport(){
       startDate = document.getElementById('startDate').value
       endDate = document.getElementById('endDate').value
 
+      //storing local storage of start date and end date for download report
+      localStorage.setItem('startDate',startDate)
+      localStorage.setItem('endDate',endDate)
+
       startErr = document.getElementById('start-date-err')
       endErr = document.getElementById('end-date-err')
 
@@ -59,8 +63,8 @@ function generateCustomReport(){
 function downloadSalesReport(format){
   
   const filterType = localStorage.getItem('filterType')
-  const startDate = document.getElementById('startDate').value
-  const endDate = document.getElementById('endDate').value
+  const startDate = localStorage.getItem('startDate')
+  const endDate = localStorage.getItem('endDate')
 
   let url
   if(filterType === 'custom'){
@@ -69,7 +73,11 @@ function downloadSalesReport(format){
     url = `/admin/salesReportDownload?format=${format}&filterType=${filterType}`
   }
 
+  //remove all the filter type start and end date from local storage
+  
   localStorage.removeItem('filterType');
+  localStorage.removeItem('startDate')
+  localStorage.removeItem('endDate')
 
   window.open(url, '_blank');
   

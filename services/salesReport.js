@@ -25,7 +25,8 @@ exports.getSalesData = async (filterType, startDate, endDate) =>{
        case 'weekly':
           const weekStart = new Date(today.setDate(today.getDate() - today.getDay()))
           startedDate = new Date(weekStart.setHours(0,0,0,0))
-          endingDate = new Date(today.setHours(23, 59, 59, 999))
+          endingDate = new Date(today.setDate(today.getDate()- today.getDay() + 6))
+          endingDate.setHours(23, 59, 59, 999)
           salesReportFilter = {
              createdAt:{
                 $gt:startedDate,
@@ -36,7 +37,8 @@ exports.getSalesData = async (filterType, startDate, endDate) =>{
        case 'monthly':
           const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
           startedDate = new Date(monthStart.setHours(0, 0, 0, 0))
-          endingDate = new Date(today.setHours(23, 59, 59, 999))
+          endingDate = new Date(today.getFullYear(), today.getMonth()+ 1 , 0)
+          endingDate.setHours(23, 59, 59, 999)
           salesReportFilter = {
              createdAt:{
                 $gt:startedDate,
@@ -47,7 +49,8 @@ exports.getSalesData = async (filterType, startDate, endDate) =>{
        case 'yearly':
           const yearStart = new Date(today.getFullYear(),0, 1)
           startedDate = new Date(yearStart.setHours(0, 0, 0, 0))
-          endingDate = new Date(today.setHours(23, 59, 59, 999))
+          endingDate = new Date(today.getFullYear(),11, 31)
+          endingDate.setHours(23, 59, 59, 999)
           salesReportFilter = {
              createdAt:{
                 $gt:startedDate,
@@ -84,7 +87,7 @@ exports.getSalesData = async (filterType, startDate, endDate) =>{
       endingDate = getDates[getDates.length - 1];
    }
 
-   // console.log('dates',startedDate,'end',endingDate)
+   console.log('dates',startedDate,'end',endingDate)
     
    //  if(orders)
     let totalSales = 0
@@ -106,7 +109,8 @@ exports.getSalesData = async (filterType, startDate, endDate) =>{
     totalDiscount,
     totalOrders,
     startedDate: startedDate.toLocaleDateString(),
-    endingDate: endingDate.toLocaleDateString()
+    endingDate: endingDate.toLocaleDateString(),
+    salesReportFilter
    }
 
 } 
@@ -117,6 +121,8 @@ exports.getSalesData = async (filterType, startDate, endDate) =>{
 const PDFDocument = require('pdfkit');
 
 exports.generateSalesReportPDF = (res, orders, totalSales, totalDiscount, totalOrders, startedDate, endingDate) => {
+   console.log('staring date ',startedDate)
+   console.log('ending date',endingDate)
   
     const doc = new PDFDocument({
         size: 'A4',

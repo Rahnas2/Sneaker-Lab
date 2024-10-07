@@ -63,13 +63,16 @@
                     <div class="col-lg-8">
                         <div class="product__details__text">
                             <h4><%= product.productName %></h4>
+
                             <div class="rating">
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star-o"></i>
-                                <span> - 5 Reviews</span>
+                                <% for( let index = 1; index <= 5; index++ ) { %>
+                                   <% if (avgRating >= index) { %>
+                                    <i class="fa-solid fa-star text-warning"></i>
+                                   <% } else{ %>
+                                    <i class="fa-regular fa-star text-warning"></i>
+                                    <% } %>
+                                <% } %>
+                                <span> - <%= review.length %> Reviews</span>
                             </div>
                             
                             <% if (product.offer && product.offer.expirAt && new Date(product.offer.expirAt) >= new Date()) { %>
@@ -168,7 +171,7 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" data-toggle="tab" href="#tabs-6" role="tab">Customer
-                                    Previews(5)</a>
+                                    Previews(<%= review.length %>)</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" data-toggle="tab" href="#tabs-7" role="tab">Additional
@@ -213,7 +216,7 @@
                                 <div class="tab-pane" id="tabs-6" role="tabpanel">
                                     <div class="product__details__tab__content">
                                         <div class="product__details__tab__content__item">
-                                            <h5>Products Infomation</h5>
+                                            <h5>Customers Reviews</h5>
                                             <p>A Pocket PC is a handheld computer, which features many of the same
                                                 capabilities as a modern PC. These handy little devices allow
                                                 individuals to retrieve and store e-mail messages, create a contact

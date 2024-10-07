@@ -26,8 +26,8 @@ const productSchema = new mongoose.Schema({
      }],
     review:[
         {
-        comments:{type:String},
         rating:{type:Number},
+        comments:{type:String},
         userId:{type:mongoose.Schema.Types.ObjectId, ref:'users'}
         }
     ],

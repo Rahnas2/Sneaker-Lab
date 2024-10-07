@@ -1,15 +1,8 @@
 
-// const chartFilter =  JSON.stringify(chartFilter)
-// console.log('charfilter',chartFilter)
 
 const chartFilter = chartFilterG
 
 const ctx = document.getElementById('barChart').getContext('2d');
-
-  //  function updateChart(data){
-  //     if (window.myChart instanceof Chart) {
-  //       window.myChart.destroy();
-  //     }
 
      let barChart = null
      function updateChart(chartData){

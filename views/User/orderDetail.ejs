@@ -37,7 +37,7 @@
               <div>Order Status</div>
           </div>
 
-          <div class="d-flex my-5 mx-3 font-weight-bold justify-content-between">
+          <div class="d-flex mt-5 mb-4 mx-3 font-weight-bold justify-content-between">
             <div class=""><% if (item.offerPrice !== item.price) { %>
              <span class="mr-2">₹<%= item.offerPrice %></span>
              <span class=" fs-14 text-danger" style="text-decoration: line-through;">₹<%= item.price %></span>
@@ -60,9 +60,9 @@
               <%= item.status %></div>
         </div>
         <hr>
-        <!-- <div class="d-flex justify-content-between"> -->
-        <div class="mx-3 font-weight-bold ">
-          <div class="mt-3 mb-2">paymentStatus: 
+        <div class="mx-3">
+          <!-- payment status -->
+          <div class="mt-2 mb-2 font-weight-bold">paymentStatus: 
             <span class="badge 
               <% if (item.paymentStatus === 'paid') { %> 
                 badge-success 
@@ -74,13 +74,44 @@
               <%= item.paymentStatus %> 
             </span>
           </div>
-          
-          
-          <!-- invoice -->
-        <!-- <div class="text-right"><button class="border-0 p-2" onclick="downloadInvoice('<%= order._id, item._id %>')"><i class="fa-solid fa-file-invoice text-primary"></i> Download Invoice</button></div>   -->
+          <!-- review -->
+          <% if (item.status === 'delivered') { %>
 
+            <% if (item.rating) { %>   
+             <% for( let index = 1; index <= 5; index++ ) { %>
+                <% if (item.rating >= index) { %>
+                  <i class="fa-solid fa-star text-warning"></i> 
+                <% }else { %>
+                  <i class="fa-regular fa-star text-warning"></i> 
+                <% } %>
+             <% } %>
+             <p class="">You have given <%= item.rating %> star for this product</p>
+            <% }else { %>
+            <div class="mt-2" id="review-container-<%= item._id %>" data-item-id="<%= item._id %>" data-product-id="<%= item.productId %>">
+       
+              <div class="apply-rating-<%= item._id %>">
+                <i class="fa-regular fa-star text-warning"></i> 
+                <i class="fa-regular fa-star text-warning"></i>
+                <i class="fa-regular fa-star text-warning"></i>
+                <i class="fa-regular fa-star text-warning"></i>
+                <i class="fa-regular fa-star text-warning"></i>
+  
+                <p id="rating-text-<%= item._id %>" class=" ">Rate this Product now</p>
+              </div>
+  
+              <div id="write-review-<%= item._id %>" class="d-none">
+                <p class="text-danger m-0">Write Review</p>
+                <input id="review-text-<%= item._id %>" class="mt-1" type="text"> 
+                <button id="submit-review-<%= item._id %>" class="btn-danger border-0">Submit</button>
+              </div>
+              
+            </div>  
+           <% } %>
 
+          <% } %>
+  
         </div>
+        
         </div>
 
       </div>
@@ -144,6 +175,7 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <script>
+      
       function repay(orderId, paymentMethod){
           try {
             fetch('/payAfter',{
@@ -266,6 +298,76 @@ function downloadInvoice(orderId){
 
 }
 
+//product review 
+const reviewContainers = document.querySelectorAll('[id^="review-container-"]')
+
+reviewContainers.forEach(container => {
+    const itemId = container.getAttribute('data-item-id');
+    const productId = container.getAttribute('data-product-id');
+    const stars = container.querySelectorAll(`.apply-rating-${itemId} i`);
+    const ratingText = container.querySelector(`#rating-text-${itemId}`);
+    const reviewTextDiv = container.querySelector(`#write-review-${itemId}`);
+    const reviewText = container.querySelector(`#review-text-${itemId}`);
+    const submitReview = container.querySelector(`#submit-review-${itemId}`);
+
+    let rating;
+
+    stars.forEach((star, index) => {
+      star.addEventListener('click', () => {
+        rating = index + 1;
+        setRating(rating, stars, reviewTextDiv, ratingText);
+      });
+    });
+
+    submitReview.addEventListener('click', () => {
+      const review = reviewText.value;
+      submitReviewToServer(rating, review, productId, itemId);
+    });
+  });
+
+
+function setRating(rating, stars, reviewTextDiv, ratingText) {
+  stars.forEach((star, index) => {
+    if (rating > index) {
+      star.classList.remove('fa-regular');
+      star.classList.add('fa-solid');
+    } else {
+      star.classList.remove('fa-solid');
+      star.classList.add('fa-regular');
+    }
+  });
+  reviewTextDiv.classList.remove('d-none');
+  ratingText.classList.add('d-none');
+}
+
+function submitReviewToServer(rating, review, product, item) {
+  fetch('/submitReview', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({rating, review, product, item})
+  })
+  .then(response => response.json())
+  .then(result =>{
+    console.log('ressul',result)
+    if(result.success){
+      const itemId = result.item
+      const submitContainer = document.getElementById(`write-review-${itemId}`)
+      submitContainer.remove()
+      Swal.fire({
+      text: result.message, 
+      showConfirmButton: false,
+      timer: 3000, 
+      backdrop: false,
+      customClass: {
+          popup: 'swal2-popup-custom', 
+      }
+      })
+    }
+  })
+  .catch(error => console.error('error',error))
+}
     </script>
 
 <%- include('partials/footer') %> 

@@ -68,6 +68,31 @@
                 </table>
             </div>
             
+            <!-- product pagination control -->
+
+            <nav aria-label="Page navigation example">
+                <ul class="pagination mt-2 justify-content-end">
+                    <li class="page-item <%= productPage === 1 ? 'disabled' : '' %>">
+                        <a class="page-link" href="?type=product&page=<%= productPage - 1 %>&limit=<%= limit %>" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                    </li>
+                    <% for (let i = 1; i <= OfferProductTotalPage; i++) { %>
+                        <li class="page-item <%= productPage === i ? 'active' : '' %>">
+                            <a class="page-link" href="?type=product&page=<%= i %>&limit=<%= limit %>"><%= i %></a>
+                        </li>
+                    <% } %>
+                
+                  <li class="page-item <%= productPage === OfferProductTotalPage ? 'disabled' : '' %>">
+                    <a class="page-link" href="?type=product&page=<%= productPage + 1 %>&limit=<%= limit %>" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </li>
+                </ul>
+              </nav>
+
         </div>
 
         <!-- produt offer Modal -->
@@ -159,6 +184,31 @@
                 </table>
             </div>
 
+            <!--category pagination control -->
+
+            <nav aria-label="Page navigation example">
+                <ul class="pagination mt-2 justify-content-end">
+                    <li class="page-item <%= categoryPage === 1 ? 'disabled' : '' %>">
+                        <a class="page-link" href="?type=category&page=<%= categoryPage - 1 %>&limit=<%= limit %>" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                    </li>
+                    <% for (let i = 1; i <= OfferCategoryTotalPage; i++) { %>
+                        <li class="page-item <%= categoryPage === i ? 'active' : '' %>">
+                            <a class="page-link" href="?type=category&page=<%= i %>&limit=<%= limit %>"><%= i %></a>
+                        </li>
+                    <% } %>
+                
+                  <li class="page-item <%= categoryPage === OfferCategoryTotalPage ? 'disabled' : '' %>">
+                    <a class="page-link" href="?type=category&page=<%= categoryPage + 1 %>&limit=<%= limit %>" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </li>
+                </ul>
+              </nav>
+
         </div>
 
     <!-- category offer Modal -->
@@ -202,17 +252,7 @@
     </div>
 
 
-        <!-- Referral Offers (hidden by default) -->
-        <!-- <div id="referralOffers" class="offer-section" style="display: none;">
-            <h4>Referral Offers</h4>
-            <div class="d-flex justify-content-end">
-                <button class="mb-3 primary-btn border-0" data-bs-toggle="modal" data-bs-target="#addReferelOfferModal">
-                    <a href="#" class="text-decoration-none text-white ">+ Add Offer</a>   
-                </button>
-            </div>
-            <p>Here you can manage your referral offers.</p>
-
-        </div> -->
+      
     </div>
     
 </div>        

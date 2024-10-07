@@ -17,6 +17,7 @@ exports.getWishlist = async (req,res) =>{
         });
 
         let productsInCart = {}
+        let averageRating = {}
         if(wishlist){
             for(let product of wishlist.productId){
                let productId = product._id
@@ -24,6 +25,11 @@ exports.getWishlist = async (req,res) =>{
                const cart = await cartCollection.findOne({userId:user,'items.product':productId})
     
                productsInCart[productId] = cart ? true : false
+
+               let totalStars = product.review.reduce((acc,curr) => acc += curr.rating, 0)
+               let avg = Math.ceil(totalStars / product.review.length)
+               
+               averageRating[productId] = avg
             }
         }
         
@@ -31,7 +37,8 @@ exports.getWishlist = async (req,res) =>{
             user,
             page:null,
             wishlist: wishlist ? wishlist : null,
-            productsInCart
+            productsInCart,
+            averageRating
             
         })
     } catch (error) {

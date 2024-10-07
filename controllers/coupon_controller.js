@@ -7,9 +7,24 @@ const { validationResult } = require('express-validator')
 
 exports.couponManagment = async (req, res) => {
     try {
-        const coupansList = await couponCollection.find()
+
+        const searchQuery = req.query.search || ''
+        const page = parseInt(req.query.page) || 1
+        const limit = parseInt(req.query.limit) || 10
+        const skip = (page-1)*limit
+
+        const searchCriteria = {code: new RegExp(searchQuery,'i')}  
+
+        const coupansList = await couponCollection.find(searchCriteria).skip(skip).limit(limit)
+
+        const totalCoupons = await couponCollection.countDocuments()     //total coupons
+        const totalPages = Math.ceil(totalCoupons/limit)                 //total pages
+
         res.render('Admin/couponManagment', {
-            coupansList
+            coupansList,
+            currentPage: page,
+            totalPages,
+            limit
         })
     } catch (error) {
         console.error('something went wrong', error)

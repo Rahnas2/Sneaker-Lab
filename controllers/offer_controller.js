@@ -8,6 +8,13 @@ const { deleteOne } = require('../models/cartModel')
 exports.loadOfferManagment = async (req,res)=>{
     try {
 
+        const type = req.query.type
+
+        const searchQuery = req.query.search || ''
+        const page = parseInt(req.query.page) || 1
+        const limit = parseInt(req.query.limit) || 2
+        const skip = (page-1)*limit
+
         const products = await productCollection.find({deleted:false}).populate('variants')
         const categories = await categoryCollection.find({deleted:false})
         
@@ -29,6 +36,9 @@ exports.loadOfferManagment = async (req,res)=>{
             });
         }
         });
+        const paginatedOfferProducts = offerProductsList.slice(skip, skip + limit)
+        const totalOfferedProduct = offerProductsList.length
+        const OfferProductTotalPage = Math.ceil(totalOfferedProduct/limit) 
 
         const offerCategoryList = []
         categories.forEach(category => {
@@ -45,11 +55,30 @@ exports.loadOfferManagment = async (req,res)=>{
             }
         });
 
+        const paginatedOfferCategory = offerProductsList.slice(skip, skip + limit)
+        const totalOfferedCategory = offerCategoryList.length 
+        const OfferCategoryTotalPage = Math.ceil(totalOfferedCategory/limit)
+
+        let productPage = 1
+        if(type === 'product'){
+            productPage = page
+        }
+
+        let categoryPage = 1
+        if(type === 'category'){
+            categoryPage = page
+        }
+
         res.render('Admin/offerManagment',{
             products,
             categories,
-            offerProductsList,
-            offerCategoryList
+            offerProductsList : paginatedOfferProducts,           //offered product list 
+            OfferProductTotalPage,       //total pages for product offerlist
+            productPage,                 //current page in the product offerlist
+            offerCategoryList: paginatedOfferCategory,           //offered product list 
+            OfferCategoryTotalPage,      //total pages for category offerlist
+            categoryPage,                //curret page in the category offerlist
+            limit
         })
     } catch (error) {
         console.error('something went wrong',error)

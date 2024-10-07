@@ -120,9 +120,47 @@
     </div>
 
 </div>
+
+<!-- pagination control -->
+
+<nav aria-label="Page navigation example">
+    <ul class="pagination mt-2 justify-content-end">
+        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+            <a class="page-link" href="?page=<%= currentPage - 1 %>&limit=<%= limit %>" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+                <span class="sr-only">Previous</span>
+            </a>
+        </li>
+        <% for (let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                <a class="page-link" href="?page=<%= i %>&limit=<%= limit %>"><%= i %></a>
+            </li>
+        <% } %>
+    
+      <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+        <a class="page-link" href="?page=<%= currentPage + 1 %>&limit=<%= limit %>" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+            <span class="sr-only">Next</span>
+        </a>
+    </li>
+    </ul>
+  </nav>
+
 </main>
 
 <script>
+
+   //search 
+   document.getElementById('searchCoupon').addEventListener('keypress',(event)=>{
+            if(event.key === 'Enter'){
+                event.preventDefault()
+                const searchQuery = event.target.value.trim()
+                if(searchQuery){
+                    window.location.href = `/admin/couponManagment?search=${encodeURIComponent(searchQuery)}`
+                }
+            }
+        })
+
    function updateMinDateTime() {
             const now = new Date();
             const year = now.getFullYear();
