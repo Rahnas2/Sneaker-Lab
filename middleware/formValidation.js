@@ -16,7 +16,7 @@ exports.signupValidation = [
     body('phone')
     .trim()
     .isLength({min:10,max:10}).withMessage('please enter valid mobile number')
-    .isInt({min:0,max:10}).withMessage('please enter valid mobile number'),
+    .isInt({min:0}).withMessage('please enter valid mobile number'),
     body('password').trim().isLength({min:8}).withMessage('password must have atleast eight charcter'),
     body('cfpassword').trim().isLength({min:8}).withMessage('password is not match')
 ]
