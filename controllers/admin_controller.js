@@ -49,44 +49,7 @@ exports.adminLoginPost = async(req,res)=>{
       
    }
  
-}
-
-// exports.dashBoard = async (req,res)=>{
-//    try {
-      
-   
-//    res.render('Admin/dashBoard')
-
-//    } catch (error) {
-//       console.error('something went wrong',error)
-//    }
-// }
-
-// exports.downloadSalesReport = async (req,res) =>{
-//    try {
-//       const {format, filterType, startDate, endDate} = req.query
-//       console.log('req.query',req.query)
-//       console.log('filter in admin side',filterType)
-      
-//       const {orders, totalSales, totalDiscount, totalOrders, startedDate, endingDate} = await salesReportService.getSalesData(filterType, startDate, endDate)
-      
-
-//       if(format === 'pdf'){
-
-//          salesReportService.generateSalesReportPDF(res, orders, totalSales, totalDiscount, totalOrders, startedDate, endingDate ); 
-
-//       }else if(format === 'excel'){
-
-//          salesReportService.generateSalesReportEXCEL(res, orders, totalSales, totalDiscount, totalOrders,  endDate)
-
-//       }
-
-//    } catch (error) {
-//       console.error('something went wrong',error)
-//    }
-// }
-
-//user mangment start 
+} 
 
 exports.userManagment = async(req,res)=>{
    try {
