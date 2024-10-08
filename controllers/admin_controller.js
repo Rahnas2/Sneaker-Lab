@@ -73,7 +73,7 @@ exports.userManagment = async(req,res)=>{
          let totalUsers = await usersCollection.countDocuments({isAdmin:false}) //total users count
          const totalPages = Math.ceil(totalUsers/limit)
 
-         res.render('Admin/UserManagment',{
+         res.render('Admin/userManagment',{
             usersList,
             currentPage:page,
             totalPages,
@@ -312,7 +312,7 @@ exports.productManagment = async(req,res)=>{
    .populate('variants')
    .skip(skip)
    .limit(limit)
-   res.render('Admin/productManagment',{
+   res.render('Admin/ProductManagment',{
       productList,
       currentPage:page,
       limit,

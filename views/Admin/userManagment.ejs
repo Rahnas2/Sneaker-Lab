@@ -33,7 +33,7 @@
                      <td><%=user.email %></td>
                      <td><%=user.phone || 'null' %></td>
                      <td class="text-end">
-                       <button class="btn <%=user.isBlock? 'btn-primary': 'btn-warning'%>"  onclick='toggleButton("<%=user._id %>", <%=user.isBlock%>)'>
+                       <button class="btn <%=user.isBlock? 'btn-primary': 'btn-warning'%>"  onclick='toggleButton("<%=user._id %>", "<%=user.isBlock%>")'>
                         <%=user.isBlock?'unblock':'block' %>
                     </button> 
                     </td>
