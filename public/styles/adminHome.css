@@ -56,10 +56,10 @@ select:focus{
 
 @media (max-width: 991.98px) {
     .sidebar {
-        /* width: 100%;
+        width: 100%;
         position: relative;
-        margin-bottom: 20px; */
-        display: none;
+        margin-bottom: 20px;
+        /* display: none; */
     }
     .navbar-toggler{
         display: block;

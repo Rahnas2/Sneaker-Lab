@@ -51,17 +51,17 @@
 
     <section class="blog-hero mb-5">
         <div class="d-flex">
-           <div class="col-lg-2 ani"><img src="/images/model 1.png" class="img-fluid " alt=""></div>
-           <div class="col-lg-2 ani"><img src="/images/model 2.png" alt=""></div>
-           <div class="col-12 col-lg-3 d-flex justify-content-center align-items-center">
+           <div class="d-none d-lg-block col-lg-2 ani"><img src="/images/model 1.png" class="img-fluid " alt=""></div>
+           <div class="d-none d-lg-block col-lg-2 ani"><img src="/images/model 2.png" alt=""></div>
+           <div class="col-lg-3 d-flex justify-content-center align-items-center">
                <div class="text-center">
                 <h2 class="font-weight-bold mb-4" style="letter-spacing: 2px;">SNEAKER LAB</h2>
                 <h5 class="font-weight-bold mb-5">Grap Your Shoes Now</h5>
                 <a href="/shop" class="primary-btn border-0 mt-3">Shop Now <i class="fa-solid fa-arrow-right"></i></a>
             </div>
            </div>
-           <div class="col-lg-2 ani"> <img class="" src="/images/model 3.png" alt=""></div>
-           <div class="col-lg-2 ani"><img src="/images/model_4_sm.png" alt=""></div>
+           <div class="d-none d-lg-block col-lg-2 ani"> <img class="" src="/images/model 3.png" alt=""></div>
+           <div class="d-none d-lg-block col-lg-2 ani"><img src="/images/model_4_sm.png" alt=""></div>
        </div>
     </section>
 
@@ -86,15 +86,10 @@
             <div class="row product__filter">
                 <% newArrivals.forEach(newArrival => { %>
                     <a href="/viewProduct/<%= newArrival._id %>">
-                    <div class="col-lg-3 col-md-6 col-sm-6 col-md-6 col-sm-6 mix new-arrivals">
+                    <div class="col-lg-3 col-md-6 col-sm-6 mix new-arrivals">
                         <div class="product__item">
-                            <div class="product__item__pic set-bg" >
-                                <!-- <span class="label">New</span>
-                                <ul class="product__hover">
-                                    <li><a href="#"><img src="img/icon/heart.png" alt=""></a></li>
-                                    <li><a href="#"><img src="img/icon/compare.png" alt=""> <span>Compare</span></a></li>
-                                    <li><a href="#"><img src="img/icon/search.png" alt=""></a></li>
-                                </ul> -->
+                            <div class="" >
+                                
                                 <img src="<%= newArrival.variants[0].images[0] %>" alt="">
                             </div>
                             <div class="product__item__text">
