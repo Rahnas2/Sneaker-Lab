@@ -27,7 +27,7 @@ app.use(express.urlencoded({extended: true}))
 
 //session
 app.use(session({
-    secret: 'secret',
+    secret: process.env.Session_Secret,
     resave: false,
     saveUninitialized: true
 }))
@@ -42,5 +42,14 @@ app.use(nocache())
 app.use('/',userroute)
 app.use('/admin',adminroute)
 
+app.get('*', (req, res) =>{
+    res.render('404')
+})
+
+//Error handling middleware
+app.use((err, req, res, next) =>{
+    console.error(err.stack);
+    res.status(500).send('error')
+})
 
 app.listen(PORT,()=> console.log(`server is running on ${PORT}`))

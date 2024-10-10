@@ -518,14 +518,6 @@ exports.postUpdatedProduct = async (req,res) =>{
          return res.json({success:false,message:'sorry, the product does not exist!'})
       }
       
-      // const duplicateProduct = await productCollection.findOne({
-      //    productName:productName,
-      //    _id:{$ne:productId}
-      // })
-
-      // if(duplicateProduct){
-      //    return res.json({success:false,message:'sorry, the product name is exist'})
-      // }
 
       //update product details
       existingProduct.productName = productName

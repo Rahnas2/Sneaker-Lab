@@ -71,7 +71,7 @@ exports.home = async (req, res) => {
             const avg = rating / product.review.length
             averageRating[product._id] = Math.ceil(avg)
         })
-        console.log('avearge rating', averageRating)
+        
 
 
         return res.render("User/index", {
@@ -82,7 +82,7 @@ exports.home = async (req, res) => {
             averageRating
         })
     } catch (error) {
-        console.error('something went wrong', error)
+        return res.status(500).json('someting went wrong',error)
     }
 }
 
@@ -111,7 +111,6 @@ exports.postlogin = async (req, res) => {
     }
     userCheck = await usersCollection.findOne({ email: email, isBlock: false })
     if (!userCheck) {
-        console.log('invalid user');
         return res.json({ error: 'invalid user' });
     }
 
@@ -122,11 +121,9 @@ exports.postlogin = async (req, res) => {
         const passCheck = await bcrypt.compare(password, userCheck.password)
         if (passCheck) {
             req.session.user = userCheck._id
-            console.log('sucess')
             return res.json({ success: true })
 
         } else {
-            console.log('wrong password')
             return res.json({ error: 'wrong password' })
 
         }
@@ -159,10 +156,8 @@ exports.postsignup = async (req, res) => {
     //validation
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-        console.log('iam here')
+        
         const validationErrors = errors.array().reduce((acc, error) => {
-            console.log('path:', error.path)
-            console.log('message:', error.msg)
             acc[error.path] = error.msg
             return acc
         }, {})
@@ -191,7 +186,6 @@ exports.postsignup = async (req, res) => {
 exports.getsignupVerification = async (req, res) => {
     const userData = req.session.tempUser
     if (!userData) {
-        console.log('iam going to signup page')
         return res.redirect('/signup')
 
     }
@@ -214,7 +208,6 @@ exports.signupVerification = async (req, res) => {
     if (otpCheck && new Date() < otpCheck.expiresAt) {
         const userData = req.session.tempUser
         if (!userData) {
-            console.log('missing session data')
             res.render('User/otpVerify', {
                 error: 'session expired please try again',
                 email: email
@@ -282,7 +275,7 @@ exports.resendOtp = async (req, res) => {
     try {
         const userData = req.session.tempUser
         const otp = auth_controller.generateOtp();
-        console.log(otp)
+
         await auth_controller.sendOtp(userData.email, otp); // Send a new OTP
 
         const otpExpiryTime = 30 * 1000
@@ -292,7 +285,7 @@ exports.resendOtp = async (req, res) => {
             error: 'A new OTP has been sent to your email.'
         });
     } catch (error) {
-        console.error('someting went wrong', error)
+        return res.status(500).json('someting went wrong',error)
     }
 
 };
@@ -308,14 +301,14 @@ exports.emailVerification = (req, res) => {
     try {
         res.render('User/emailVerification')
     } catch (error) {
-        conosle.error('something went wrong')
+        return res.status(500).json('something went wrong',error)
     }
 }
 
 exports.postEmailVerification = async (req, res) => {
     try {
         const { email } = req.body
-        console.log('emal', email)
+
         const user = await usersCollection.findOne({ email: email })
         if (user) {
             if (user.googleId) {
@@ -323,7 +316,7 @@ exports.postEmailVerification = async (req, res) => {
             }
 
             const otp = auth_controller.generateOtp()
-            console.log(otp)
+
 
             await auth_controller.sendOtp(email, otp)
             const otpExpiryTime = 30 * 1000
@@ -335,7 +328,7 @@ exports.postEmailVerification = async (req, res) => {
         return res.json({ inValidEmail: true, message: 'invalid email' })
 
     } catch (error) {
-        console.error('something went wrong', error)
+        return res.status(500).json('sometihng went wrong',error)
     }
 }
 
@@ -378,7 +371,6 @@ exports.resendOtpFrg = async (req, res) => {
     try {
 
         const otp = auth_controller.generateOtp()
-        console.log(otp)
 
         await auth_controller.sendOtp(email, otp)
 
@@ -409,7 +401,7 @@ exports.PostchangePassword = async (req, res) => {
         return res.json({ success: true })
 
     } catch (error) {
-        console.error('something went wrong', error)
+        return res.status(500).json('sometihng went wrong',error)
     }
 }
 
@@ -685,7 +677,6 @@ exports.addToCart = async (req, res) => {
             return res.json({ success: true, message: 'Added to cart' })
         }
     } catch (error) {
-        console.error('server error', error)
         return res.status(500).json({ success: false, message: 'sever error' })
     }
 }
@@ -744,6 +735,7 @@ exports.deleteCartItem = async (req, res) => {
 
         return res.json({ success: true, updatedCart: updatedCart })
     } catch (error) {
+        return res.status(500).json('something went wrong',error)
         console.log('something went wrong', error)
     }
 }
@@ -792,7 +784,6 @@ exports.updatedCartQuantity = async (req, res) => {
                 path: 'variants'
             }
         })
-        console.log('updated cart', updatedCart)
 
         return res.json({ success: true, updatedCart: updatedCart })
 
@@ -837,18 +828,16 @@ exports.getProfile = async (req, res) => {
 
 exports.editProfile = async (req, res) => {
     try {
-        console.log('hekki')
         //validation
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
-            console.log('validation error', errors)
             const validationErrors = errors.array().reduce((acc, error) => {
                 acc[error.path] = error.msg;
                 return acc;
             }, {})
             return res.json({ validationError: true, validationErrors })
         }
-        userId = req.session.user
+        const userId = req.session.user
         const { username, phone } = req.body
         const user = await usersCollection.findById(userId)
 
@@ -865,7 +854,7 @@ exports.editProfile = async (req, res) => {
         }
 
     } catch (error) {
-        console.error('something went wrong', error)
+        return res.status(500).json('something went wrong',error)
     }
 }
 
@@ -889,7 +878,7 @@ exports.setNewPassword = async (req, res) => {
 exports.addAddress = async (req, res) => {
     try {
         req.session.source = req.query.profile
-        console.log('source details', req.session.source)
+
         user = req.session.user
         currAddress = null
         return res.render('User/addAddress', {
@@ -917,7 +906,6 @@ exports.postAddress = async (req, res) => {
 
         const userId = req.session.user
 
-        console.log('defalut address', req.body.defaultAddress)
 
         const newAddress = {
             fullName: req.body.fullName,
@@ -999,7 +987,6 @@ exports.editAddressPost = async (req, res) => {
         addressId = req.params.id
         userId = req.session.user
 
-        console.log('defalut address', req.body.defaultAddress)
 
         const address = await addressCollection.findOne({ userId: userId })
         if (address) {
@@ -1085,10 +1072,8 @@ exports.orderDetail = async (req, res) => {
 
 exports.downloadInvoice = (req, res) => {
     try {
-        console.log('invoice')
-        console.log('req.query', req.query.orderId)
-        // const { orderId } = req.query
-        console.log('orderId', orderId)
+        const { orderId } = req.query
+
         invoiceService.invoiceDownload(res, orderId)
     } catch (error) {
         console.error('something went wrong', error)
@@ -1099,7 +1084,6 @@ exports.downloadInvoice = (req, res) => {
 exports.cancelProduct = async (req, res) => {
     try {
         const { orderId, itemId } = req.body
-        console.log('req.body', req.body)
 
         const orders = await orderCollection.findOne({ _id: orderId })
 
@@ -1128,7 +1112,7 @@ exports.cancelProduct = async (req, res) => {
         await variant.save();
 
         const { status } = orders.items[itemIndex]
-        console.log('status', status)
+
 
         if (status === 'order placed' || status === 'pending') {
 
@@ -1144,7 +1128,6 @@ exports.cancelProduct = async (req, res) => {
         // handinling wallet refunds for online or wallet payment methods
         if (orders.paymentMethod === 'RAZORPAY' || orders.paymentMethod === 'WALLET') {
             const cancelItem = orders.items[itemIndex]
-            console.log('cancel product', cancelItem)
             const amount = cancelItem.itemTotal
 
             const wallet = await walletCollection.findOne({ userId: req.session.user })
@@ -1184,7 +1167,6 @@ exports.returnProduct = async (req, res) => {
     try {
 
         const { orderId, itemId, returnReason } = req.body
-        console.log('req.body', req.body)
 
         const orders = await orderCollection.findOne({ _id: orderId })
 
@@ -1293,7 +1275,6 @@ exports.getCheckOut = async (req, res) => {
         const appliedCoupon = req.session.coupon ? await couponCollection.findOne({ code: req.session.coupon.code }) : false;
 
         const couponDiscount = req.session.coupon ? req.session.coupon.couponDiscount : 0
-        console.log('checkout coupon discount', couponDiscount)
 
         res.render('User/checkout', {
             user,
@@ -1435,8 +1416,6 @@ exports.placeOrder = async (req, res) => {
             // paymentStatus:'pending', 
             totalAmount
         }
-        console.log('place order coupon check begining', req.session.coupon)
-        console.log('added coupon discount to the order detail object', orderDetails.couponDiscount)
 
         if (req.session.coupon) {
             //delete the coupon session
@@ -1468,7 +1447,6 @@ exports.placeOrder = async (req, res) => {
             }
 
             const razorpayOrder = await razorpayInstance.orders.create(options)
-            console.log('razorpay order', razorpayOrder)
 
             return res.json({
                 success: true,
@@ -1514,13 +1492,11 @@ async function processOrderPostPayment(order, orderItems) {
 }
 
 exports.verifyPayment = async (req, res) => {
-    console.log('here')
     try {
         const { paymentId, orderId, signature, failed, isRetry } = req.body
 
         const orderDetails = req.session.tempOrderDetails
         if (!orderDetails) {
-            console.log('order details not found in the session')
             return res.json({ success: false, message: 'order details not found in the session' })
         }
 
@@ -1586,10 +1562,8 @@ exports.verifyPayment = async (req, res) => {
 
         if (paymentSuccess) {
 
-            console.log('order placed successfully')
             return res.json({ success: true, message: 'order placed successfully', orderId: newOrderId })
         } else {
-            console.log('payment faild order createed with pending status')
             return res.json({ success: true, messagae: 'payment faild , order created with pending status', orderId: newOrderId })
         }
 
@@ -1605,11 +1579,10 @@ exports.payAfter = async (req, res) => {
         const { orderId, paymentMethod } = req.body
         const userId = req.session.user
 
-        console.log('req.body', req.body)
 
         //order 
         const order = await orderCollection.findOne({ _id: orderId })
-        console.log('order', order)
+
 
         //payment method
         if (!paymentMethod) {
@@ -1685,7 +1658,7 @@ exports.payAfter = async (req, res) => {
 exports.submitReview = async (req, res) => {
     try {
         const { rating, review, product, item } = req.body
-        console.log('req.body', req.body)
+        
         const userId = req.session.user
 
         //add review to the ordered product

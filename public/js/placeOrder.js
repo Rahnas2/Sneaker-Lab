@@ -40,12 +40,11 @@ function placeOrder(url){
                     }
                     const rzp = new Razorpay(options)
                     rzp.on('payment.failed', function(response){
-                        console.log('faild response',response)
                         handlePaymentFailure(response);
                     })
                     rzp.open()
                 }else if(result.error){
-                    console.log('error')
+                    
                     Swal.fire({
                     icon: 'error',
                     text: result.message,
@@ -53,12 +52,12 @@ function placeOrder(url){
                 }) 
                 }
                 else{
-                    console.log('cash on delivery')
+                    
                     handleSuccess(result.message)
                 }
       
             }else if(result.error){
-                console.log('error')
+                
                 Swal.fire({
                 icon: 'error',
                 text: result.message,
