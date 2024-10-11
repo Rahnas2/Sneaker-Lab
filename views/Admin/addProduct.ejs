@@ -542,8 +542,9 @@
                             title: result.message,
                             showConfirmButton: false,
                             timer: 2000
-                          });
-                          window.location.href = '/admin/productManagment';  
+                          }).then(() =>{
+                            window.location.href = '/admin/productManagment'; 
+                          }) 
                     } 
                     else {
                         Swal.fire({

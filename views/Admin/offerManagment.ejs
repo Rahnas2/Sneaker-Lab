@@ -1,5 +1,11 @@
 <%- include('partials/header') %>  
 
+<style>
+    select[readonly]:read-only {
+    pointer-events: none;
+}
+</style>
+
 <div class="container-fluid pt-4">
     <div class="mb-3">Offer Managment</div>
      <!-- Navigation for offer types -->
@@ -21,7 +27,7 @@
         <div id="productOffers" class="offer-section">
             <h4>Product Offers</h4>
             <div class="d-flex justify-content-end">
-                <button class="mb-3 primary-btn border-0" data-bs-toggle="modal" data-bs-target="#addProductOfferModal">
+                <button class="mb-3 primary-btn border-0" data-bs-toggle="modal" data-bs-target="#addProductOfferModal" onclick="resetProductModal()">
                     <a href="#" class="text-decoration-none text-white ">+ Add Offer</a>   
                 </button>
             </div>
@@ -59,7 +65,7 @@
                           <td class="<%= offerProduct.status? 'text-success': 'text-danger' %>"><%= offerProduct.status? 'active': 'expired' %></td>
                           <td class="text-end">
                             <button class="border-0" onclick="deleteProductOffer('/admin/deleteProductOffer/<%=offerProduct.productId %>','<%=offerProduct.productId %>')"><i class="fa-solid fa-trash text-danger fs-4"></i></button> 
-                            <!-- <button class="border-0"><i class="fas fa-edit text-primary fs-4"></i></button> -->
+                            <button class="border-0" data-bs-toggle="modal" data-bs-target="#addProductOfferModal"  onclick="editProductOffer('<%= offerProduct.productId %>', '<%= offerProduct.discountPercentage %>', '<%= offerProduct.expirAt %>' )"><i class="fas fa-edit text-primary fs-4"></i></button>
                          </td>
                           
                      </tr>
@@ -108,7 +114,7 @@
                     <div id="productOffer-error" class="alert alert-danger d-none"></div>
 
                     <label for="productId"  class="mb-1">Select Product</label>
-                    <select name="productId" class="form-select" id="">
+                    <select name="productId" class="form-select" >
                         <option value="" >select product</option>
                         <% products.forEach(product => { %>
                          <option value="<%= product._id %>" class=" mb-1"><%= product.productName %></option>
@@ -117,7 +123,7 @@
                     <p id="productId-notvalid" class="text-danger fs-14 d-none" ></p>
 
                     <label for="productDiscountPercentage" class="mb-1">Discount Percentage</label>
-                    <input id="productDiscountPercentage" class="form-control mb-1" name="productDiscountPercentage" type="text">
+                    <input id="productDiscountPercentage" value="" class="form-control mb-1" name="productDiscountPercentage" type="text">
                     <p id="productDiscountPercentage-notvalid" class="text-danger fs-14 d-none" ></p>
 
                     <label for="ProductOffExpiry" class="mb-1">Expires at</label>
@@ -139,7 +145,7 @@
         <div id="categoryOffers" class="offer-section" style="display: none;">
             <h4>Category Offers</h4>
             <div class="d-flex justify-content-end">
-                <button class="mb-3 primary-btn border-0" data-bs-toggle="modal" data-bs-target="#addCategoryOfferModal">
+                <button class="mb-3 primary-btn border-0" data-bs-toggle="modal" data-bs-target="#addCategoryOfferModal" onclick="resetCategoryModal()">
                     <a href="#" class="text-decoration-none text-white ">+ Add Offer</a>   
                 </button>
             </div>
@@ -175,7 +181,7 @@
                           <td class="<%= offerCategory.status? 'text-success': 'text-danger' %>"><%= offerCategory.status? 'active': 'expired' %></td>
                           <td class="text-end">
                             <button class="border-0" onclick="deleteCategoryOffer('/admin/deleteCategoryOffer/<%=offerCategory.categoryId %>','<%=offerCategory.categoryId %>')"><i class="fa-solid fa-trash text-danger fs-4"></i></button> 
-                            <!-- <button class="border-0"><i class="fas fa-edit text-primary fs-4"></i></button> -->
+                            <button class="border-0" data-bs-toggle="modal" data-bs-target="#addCategoryOfferModal"  onclick="editCategoryOffer('<%= offerCategory.categoryId %>', '<%= offerCategory.discountPercentage %>', '<%= offerCategory.expirAt %>' )" ><i class="fas fa-edit text-primary fs-4"></i></button>
                          </td>
                           
                      </tr>

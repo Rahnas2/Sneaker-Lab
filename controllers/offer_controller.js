@@ -12,7 +12,7 @@ exports.loadOfferManagment = async (req,res)=>{
 
         const searchQuery = req.query.search || ''
         const page = parseInt(req.query.page) || 1
-        const limit = parseInt(req.query.limit) || 2
+        const limit = parseInt(req.query.limit) || 10
         const skip = (page-1)*limit
 
         const products = await productCollection.find({deleted:false}).populate('variants')
@@ -55,7 +55,7 @@ exports.loadOfferManagment = async (req,res)=>{
             }
         });
 
-        const paginatedOfferCategory = offerProductsList.slice(skip, skip + limit)
+        const paginatedOfferCategory = offerCategoryList.slice(skip, skip + limit)
         const totalOfferedCategory = offerCategoryList.length 
         const OfferCategoryTotalPage = Math.ceil(totalOfferedCategory/limit)
 
@@ -103,10 +103,6 @@ exports.addProductOffer = async (req,res)=>{
         if(new Date(expirAt) <= currTime){
             return res.json({success:false,message:'sorry,expiry time should be in the future!'})
         }
-
-        // if(product.offer.discountPercentage){
-        //     return res.json({success:false,message:'soryy, a offer is there in this product'})
-        // }
 
         product.offer = {offerType, discountPercentage, expirAt}
         product.save()
