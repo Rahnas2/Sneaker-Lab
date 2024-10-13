@@ -4,7 +4,7 @@ const userAuth = (req,res,next)=>{
         console.log('user Authenticated')
         next()
     }else{
-       return res.json({userNotAuthenticated:true,message:'you cannot access this page please login. <a href="/login" class="fw-bold">Login here</a>'})  
+       return res.json({userNotAuthenticated:true,message:'you cannot access this page please login. <a href="/login" class="fw-bold text-primary">Login here</a>'})  
     }     
 }
 

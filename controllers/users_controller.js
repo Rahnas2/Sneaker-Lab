@@ -58,7 +58,7 @@ exports.home = async (req, res) => {
 
 
         //new arrivels 
-        const newArrivals = await productCollection.find().populate('variants')
+        const newArrivals = await productCollection.find({deleted:false}).populate('variants')
             .sort({ createdAt: -1 }).limit(4)
 
         //average rating
@@ -557,11 +557,21 @@ exports.getShop = async (req, res) => {
 //=========view product start=========// 
 exports.getViewProduct = async (req, res) => {
     try {
-        const productId = req.params.id
+        const productId = req.params.id   //product id
 
-        const userId = req.session.user
+        const userId = req.session.user   //users id
 
-        const product = await productCollection.findOne({ _id: productId }).populate('variants')
+        const product = await productCollection.findOne({ _id: productId }).populate('variants')   //product details
+        
+        const categoryId = product.category
+        const brandId = product.brand
+
+        const category = await categoryCollection.findById(categoryId)
+        const brand = await brandCollection.findById(brandId)
+
+        const jsObjProduct = product.toObject()   //convert mongoose object to plain js object to edit to chnage the category and  brand id to their name
+        jsObjProduct.category = category.categoryName
+        jsObjProduct.brand = brand.brandName
 
         const cart = await cartCollection.findOne({ userId: userId, 'items.product': productId })
         const productInCart = cart ? true : false
@@ -575,7 +585,7 @@ exports.getViewProduct = async (req, res) => {
         res.render('User/viewProduct', {
             user: req.session.user,
             page: 'shope',
-            product,
+            product: jsObjProduct,
             productInCart,
             review,
             avgRating

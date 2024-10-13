@@ -93,22 +93,14 @@ select:focus{
     position: relative;
     width: 100%;
 }
-#myInput {
-   
-    width: 100%;
-    padding-left: 1.875rem;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    
-}
 .searchbar {
    
     width: 100%;
+    padding: 1rem;
     padding-left: 1.875rem;
     font-size: 14px;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 2px;
     
 }
 
@@ -134,7 +126,7 @@ select:focus{
     border: none; 
     padding: 10px 20px; /* Padding for more space around the text */
   
-    transition: background-color 0.3s, color 0.3s; /* Smooth transition for hover effects */
+    transition: background-color 1s, color 1s; /* Smooth transition for hover effects */
 }
 
 /* Style active tab */
@@ -154,4 +146,13 @@ select:focus{
 .nav-item:hover {
 
     /* color: #007bff; Change color on hover */
+}
+
+.transform{
+    transition: 500ms linear, background-color 500ms
+}
+
+.transform:hover{
+    transform:scale(1.1);
+    background-color: #000000 !important;
 }

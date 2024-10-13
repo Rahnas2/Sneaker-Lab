@@ -108,7 +108,24 @@
     </section>
     <!-- Shopping Cart Section End -->
     <% } else { %> 
-        <div class="container">your cart is empty</div>
+         <!-- Empty Cart -->
+    <div class="container mt-5 mb-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h4 class="card-title">Your Cart is Empty</h4>
+                        <p class="card-text">It looks like you haven't added any items to your Cart yet.</p>
+                        <p class="card-text">Start adding items to your Cart</p>
+                        <a href="/shop" class="primary-btn bg-danger">Browse Products</a>
+                    </div>
+                    <div class="card-footer text-muted">
+                        You can always come back here to view your added items.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <% } %>
 
     <script>

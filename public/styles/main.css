@@ -61,6 +61,10 @@
     text-transform: uppercase;
   }
 
+  .pointer{
+    cursor: pointer;
+  }
+
   .nav-tabs .nav-link.custom-tab {
     color: #555; /* Default text color */
     font-weight: 600; /* Make text bold */
