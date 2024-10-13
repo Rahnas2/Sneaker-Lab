@@ -847,23 +847,40 @@ exports.editProfile = async (req, res) => {
             }, {})
             return res.json({ validationError: true, validationErrors })
         }
+        
         const userId = req.session.user
         const { username, phone } = req.body
         const user = await usersCollection.findById(userId)
 
-        if (user.username === username && user.phone === phone) {
+        if(user.googleId){
+            if(user.username === username && !phone){
+                return res.json({noChange: true, message: 'sorry you didnt make any changes'})
+            }
+        }
+
+        if (user.username === username && user.phone?.toString() === phone) {
             return res.json({ noChange: true, message: 'sorry you didit make any changes' })
         }
-        else {
-            user.username = username
-            user.phone = phone
-
-            await user.save()
-
-            return res.json({ success: true, message: 'successfully updated your profile' })
+        
+        if(user.username !== username){
+            await usersCollection.updateOne(
+                {_id:userId},
+                {$set:{username:username}}
+            )
         }
 
+        if(phone && phone.length === 10 && user.phone?.toString() !== phone){
+            await usersCollection.updateOne(
+                {_id:userId},
+                {$set:{phone:Number(phone)}}
+            )
+        }
+
+        return res.json({ success: true, message: 'successfully updated your profile' })
+        
+
     } catch (error) {
+        console.error('error',error)
         return res.status(500).json('something went wrong',error)
     }
 }

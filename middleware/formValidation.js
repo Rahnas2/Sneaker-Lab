@@ -8,16 +8,19 @@ exports.formValidation = [
 exports.signupValidation = [
     body('username')
     .trim()
-    .isLength({min:5}).withMessage('username must be aleast 5 characters')
-    .isAlphanumeric().withMessage('Username must be alphanumeric'),
+    .isLength({min:5}).withMessage('username must be aleast 5 characters'),
+
     body('email')
     .trim()
     .isEmail().withMessage('email is required'),
+
     body('phone')
     .trim()
     .isLength({min:10,max:10}).withMessage('please enter valid mobile number')
     .isInt({min:0}).withMessage('please enter valid mobile number'),
+
     body('password').trim().isLength({min:8}).withMessage('password must have atleast eight charcter'),
+    
     body('cfpassword').trim().isLength({min:8}).withMessage('password is not match')
 ]
 

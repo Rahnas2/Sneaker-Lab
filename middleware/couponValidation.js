@@ -18,10 +18,6 @@ const couponValidation = [
     .trim()
     .isInt({min:1}).withMessage('invalid'),
 
-    // body('startDate')
-    // .trim()
-    // .notEmpty().withMessage('please select the starting date'),
-
     body('endDate')
     .trim()
     .notEmpty().withMessage('plese select the ending date')

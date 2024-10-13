@@ -1,19 +1,35 @@
-const {body} = require('express-validator')
+const { body } = require('express-validator');
+const usersCollection = require('../models/usersModel');
 
-const editProfileValidation = [
+const editProfileValidation = async (req, res, next) => {
+  const user = await usersCollection.findOne({ _id: req.session.user });
+
+  const validations = [
     body('username')
-    .trim()
-    .isLength({min:5}).withMessage('username must be aleast 5 characters')
-    .isAlphanumeric().withMessage('Username must be alphanumeric'),
+      .trim()
+      .isLength({ min: 5 }).withMessage('Username must be at least 5 characters'),
 
     body('email')
-    .trim()
-    .isEmail().withMessage('email is required'),
+      .trim()
+      .isEmail().withMessage('Email is required and must be valid'),
 
-    body('phone')
-    .trim()
-    .isLength({min:10,max:10}).withMessage('please enter valid mobile number')
-    .isNumeric().withMessage('please enter valid mobile number')
-]
+    body('phone')  
+      .custom((value,{req}) =>{
+        if(user.googleId && value){
+          if (!/^\d{10}$/.test(value)) {
+            throw new Error('Please enter a valid 10-digit mobile number');
+          }
+        }else if(!user.googleId){
+          if (!/^\d{10}$/.test(value)) {
+            throw new Error('Please enter a valid 10-digit mobile number');
+          }
+        }
+        return true
+      })
+  ];
 
-module.exports = editProfileValidation
+  await Promise.all(validations.map(validation => validation.run(req)));
+  next();
+};
+
+module.exports = editProfileValidation;
