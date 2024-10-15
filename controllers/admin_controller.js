@@ -158,7 +158,7 @@ exports.addCategory = async(req,res)=>{
 
       const { categoryName, categoryDescription } = req.body
 
-      const categoryExist = await categoryCollection.findOne({categoryName})
+      const categoryExist = await categoryCollection.findOne({categoryName: { $regex: new RegExp(`^${categoryName}$`, 'i')}})
 
       if(categoryExist){
          return res.json({success:false,error:'category alredy exsist'})
@@ -239,7 +239,7 @@ exports.addBrand = async(req,res)=>{
 
       const { brandName , brandDescription } = req.body
 
-      const brandExist = await brandCollection.findOne({brandName})
+      const brandExist = await brandCollection.findOne({brandName: { $regex: new RegExp(`^${brandName}$`, 'i')}})
      
       if(brandExist){
          return res.json({success:false,error:'brand already exist'})
@@ -338,24 +338,16 @@ exports.getaddProduct = async(req,res)=>{
 exports.postaddproduct = async(req,res)=>{
    try {
       const {productName, category, brand, description} = req.body
-
-     console.log('req.body',req.body)
       
       const variants = req.body.variants
-      console.log('varaints',variants)
-
 
       //  checking validation error
         const errors = validationResult(req)
         if(!errors.isEmpty()){
-         console.log('iam here')
          const validationErrors = errors.array().reduce((acc,error)=>{
-             console.log('path:',error.path)
-             console.log('message:',error.msg)
              acc[error.path]=error.msg
              return acc
          },{})
-         console.log(validationErrors)
          return res.json({validationError:true,validationErrors})
      }
 
@@ -497,10 +489,7 @@ exports.postUpdatedProduct = async (req,res) =>{
        //  checking validation error
        const errors = validationResult(req)
        if(!errors.isEmpty()){
-        console.log('iam here')
         const validationErrors = errors.array().reduce((acc,error)=>{
-            console.log('path:',error.path)
-            console.log('message:',error.msg)
             acc[error.path]=error.msg
             return acc
         },{})
@@ -518,7 +507,6 @@ exports.postUpdatedProduct = async (req,res) =>{
          return res.json({success:false,message:'sorry, the product does not exist!'})
       }
       
-
       //update product details
       existingProduct.productName = productName
       existingProduct.category = category
@@ -552,11 +540,14 @@ exports.postUpdatedProduct = async (req,res) =>{
       for (let i = 0; i < variants.length; i++) {
          const variant = variants[i]; // Get the current variant
         
+         if(!variant.sizes){
+            return res.json({success:false,message:'plese add atleast one size and stock to the varaints'})
+         }
+
          let existingVariant;
      
-
-             // Find existing variant by ID and product association
-             existingVariant = await variantCollection.findOne({ color: variant.color, product: productId });
+          // Find existing variant by ID and product association
+          existingVariant = await variantCollection.findOne({ color: variant.color, product: productId });
 
          if(existingVariant){
             //update existing variant

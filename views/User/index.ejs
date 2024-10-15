@@ -47,7 +47,8 @@
                                 <h6><%= newArrival.productName %></h6>
                                 
                                 <a href=""></a>
-                                    <% if ((newArrival.variants[0].sizes[0].stock) === 0) { %>
+                                <% console.log('helo',newArrival.variants[0]) %>
+                                    <% if ((newArrival.variants[0].sizes[0]?.stock) == 0) { %>
                                       <span class="text-warning fs-14">out of stock</span>
                                     <% } else { %> 
                                        <span id="cart-action-<%= newArrival._id %>" onclick="<%= productsInCart[newArrival._id]? `checkAccess('/cart')`:`addCart('/addToCart/${newArrival._id}')` %>">

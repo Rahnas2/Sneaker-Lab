@@ -22,8 +22,8 @@ router.get('/dashBoard',auth,dashboard_controller.dashBoard)
 
 //user managment start 
 router.get('/userManagment',auth,admin_controller.userManagment)
-router.post('/userManagment/block/:userId',admin_controller.blockUser)
-router.post('/userManagment/unblock/:userId',admin_controller.unblockUser)
+router.post('/userManagment/block/:userId',auth,admin_controller.blockUser)
+router.post('/userManagment/unblock/:userId',auth,admin_controller.unblockUser)
 //user managment end
 
 //category managment start 
@@ -42,7 +42,7 @@ router.post('/deleteBrand/:id',auth,admin_controller.softDeleteBrand)
 
 //product managment start
 router.get('/productManagment',auth,admin_controller.productManagment)
-router.get('/addProduct',admin_controller.getaddProduct)
+router.get('/addProduct',auth,admin_controller.getaddProduct)
 router.post('/addProduct',upload.any(),provalidation,admin_controller.postaddproduct)  
 router.post('/softDeleteProduct/:id',auth,admin_controller.softDeleteProduct)    
 router.get('/editProduct/:id',upload.any(),admin_controller.getEditProduct)
