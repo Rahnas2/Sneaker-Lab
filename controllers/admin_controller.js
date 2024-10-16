@@ -81,7 +81,7 @@ exports.userManagment = async(req,res)=>{
             searchQuery
          })
    } catch (error) {
-      console.error(error)
+      console.error('error',error)
    }
 }
 
@@ -90,11 +90,11 @@ exports.blockUser = async(req,res)=>{
       const user = await usersCollection.findByIdAndUpdate(req.params.userId,{isBlock:true},{new:true})
       const message = 'sucessfully block the user'
       req.session.user = undefined
-      console.log(req.session.user)
-      console.log('dslfjk;lds',req.session)
+
       return res.json({success:true, user, message})
    } catch (error) {
-      res.status(500).json({success:false , message:'error while blocking the user'})
+      console.error('error',error)
+      return res.status(500).json({success:false , message:'error while blocking the user'})
    }
 }
 
@@ -102,10 +102,11 @@ exports.unblockUser = async(req,res)=>{
    try {
       const user = await usersCollection.findByIdAndUpdate(req.params.userId,{isBlock:false},{new:true})
       const message = 'sucessfully unblock the user'
-      req.session.user = user.email
+      req.session.user = user._id
       return res.json({success:true, user, message})
    } catch (error) {
-      res.status(500).json({success:false , message:'error while blocking the user'})
+      console.error('error',error)
+      return res.status(500).json({success:false , message:'error while blocking the user'})
    }
 }
 
@@ -352,7 +353,7 @@ exports.postaddproduct = async(req,res)=>{
      }
 
      //checking the product is existed
-     const productCheck = await productCollection.findOne({productName})
+     const productCheck = await productCollection.findOne({productName: { $regex: new RegExp(`^${productName}$`, 'i')}})
      if(productCheck){
       return res.json({success:false,message:'sorry the product is already exisited!'})
      }
@@ -506,6 +507,17 @@ exports.postUpdatedProduct = async (req,res) =>{
       if(!existingProduct){
          return res.json({success:false,message:'sorry, the product does not exist!'})
       }
+
+      const productNameCheck = await productCollection.findOne({
+         productName: { $regex: new RegExp(`^${productName}$`, 'i') }, // Case-insensitive name check
+         _id: { $ne: productId } // Exclude the current product from the check
+       });
+
+       if(productNameCheck){
+         return res.json({success:false,message:'sorry the product name is already used'})
+       }
+
+
       
       //update product details
       existingProduct.productName = productName
@@ -513,7 +525,7 @@ exports.postUpdatedProduct = async (req,res) =>{
       existingProduct.brand = brand
       existingProduct.productDescription = description
 
-      const regex = /.*[\/\\]public[\/\\](.*)/;
+      const regex = /.*[\/\\]public[\/\\](.*)/;    
       const uploadedFiles = req.files ? req.files.map(file => {
           const match = file.path.match(regex);
           return match ? match[1] : null;
@@ -524,7 +536,7 @@ exports.postUpdatedProduct = async (req,res) =>{
         uploadedFiles.forEach(filePath => {
             const file = req.files.find(f => f.path.includes(filePath));
             if (file && file.fieldname) {
-                const variantIndexMatch = file.fieldname.match(/variants\[(\d+)\]\[images\]/);
+                const variantIndexMatch = file.fieldname.match(/variants\[(\d+)\]\[images\]/); 
                 if (variantIndexMatch) {
                     const variantIndex = parseInt(variantIndexMatch[1]);
                     if (!variantImagesMap.has(variantIndex)) {
@@ -588,8 +600,6 @@ exports.postUpdatedProduct = async (req,res) =>{
          //saving the updated product
          await existingProduct.save()
       }
-
-      
 
       return res.json({success:true,message:'successfully updated the product'})
    } catch (error) {

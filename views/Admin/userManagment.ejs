@@ -87,9 +87,7 @@
     }
         function toggleButton(userId,isBlock){
             confirm('are you sure')
-            
-            console.log('sucess:',userId,isBlock)  
-            const action = isBlock? 'unblock': 'block'
+            const action = isBlock === 'true'? 'unblock': 'block'
             const url = `/admin/userManagment/${action}/${userId}`
             console.log('url',url)
             fetch(url,{
