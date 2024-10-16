@@ -376,6 +376,7 @@ exports.postaddproduct = async(req,res)=>{
          const file = req.files.find(f => f.path.includes(filePath));
      
          if (file && file.fieldname) {
+            console.log(`Processing file: ${file.fieldname}, Path: ${filePath}`);
              // Extract the variant index from the field name (e.g., "variants[0][images]")
              const variantIndexMatch = file.fieldname.match(/variants\[(\d+)\]\[images\]/);
              
@@ -536,6 +537,7 @@ exports.postUpdatedProduct = async (req,res) =>{
         uploadedFiles.forEach(filePath => {
             const file = req.files.find(f => f.path.includes(filePath));
             if (file && file.fieldname) {
+               console.log(`Processing file: ${file.fieldname}, Path: ${filePath}`);
                 const variantIndexMatch = file.fieldname.match(/variants\[(\d+)\]\[images\]/); 
                 if (variantIndexMatch) {
                     const variantIndex = parseInt(variantIndexMatch[1]);
