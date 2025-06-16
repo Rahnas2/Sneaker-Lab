@@ -6,7 +6,7 @@ cron.schedule('* * * * *', async () => {
     console.log('iam working')
     try {
         const now = new Date()
-
+        console.log('now',now)
         const expiredCoupon = await couponCollection.find({endDate:{$lt:now},isActive:true})
         if (expiredCoupon.length > 0){
             await couponCollection.updateMany(

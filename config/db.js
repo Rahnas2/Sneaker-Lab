@@ -6,7 +6,7 @@ const connect_db = async()=>{
         await mongoose.connect(mongo_uri)
         console.log('Databse connected')
     } catch (error) {
-        console.log('databse not connected')
+        console.error('databse not connected ', error)
     }
 }
 
