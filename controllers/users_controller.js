@@ -608,10 +608,7 @@ exports.getCart = async (req, res) => {
 
         //cart
         const cart = await cartCollection.findOne({ userId: userId }).populate([
-            {path: 'items.product',
-            populate: {
-                path: 'variants'
-            },},
+            {path: 'items.product'},
             { path: 'items.variant' }
         ])
 
@@ -631,7 +628,7 @@ exports.getCart = async (req, res) => {
                     item.itemTotal = Math.round(originalPrice - (originalPrice * discount / 100)) * item.quantity;
                 } else {
                     // No offer, use the original price
-                    item.itemTotal = variant.variants[0].price * item.quantity;
+                    item.itemTotal = variant.price * item.quantity;
                 }
             });
             await cart.save()
