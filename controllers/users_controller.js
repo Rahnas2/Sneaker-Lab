@@ -620,7 +620,7 @@ exports.getCart = async (req, res) => {
                 // Check if the product has a valid offer
                 const product = item.product;
                 const variant = item.variant
-
+                console.log('variant in cart ', variant)
                 if (product.offer && product.offer.expirAt && new Date(product.offer.expirAt) >= new Date()) {
                     // Calculate the offer price
                     const originalPrice = variant.price;
@@ -659,10 +659,7 @@ exports.addToCart = async (req, res) => {
         const variant = req.body.variantId
 
         const cart = await cartCollection.findOne({ userId: userId }).populate({
-            path: 'items.product',
-            populate: {
-                path: 'variants'
-            }
+            path: 'items.product'
         })
         if (cart) {
             //user already have cart
@@ -672,7 +669,7 @@ exports.addToCart = async (req, res) => {
                 //product exsists in the cart
                 return res.json({ productExist: true, message: 'GO TO CART' })
             } else {
-                cart.items.push({ product, quantity, itemTotal })
+                cart.items.push({ product, variant , quantity, itemTotal })
                 await cart.save()
 
                 //apply shipping fee
