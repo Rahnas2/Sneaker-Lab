@@ -1,7 +1,8 @@
 
 const wishlistCollection = require('../models/wishlistModel')
 
-const cartCollection = require('../models/cartModel')
+const cartCollection = require('../models/cartModel');
+const HttpStatusCode = require('../utils/statsCode');
 
 exports.getWishlist = async (req,res) =>{
     try {
@@ -89,6 +90,6 @@ exports.removeWishlist = async (req,res)=>{
         return res.json({success:true,message:'successfully removed the product'})
     } catch (error) {
         console.error('something went wrong',error)
-        return res.status(500).json({ success: false, message: 'Failed to remove product' });
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Failed to remove product' });
     }
 }

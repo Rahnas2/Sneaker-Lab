@@ -11,12 +11,13 @@ const walletCollection = require('../models/walletModel')
 
 //validation
 const { validationResult } = require('express-validator')
-const provalidation = require('../middleware/productValidation')
+// const provalidation = require('../middleware/productValidation')
 
-const upload = require('../config/multerConfig')
-const path = require('path')
-const { request } = require('express')
-const { json } = require('body-parser')
+// const upload = require('../config/multerConfig')
+// const path = require('path')
+// const { request } = require('express')
+
+const HttpStatusCode = require('../utils/statsCode')
 
 exports.adminLogin = (req,res)=>{
    if(!req.session.admin){
@@ -91,10 +92,10 @@ exports.blockUser = async(req,res)=>{
       const message = 'sucessfully block the user'
       req.session.user = undefined
 
-      return res.json({success:true, user, message})
+      return res.status(HttpStatusCode.OK).json({success:true, user, message})
    } catch (error) {
       console.error('error',error)
-      return res.status(500).json({success:false , message:'error while blocking the user'})
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({success:false , message:'error while blocking the user'})
    }
 }
 
@@ -103,10 +104,10 @@ exports.unblockUser = async(req,res)=>{
       const user = await usersCollection.findByIdAndUpdate(req.params.userId,{isBlock:false},{new:true})
       const message = 'sucessfully unblock the user'
       req.session.user = user._id
-      return res.json({success:true, user, message})
+      return res.status(HttpStatusCode.OK).json({success:true, user, message})
    } catch (error) {
       console.error('error',error)
-      return res.status(500).json({success:false , message:'error while blocking the user'})
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({success:false , message:'error while blocking the user'})
    }
 }
 
@@ -154,7 +155,7 @@ exports.addCategory = async(req,res)=>{
             return acc
          },{})
          console.log('validation error',validationErrors)
-         return res.status(400).json({validationError:true,validationErrors})
+         return res.status(HttpStatusCode.CREATED).json({validationError:true,validationErrors})
       }
 
       const { categoryName, categoryDescription } = req.body
@@ -185,10 +186,10 @@ exports.softDeleteCategory = async(req,res)=>{
       const categoryId = req.params.id
       await categoryCollection.findByIdAndUpdate(categoryId,{deleted:true})
       console.log("helo",categoryId)
-      return res.json({success:true,message:'category deleted successfully'})
+      return res.status(HttpStatusCode.OK).json({success:true,message:'category deleted successfully'})
    } catch (error) {
       console.error('error during soft delete',error)
-      return res.status(500).json({success:false,message:'faild category delete'})
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({success:false,message:'faild category delete'})
    }
 }
 
@@ -235,7 +236,7 @@ exports.addBrand = async(req,res)=>{
             return acc
          },{})
          console.log('validation error',validationErrors)
-         return res.status(400).json({validationError:true,validationErrors})
+         return res.status(HttpStatusCode.BAD_REQUEST).json({validationError:true,validationErrors})
       }
 
       const { brandName , brandDescription } = req.body
@@ -243,7 +244,7 @@ exports.addBrand = async(req,res)=>{
       const brandExist = await brandCollection.findOne({brandName: { $regex: new RegExp(`^${brandName}$`, 'i')}})
      
       if(brandExist){
-         return res.json({success:false,error:'brand already exist'})
+         return res.status(HttpStatusCode.CONFLICT).json({success:false,error:'brand already exist'})
       }
 
       const newBrand = new brandCollection({
@@ -253,7 +254,7 @@ exports.addBrand = async(req,res)=>{
 
       await newBrand.save()
 
-      return res.json({success:true,message:'brand added successfull'})
+      return res.status(HttpStatusCode.CREATED).json({success:true,message:'brand added successfull'})
 
    } catch (error) {
       console.log('error',error)
@@ -266,9 +267,9 @@ exports.softDeleteBrand = async(req,res)=>{
 
       await brandCollection.findByIdAndUpdate(brandId,{deleted:true})
 
-      return res.json({success:true,message:'brand deleted successfully'})
+      return res.status(HttpStatusCode.OK).json({success:true,message:'brand deleted successfully'})
    } catch (error) {
-      return res.status(500).json({success:false,message:'faild brand delete'})
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({success:false,message:'faild brand delete'})
    }
 }
 
@@ -360,12 +361,12 @@ exports.postaddproduct = async(req,res)=>{
 
      const regex = /.*[\/\\]public[\/\\](.*)/;
      
-     const uploadedFiles =req.files?req.files.map(file =>{
+     const uploadedFiles =req.files ? req.files.map(file =>{
       const match = file.path.match(regex)
       return match ? match[1] : null 
      }).filter(path => path !== null): []
 
-     if(uploadedFiles.length < 3){
+     if(uploadedFiles.length < 4){
       return res.json({success:false,message:'all images are required'})
      }
 
@@ -406,6 +407,7 @@ exports.postaddproduct = async(req,res)=>{
       }
    })
 
+      console.log('creating new product..')
      //create new Product
      const newProduct = new productCollection({
       productName,
@@ -668,7 +670,7 @@ exports.cancelProductAdm = async (req,res) =>{
         
          const variant = await variantCollection.findOne({ _id: variantId });
         if (!variant) {
-            return res.status(500).json({ success: false, message: 'Variant not found' });
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Variant not found' });
         }
 
 
@@ -758,7 +760,7 @@ exports.returnApprovel = async (req,res) =>{
       //incriment the stock
       const variant = await variantCollection.findOne({ _id: variantId });
         if (!variant) {
-            return res.status(500).json({ success: false, message: 'Variant not found' });
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Variant not found' });
         }
 
         variant.sizes[0].stock += quantity;

@@ -1,18 +1,32 @@
-
 <%- include('partials/header') %>
 
 
-<!-- addres -->
-  <div class=" mb-4 container"> <h5 class="font-weight-bold mb-2 text-danger">Delivery Address</h5>
-  <div id="currAddress" class="col-lg-5 mb-2 px-4 py-4 saved-address ">
-     <div class="d-flex justify-content-between mb-3"><span class="font-weight-bold text-uppercase"><%= order.deliveryAddress.fullName %></span><span class="text-right rounded  px-2 font-weight-bold" style="background: 	#e4e5f1;"><%= order.deliveryAddress.typeOfAddress %></span></div>
-     <div><%= order.deliveryAddress.localAddress %></div>
-     <div><%= order.deliveryAddress.city %></div>
-     <div><%= order.deliveryAddress.state %></div>
-     <div class="mt-2">mobile: <span class="font-weight-bold"><%= order.deliveryAddress.mobile %></span></div>
-     <div><%= order.deliveryAddress.email || '' %></div> 
-     <hr>
-    </div> 
+  <!-- addres -->
+  <div class=" mb-4 container">
+    <h5 class="font-weight-bold mb-2 text-danger">Delivery Address</h5>
+    <div id="currAddress" class="col-lg-5 mb-2 px-4 py-4 saved-address ">
+      <div class="d-flex justify-content-between mb-3"><span class="font-weight-bold text-uppercase">
+          <%= order.deliveryAddress.fullName %>
+        </span><span class="text-right rounded  px-2 font-weight-bold" style="background: 	#e4e5f1;">
+          <%= order.deliveryAddress.typeOfAddress %>
+        </span></div>
+      <div>
+        <%= order.deliveryAddress.localAddress %>
+      </div>
+      <div>
+        <%= order.deliveryAddress.city %>
+      </div>
+      <div>
+        <%= order.deliveryAddress.state %>
+      </div>
+      <div class="mt-2">mobile: <span class="font-weight-bold">
+          <%= order.deliveryAddress.mobile %>
+        </span></div>
+      <div>
+        <%= order.deliveryAddress.email || '' %>
+      </div>
+      <hr>
+    </div>
   </div>
 
 
@@ -20,34 +34,41 @@
 
 
 
-      <!-- Order Details Section -->
-      <h5 class="font-weight-bold mb-1 text-danger container">Order Detail</h5>
-      <% order.items.forEach((item,index) => { %>
-      <div class="box-shadow col-lg-12 d-flex container p-0 my-4">
-        
-         <div class="col-lg-4 p-0 "><img class="" src="\<%= item.image %>" alt=""></div>
+  <!-- Order Details Section -->
+  <h5 class="font-weight-bold mb-1 text-danger container">Order Detail</h5>
+  <% order.items.forEach((item,index)=> { %>
+    <div class="box-shadow col-lg-12 d-flex container p-0 my-4">
 
-         <div class="col-lg-8 ">
+      <div class="col-lg-4 p-0 "><img class="" src="\<%= item.image %>" alt=""></div>
 
-          <h5 class="mt-5 text-center font-weight-bold text-danger"><%= item.productName %></h5>
-          <div class="d-flex my-5 mx-3 font-weight-bold justify-content-between">
-              <div class="">Amount</div>
-              <div>Quantity</div>
-              <div>Total</div>
-              <div>Order Status</div>
+      <div class="col-lg-8 ">
+
+        <h5 class="mt-5 text-center font-weight-bold text-danger">
+          <%= item.productName %>
+        </h5>
+        <div class="d-flex my-5 mx-3 font-weight-bold justify-content-between">
+          <div class="">Amount</div>
+          <div>Quantity</div>
+          <div>Total</div>
+          <div>Order Status</div>
+        </div>
+
+        <div class="d-flex mt-5 mb-4 mx-3 font-weight-bold justify-content-between">
+          <div class="">
+            <% if (item.offerPrice !==item.price) { %>
+              <span class="mr-2">₹<%= item.offerPrice %></span>
+              <span class=" fs-14 text-danger" style="text-decoration: line-through;">₹<%= item.price %></span>
+              <% }else{ %>
+                <span>₹<%= item.price %></span>
+                <% } %>
           </div>
-
-          <div class="d-flex mt-5 mb-4 mx-3 font-weight-bold justify-content-between">
-            <div class=""><% if (item.offerPrice !== item.price) { %>
-             <span class="mr-2">₹<%= item.offerPrice %></span>
-             <span class=" fs-14 text-danger" style="text-decoration: line-through;">₹<%= item.price %></span>
-            <% }else{ %>
-             <span>₹<%= item.price %></span>
-            <% } %>
-            </div>
-            <div><%= item.quantity %></div>
-            <div><%= item.itemTotal %></div>
-            <div class="badge
+          <div>
+            <%= item.quantity %>
+          </div>
+          <div>
+            <%= item.itemTotal %>
+          </div>
+          <div class="badge
             <% if (item.status === 'delivered') { %> 
               badge-success 
             <% } else if (item.status === 'canceled') { %> 
@@ -57,12 +78,13 @@
             <% } else { %> 
               badge-primary 
             <% } %>">
-              <%= item.status %></div>
+            <%= item.status %>
+          </div>
         </div>
         <hr>
         <div class="mx-3">
           <!-- payment status -->
-          <div class="mt-2 mb-2 font-weight-bold">paymentStatus: 
+          <div class="mt-2 mb-2 font-weight-bold">paymentStatus:
             <span class="badge 
               <% if (item.paymentStatus === 'paid') { %> 
                 badge-success 
@@ -71,84 +93,92 @@
               <% } else { %>
                 badge-danger
               <% } %>">
-              <%= item.paymentStatus %> 
+              <%= item.paymentStatus %>
             </span>
           </div>
           <!-- review -->
-          <% if (item.status === 'delivered') { %>
+          <% if (item.status==='delivered' ) { %>
 
-            <% if (item.rating) { %>   
-             <% for( let index = 1; index <= 5; index++ ) { %>
-                <% if (item.rating >= index) { %>
-                  <i class="fa-solid fa-star text-warning"></i> 
-                <% }else { %>
-                  <i class="fa-regular fa-star text-warning"></i> 
-                <% } %>
-             <% } %>
-             <p class="">You have given <%= item.rating %> star for this product</p>
-            <% }else { %>
-            <div class="mt-2" id="review-container-<%= item._id %>" data-item-id="<%= item._id %>" data-product-id="<%= item.productId %>">
-       
-              <div class="apply-rating-<%= item._id %>">
-                <i class="fa-regular fa-star text-warning"></i> 
-                <i class="fa-regular fa-star text-warning"></i>
-                <i class="fa-regular fa-star text-warning"></i>
-                <i class="fa-regular fa-star text-warning"></i>
-                <i class="fa-regular fa-star text-warning"></i>
-  
-                <p id="rating-text-<%= item._id %>" class=" ">Rate this Product now</p>
-              </div>
-  
-              <div id="write-review-<%= item._id %>" class="d-none">
-                <p class="text-danger m-0">Write Review</p>
-                <input id="review-text-<%= item._id %>" class="mt-1" type="text"> 
-                <button id="submit-review-<%= item._id %>" class="btn-danger border-0">Submit</button>
-              </div>
-              
-            </div>  
-           <% } %>
+            <% if (item.rating) { %>
+              <% for( let index=1; index <=5; index++ ) { %>
+                <% if (item.rating>= index) { %>
+                  <i class="fa-solid fa-star text-warning"></i>
+                  <% }else { %>
+                    <i class="fa-regular fa-star text-warning"></i>
+                    <% } %>
+                      <% } %>
+                        <p class="">You have given <%= item.rating %> star for this product</p>
+                        <% }else { %>
+                          <div class="mt-2" id="review-container-<%= item._id %>" data-item-id="<%= item._id %>"
+                            data-product-id="<%= item.productId %>">
 
-          <% } %>
-  
-        </div>
-        
+                            <div class="apply-rating-<%= item._id %>">
+                              <i class="fa-regular fa-star text-warning"></i>
+                              <i class="fa-regular fa-star text-warning"></i>
+                              <i class="fa-regular fa-star text-warning"></i>
+                              <i class="fa-regular fa-star text-warning"></i>
+                              <i class="fa-regular fa-star text-warning"></i>
+
+                              <p id="rating-text-<%= item._id %>" class=" ">Rate this Product now</p>
+                            </div>
+
+                            <div id="write-review-<%= item._id %>" class="d-none">
+                              <p class="text-danger m-0">Write Review</p>
+                              <input id="review-text-<%= item._id %>" class="mt-1" type="text">
+                              <button id="submit-review-<%= item._id %>" class="btn-danger border-0">Submit</button>
+                            </div>
+
+                          </div>
+                          <% } %>
+
+                            <% } %>
+
         </div>
 
       </div>
 
-         </div>
+    </div>
 
-         <div>
+    </div>
 
-         <!-- </div> -->
-      </div>
-      <% }) %>
+    <div>
+
+      <!-- </div> -->
+    </div>
+    <% }) %>
 
       <div class="d-flex justify-content-end container ">
-      <div class=" checkout__order mb-4"> 
-        <h4 class="order__title">Your Order</h4>
-        <ul class=" checkout__total__all border-top-0 ">
-          <% const totalMrp = order.items.reduce((acc,curr) =>{ %>
-            <% acc += curr.price * curr.quantity%>
-            <% return acc %>
-          <% },0) %>   
+        <div class=" checkout__order mb-4">
+          <h4 class="order__title">Your Order</h4>
+          <ul class=" checkout__total__all border-top-0 ">
+            <% const totalMrp=order.items.reduce((acc,curr)=>{ %>
+              <% acc +=curr.price * curr.quantity%>
+                <% return acc %>
+                  <% },0) %>
 
-          <% const soldPrice = order.items.reduce((acc,curr) =>{ %>
-            <%  acc += curr.offerPrice * curr.quantity %>
-            <%  return acc %>
-          <% },0) %>
-    
-          <% const discountOnMrp = totalMrp - soldPrice %>
-          
-          <li class="">Total Mrp <span class="order_summary" id="">₹ <%= totalMrp %></span></li>
-          <li class="">Discound On MRP <span class="text-success" id=""> <%= discountOnMrp %></span></li>
-          <li class="">Coupon Discound <span class="text-success" id="cart-total"> <%= order.couponDiscount %></span></li>
-          <li class="">shippingFee <span class="fs-14 <% order.shippingFee === 0 ? 'text-success': '' %>" id="cart-total"><%= order.shippingFee === 0 ? 'free': order.shippingFee %></span></li>
-          <li class="">Total Amound <span id="cart-total">₹ <%= order.totalAmount %></span></li>
-      </ul>
-      
-      <div class="mt-3 mb-2">paymentStatus: 
-        <span class="badge 
+                    <% const soldPrice=order.items.reduce((acc,curr)=>{ %>
+                      <% acc +=curr.offerPrice * curr.quantity %>
+                        <% return acc %>
+                          <% },0) %>
+
+                            <% const discountOnMrp=totalMrp - soldPrice %>
+
+                              <li class="">Total Mrp <span class="order_summary" id="">₹ <%= totalMrp %></span></li>
+                              <li class="">Discound On MRP <span class="text-success" id="">
+                                  <%= discountOnMrp %>
+                                </span></li>
+                              <li class="">Coupon Discound <span class="text-success" id="cart-total">
+                                  <%= order.couponDiscount %>
+                                </span></li>
+                              <li class="">shippingFee <span
+                                  class="fs-14 <% order.shippingFee === 0 ? 'text-success': '' %>" id="cart-total">
+                                  <%= order.shippingFee===0 ? 'free' : order.shippingFee %>
+                                </span></li>
+                              <li class="">Total Amound <span id="cart-total">₹ <%= order.totalAmount %></span></li>
+          </ul>
+
+          <div class="mt-3 mb-2">paymentStatus:
+            <span class="badge 
           <% if (order.items[0].paymentStatus === 'paid') { %> 
             badge-success 
           <% } else if(order.items[0].paymentStatus === 'pending') { %> 
@@ -156,218 +186,221 @@
           <% } else { %>
              badge-danger
           <% } %>">
-          <%= order.items[0].paymentStatus %>
-        </span>
-      </div>
-        <% if (order.items[0].paymentStatus === 'faild' && order.items[0].status === 'pending') { %>
-          <div class="mt-3"> 
-            <button onclick="repay('<%= order._id %>','razorpay')" class="  btn-primary text-white border-0 mr-2"><i class="fas fa-money-check"></i>&nbsp;&nbsp;&nbsp;Online</button>
-            <!-- <button onclick="repay('<%= order._id %>','wallet')" class="  btn-dark text-white border-0 "><i class="fas fa-money-check"></i>&nbsp;&nbsp;&nbsp;wallet</button> -->
+              <%= order.items[0].paymentStatus %>
+            </span>
           </div>
-        <% } else if(order.items[0].paymentStatus === 'paid') { %>
-          <!-- invoice -->
-        <div class=""><button class="border-0 p-2 " onclick="downloadInvoice('<%= order._id %>')" style="background: #ffffff;"><i class="fa-solid fa-file-invoice text-primary"></i> Download Invoice</button></div>  
-        <% } %>
-        
+          <% if (order.items[0].paymentStatus==='faild' && order.items[0].status==='pending' ) { %>
+            <div class="mt-3">
+              <button onclick="repay('<%= order._id %>','razorpay')" class="  btn-primary text-white border-0 mr-2"><i
+                  class="fas fa-money-check"></i>&nbsp;&nbsp;&nbsp;Online</button>
+              <!-- <button onclick="repay('<%= order._id %>','wallet')" class="  btn-dark text-white border-0 "><i class="fas fa-money-check"></i>&nbsp;&nbsp;&nbsp;wallet</button> -->
+            </div>
+            <% } else if(order.items[0].paymentStatus==='paid' ) { %>
+              <!-- invoice -->
+              <div class=""><button class="border-0 p-2 " onclick="downloadInvoice('<%= order._id %>')"
+                  style="background: #ffffff;"><i class="fa-solid fa-file-invoice text-primary"></i> Download
+                  Invoice</button></div>
+              <% } %>
+
+        </div>
       </div>
-    </div>
 
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-    <script>
-      
-      function repay(orderId, paymentMethod){
+      <script>
+
+        function repay(orderId, paymentMethod) {
           try {
-            fetch('/payAfter',{
-              method:'PUT',
-              headers:{
+            fetch('/payAfter', {
+              method: 'PUT',
+              headers: {
                 'Content-Type': 'application/json'
               },
-              body:JSON.stringify({
+              body: JSON.stringify({
                 orderId,
                 paymentMethod
               })
             })
-            .then(response => response.json())
-            .then(result => {
-                  if(result.success){
-                    if(result.razorpay){
-                      const options = {
-                        key: result.key,
-                        amount: result.amount * 100,
-                        currency: 'INR',
-                        name:'SNEAKER LAB',
-                        description: 'make your payment',
-                        order_id: result.razorpayOrderId,
-                        handler: function(response){
-                            verifyPayment(response)     
-                        },
-                        theme: {
-                            color: "#0000"
-                        }
+              .then(response => response.json())
+              .then(result => {
+                if (result.success) {
+                  if (result.razorpay) {
+                    const options = {
+                      key: result.key,
+                      amount: result.amount * 100,
+                      currency: 'INR',
+                      name: 'SNEAKER LAB',
+                      description: 'make your payment',
+                      order_id: result.razorpayOrderId,
+                      handler: function (response) {
+                        verifyPayment(response)
+                      },
+                      theme: {
+                        color: "#0000"
+                      }
                     }
                     const rzp = new Razorpay(options)
-                    rzp.on('payment.failed', function(response){
-                        handlePaymentFailure(response);
+                    rzp.on('payment.failed', function (response) {
+                      handlePaymentFailure(response);
                     })
                     rzp.open()
-                    }else{
+                  } else {
 
-                    }
-                  } 
-            })
+                  }
+                }
+              })
           } catch (error) {
-            console.error('something went wrong',error)
+            console.error('something went wrong', error)
           }
-      }
-
-      
-//payment verify
-function verifyPayment(response){
-    fetch('/verifyPayment', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            paymentId: response.razorpay_payment_id,
-            orderId: response.razorpay_order_id,
-            signature: response.razorpay_signature,
-            isRetry:true
-        })
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            handleSuccess('Payment successful',result.orderId);
-        } else {
-            handlePaymentFailure(result);
         }
-    })
-    .catch(err => {
-        console.error('Error verifying payment:', err);
-        handleError('An error occurred while verifying the payment.');
-    })
-}
 
-//handle failure
-function handlePaymentFailure(response) {
-    fetch('/verifyPayment', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            paymentId: response.error.metadata.payment_id,
-            orderId: response.error.metadata.order_id,
-            signature: null,
-            failed:true,
-            isRetry:true
-        })
-    })
-    .then(() => {
-        Swal.fire({
-            icon: 'error',
-            text: 'Payment failed.',
+
+        //payment verify
+        function verifyPayment(response) {
+          fetch('/verifyPayment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
+              signature: response.razorpay_signature,
+              isRetry: true
+            })
+          })
+            .then(response => response.json())
+            .then(result => {
+              if (result.success) {
+                handleSuccess('Payment successful', result.orderId);
+              } else {
+                handlePaymentFailure(result);
+              }
+            })
+            .catch(err => {
+              console.error('Error verifying payment:', err);
+              handleError('An error occurred while verifying the payment.');
+            })
+        }
+
+        //handle failure
+        function handlePaymentFailure(response) {
+          fetch('/verifyPayment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              paymentId: response.error.metadata.payment_id,
+              orderId: response.error.metadata.order_id,
+              signature: null,
+              failed: true,
+              isRetry: true
+            })
+          })
+            .then(() => {
+              Swal.fire({
+                icon: 'error',
+                text: 'Payment failed.',
+                confirmButtonText: 'OK'
+              }).then(() => {
+                // window.location.href = '/shop';  
+                location.reload()
+              });
+            })
+        }
+
+        //handle success payment 
+        function handleSuccess(message, orderId) {
+          Swal.fire({
+            icon: 'success',
+            text: message,
             confirmButtonText: 'OK'
-        }).then(() => {
-            // window.location.href = '/shop';  
+          }).then(() => {
+            // window.location.href = `/orderDetail/${orderId}`; 
             location.reload()
+          })
+        }
+
+        // invoice download
+
+        function downloadInvoice(orderId) {
+          console.log('order id', orderId)
+          const url = `/downloadInvoice?orderId=${orderId}`
+          window.open(url, '_blank');
+
+        }
+
+        //product review 
+        const reviewContainers = document.querySelectorAll('[id^="review-container-"]')
+
+        reviewContainers.forEach(container => {
+          const itemId = container.getAttribute('data-item-id');
+          const productId = container.getAttribute('data-product-id');
+          const stars = container.querySelectorAll(`.apply-rating-${itemId} i`);
+          const ratingText = container.querySelector(`#rating-text-${itemId}`);
+          const reviewTextDiv = container.querySelector(`#write-review-${itemId}`);
+          const reviewText = container.querySelector(`#review-text-${itemId}`);
+          const submitReview = container.querySelector(`#submit-review-${itemId}`);
+
+          let rating;
+
+          stars.forEach((star, index) => {
+            star.addEventListener('click', () => {
+              rating = index + 1;
+              setRating(rating, stars, reviewTextDiv, ratingText);
+            });
+          });
+
+          submitReview.addEventListener('click', () => {
+            const review = reviewText.value;
+            submitReviewToServer(rating, review, productId, itemId);
+          });
         });
-    })
-}
-
-//handle success payment 
-function handleSuccess(message,orderId){
-    Swal.fire({
-        icon: 'success',
-        text: message,
-        confirmButtonText: 'OK'
-    }).then(() => {
-        // window.location.href = `/orderDetail/${orderId}`; 
-        location.reload()
-    })
-}
-
-// invoice download
-
-function downloadInvoice(orderId){
-  console.log('order id',orderId)
-  const url = `/downloadInvoice?orderId=${orderId}`
-   window.open(url, '_blank');
-
-}
-
-//product review 
-const reviewContainers = document.querySelectorAll('[id^="review-container-"]')
-
-reviewContainers.forEach(container => {
-    const itemId = container.getAttribute('data-item-id');
-    const productId = container.getAttribute('data-product-id');
-    const stars = container.querySelectorAll(`.apply-rating-${itemId} i`);
-    const ratingText = container.querySelector(`#rating-text-${itemId}`);
-    const reviewTextDiv = container.querySelector(`#write-review-${itemId}`);
-    const reviewText = container.querySelector(`#review-text-${itemId}`);
-    const submitReview = container.querySelector(`#submit-review-${itemId}`);
-
-    let rating;
-
-    stars.forEach((star, index) => {
-      star.addEventListener('click', () => {
-        rating = index + 1;
-        setRating(rating, stars, reviewTextDiv, ratingText);
-      });
-    });
-
-    submitReview.addEventListener('click', () => {
-      const review = reviewText.value;
-      submitReviewToServer(rating, review, productId, itemId);
-    });
-  });
 
 
-function setRating(rating, stars, reviewTextDiv, ratingText) {
-  stars.forEach((star, index) => {
-    if (rating > index) {
-      star.classList.remove('fa-regular');
-      star.classList.add('fa-solid');
-    } else {
-      star.classList.remove('fa-solid');
-      star.classList.add('fa-regular');
-    }
-  });
-  reviewTextDiv.classList.remove('d-none');
-  ratingText.classList.add('d-none');
-}
+        function setRating(rating, stars, reviewTextDiv, ratingText) {
+          stars.forEach((star, index) => {
+            if (rating > index) {
+              star.classList.remove('fa-regular');
+              star.classList.add('fa-solid');
+            } else {
+              star.classList.remove('fa-solid');
+              star.classList.add('fa-regular');
+            }
+          });
+          reviewTextDiv.classList.remove('d-none');
+          ratingText.classList.add('d-none');
+        }
 
-function submitReviewToServer(rating, review, product, item) {
-  fetch('/submitReview', {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({rating, review, product, item})
-  })
-  .then(response => response.json())
-  .then(result =>{
-    console.log('ressul',result)
-    if(result.success){
-      const itemId = result.item
-      const submitContainer = document.getElementById(`write-review-${itemId}`)
-      submitContainer.remove()
-      Swal.fire({
-      text: result.message, 
-      showConfirmButton: false,
-      timer: 3000, 
-      backdrop: false,
-      customClass: {
-          popup: 'swal2-popup-custom', 
-      }
-      })
-    }
-  })
-  .catch(error => console.error('error',error))
-}
-    </script>
+        function submitReviewToServer(rating, review, product, item) {
+          fetch('/submitReview', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ rating, review, product, item })
+          })
+            .then(response => response.json())
+            .then(result => {
+              console.log('ressul', result)
+              if (result.success) {
+                const itemId = result.item
+                const submitContainer = document.getElementById(`write-review-${itemId}`)
+                submitContainer.remove()
+                Swal.fire({
+                  text: result.message,
+                  showConfirmButton: false,
+                  timer: 3000,
+                  backdrop: false,
+                  customClass: {
+                    popup: 'swal2-popup-custom',
+                  }
+                })
+              }
+            })
+            .catch(error => console.error('error', error))
+        }
+      </script>
 
-<%- include('partials/footer') %> 
+      <%- include('partials/footer') %>

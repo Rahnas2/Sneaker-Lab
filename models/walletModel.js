@@ -13,7 +13,8 @@ const walletSchema = new mongoose.Schema({
     history:[{
         amount:{type:Number, required:true},
         status:{type:String, required:true, enum: ['credit', 'debit']},
-        description:{type:String}
+        description:{type:String},
+        createdAt: { type: Date, default: Date.now }
     }]
 },{timestamps:true})
 

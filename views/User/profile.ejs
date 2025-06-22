@@ -1,5 +1,3 @@
-
-
 <%- include('partials/header') %>
 
     <section class="my-5">
@@ -11,37 +9,46 @@
                             <div class="card-body">
                                 <!-- basic informations -->
                                 <div class="d-flex flex-column align-items-center text-center">
-                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtbEsykx-0fhTred6UwHDYtMFd2UgTJCG4gaklT1dx4suRO4_n5LJr4Gg28kquSX5fpNo&usqp=CAU" alt="Admin"
-                                        class="rounded-circle p-1" width="110">
+                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtbEsykx-0fhTred6UwHDYtMFd2UgTJCG4gaklT1dx4suRO4_n5LJr4Gg28kquSX5fpNo&usqp=CAU"
+                                        alt="Admin" class="rounded-circle p-1" width="110">
                                     <div class="mt-3">
-                                        <h4><%= user.username %></h4>
-                                        <p class="text-secondary mb-1"><% user.email %></p>
-                                        <p class="text-muted font-size-sm"><%= user.phone? user.phone: 'N/A' %></p>
+                                        <h4>
+                                            <%= user.username %>
+                                        </h4>
+                                        <p class="text-secondary mb-1">
+                                            <% user.email %>
+                                        </p>
+                                        <p class="text-muted font-size-sm">
+                                            <%= user.phone? user.phone: 'N/A' %>
+                                        </p>
                                     </div>
                                 </div>
 
                                 <div class="list-group list-group-flush text-center mt-4">
                                     <!-- personal information  section -->
-                                    <a href="#" class="list-group-item list-group-item-action border-0 " onclick="showProfileDetails()">
+                                    <a href="#" class="list-group-item list-group-item-action border-0 "
+                                        onclick="showProfileDetails()">
                                         Profile Informaton
                                     </a>
 
                                     <!-- order details -->
-                                    <a href="#" class="list-group-item list-group-item-action border-0" onclick="showOrderDetails()">Orders</a>
-                                    
+                                    <a href="#" class="list-group-item list-group-item-action border-0"
+                                        onclick="showOrderDetails()">Orders</a>
+
                                     <!-- address section -->
                                     <a href="#" class="list-group-item list-group-item-action border-0 active"
                                         onclick="showAddressBook()">
-                                        Address 
+                                        Address
                                     </a>
                                     <!-- wallet section -->
                                     <a href="#" class="list-group-item list-group-item-action border-0 "
                                         onclick="showWallet()">
-                                        Wallet 
+                                        Wallet
                                     </a>
 
                                     <!-- logout option -->
-                                    <a href="/logout" class="list-group-item list-group-item-action border-0" onclick=" return Confirm()">Logout</a>
+                                    <a href="/logout" class="list-group-item list-group-item-action border-0"
+                                        onclick=" return Confirm()">Logout</a>
 
                                 </div>
                             </div>
@@ -49,196 +56,356 @@
                     </div>
                     <div class="col-lg-8">
 
-                    <!-- order section -->
-                    <div  id="orderDetails" class="order_card" style="display: none;">
-                    <% orders.forEach(order => { %>
-                        <div class="card mb-4">
-                            <% let viewButton = false %>
-                        <div class="d-flex justify-content-between">
+                        <!-- order section -->
+                        <div id="orderDetails" class="order_card" style="display: none;">
+                            <div id="ordersContainer">
+                                <% if (orders && orders.length> 0) { %>
+                                    <% orders.forEach(order=> { %>
+                                        <div class="card mb-4">
+                                            <% let viewButton=false %>
+                                                <div class="d-flex justify-content-between">
+                                                    <h6 class="p-3 mb-0"><span class="font-weight-bold">Order Id:</span>
+                                                        <%= order._id %>
+                                                    </h6>
 
-                          <h6 class="p-3 mb-0"><span class="font-weight-bold">Order Id:</span><%= order._id %></h6>
-                          
-                          <% if (!viewButton) { %>
-                           <a href="/orderDetail/<%= order._id %>"><span class="btn btn-primary m-2 p-2">View Detail</span></a>
-                           <% viewButton = true %>
-                          <% } %>
+                                                    <% if (!viewButton) { %>
+                                                        <a href="/orderDetail/<%= order._id %>"><span
+                                                                class="btn btn-primary m-2 p-2">View Detail</span></a>
+                                                        <% viewButton=true %>
+                                                            <% } %>
+                                                </div>
 
-                        </div>
+                                                <% order.items.forEach(item=> { %>
+                                                    <div class="card-body p-0 table-responsive">
+                                                        <table class="table mb-0">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th scope="col">Product</th>
+                                                                    <th scope="col"></th>
+                                                                    <th scope="col">Amount</th>
+                                                                    <th scope="col">Quantity</th>
+                                                                    <th scope="col">Status</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <th>
+                                                                        <img src="\<%= item.image %>" alt="product"
+                                                                            class="" width="80">
+                                                                    </th>
+                                                                    <td>
+                                                                        <%= item.productName %>
+                                                                    </td>
+                                                                    <td><strong>
+                                                                            <%= item.itemTotal %>
+                                                                        </strong></td>
+                                                                    <td>
+                                                                        <%= item.quantity %>
+                                                                    </td>
+                                                                    <td>
+                                                                        <span id="deliveryStatus-<%= item._id %>" class="badge 
+                                              <% if (item.status === 'delivered') { %> 
+                                                badge-success 
+                                              <% } else if (item.status === 'canceled') { %> 
+                                                badge-danger 
+                                              <% } else if(item.status === 'order placed') { %> 
+                                                badge-primary 
+                                               <% } else { %>
+                                                 badge-danger
+                                              <% } %>">
+                                                                            <%= item.status %>
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr class="">
+                                                                    <th colspan="3">
+                                                                        <span>Status:</span>
+                                                                        <span class="badge 
+                                              <% if (item.paymentStatus === 'paid') { %> 
+                                                badge-success 
+                                              <% } else if(item.paymentStatus === 'pending') { %> 
+                                                badge-warning 
+                                              <% } else { %>
+                                                 badge-danger
+                                              <% } %>">
+                                                                            <%= item.paymentStatus %>
+                                                                        </span>
+                                                                    </th>
 
-                          <% order.items.forEach(item => { %>
+                                                                    <td colspan="3" class="text-right">
+                                                                        <% if (item.status==='delivered' ) { %>
+                                                                            <span type="button" id="returnButton"
+                                                                                onclick="openReturnModal('<%= order._id %>','<%= item._id %>')"
+                                                                                class="text-danger font-weight-bold ">Return?</span>
+                                                                            <% } else if(item.status==='order placed' ||
+                                                                                item.status==='pending' ) { %>
+                                                                                <span type="button"
+                                                                                    onclick="cancelProductUser('<%= order._id %>','<%= item._id %>')"
+                                                                                    class="text-danger font-weight-bold">Cancel?</span>
+                                                                                <% } %>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <% }) %>
+                                        </div>
+                                        <% }) %>
+                                            <% } else { %>
+                                                <div class="card">
+                                                    <div class="card-body text-center">
+                                                        <h5>No orders found</h5>
+                                                        <p>You haven't placed any orders yet.</p>
+                                                    </div>
+                                                </div>
+                                                <% } %>
+                            </div>
 
-                            <div class="card-body p-0 table-responsive">
-                                <table class="table mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">Product</th>
-                                            <th scope="col"></th>
-                                            <th scope="col">Amount</th>
-                                            <th scope="col">Quantity</th>
-                                            <th scope="col">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            
-                                            <th>
-                                                <img src="\<%= item.image %>"
-                                                    alt="product" class="" width="80">
-                                            </th>
-                                            <td><%= item.productName %></td>
-                                            <td><strong><%= item.itemTotal %></strong></td>
-                                            <td><%= item.quantity %></td>
- 
-                                            <td> 
-                                                <span id="deliveryStatus-<%= item._id %>" class="badge 
-                                                  <% if (item.status === 'delivered') { %> 
-                                                    badge-success 
-                                                  <% } else if (item.status === 'canceled') { %> 
-                                                    badge-danger 
-                                                  <% } else if(item.status === 'order placed') { %> 
-                                                    badge-primary 
-                                                   <% } else { %>
-                                                     badge-danger
-                                                  <% } %>">
-                                                  <%= item.status %>
-                                                </span>
-                                              </td> 
-                                             
-                                        </tr>
-                                        <tr class="">
-                                            <th colspan="3">
-                                                <span>Status:</span>
-                                                <span class="badge 
-                                                  <% if (item.paymentStatus === 'paid') { %> 
-                                                    badge-success 
-                                                  <% } else if(item.paymentStatus === 'pending') { %> 
-                                                    badge-warning 
-                                                  <% } else { %>
-                                                     badge-danger
-                                                  <% } %>">
-                                                  <%= item.paymentStatus %>
-                                                </span>
-                                            </th>
-                                            
-                                            <td colspan="3" class="text-right" >
-                                                <% if (item.status === 'delivered') { %>
+                            <!-- Orders Pagination -->
+                            <% if (ordersPagination && ordersPagination.totalPages> 1) { %>
+                                <nav aria-label="Page navigation example" id="orders-pagination">
+                                    <ul class="pagination mt-2 justify-content-end">
+                                        <li
+                                            class="page-item <%= ordersPagination.currentPage === 1 ? 'disabled' : '' %>">
+                                            <a class="page-link" href="#"
+                                                onclick="loadOrders(<%= ordersPagination.currentPage - 1 %>)"
+                                                aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                                <span class="sr-only">Previous</span>
+                                            </a>
+                                        </li>
+                                        <% for (let i=1; i <=ordersPagination.totalPages; i++) { %>
+                                            <li
+                                                class="page-item <%= ordersPagination.currentPage === i ? 'active' : '' %>">
+                                                <a class="page-link" href="#" onclick="loadOrders(<%= i %>)">
+                                                    <%= i %>
+                                                </a>
+                                            </li>
+                                            <% } %>
 
-                                                    <span type="button" id="returnButton" onclick="openReturnModal('<%= order._id %>','<%= item._id %>')" class="text-danger font-weight-bold ">Return?</span>
+                                                <li
+                                                    class="page-item <%= ordersPagination.currentPage === ordersPagination.totalPages ? 'disabled' : '' %>">
+                                                    <a class="page-link" href="#"
+                                                        onclick="loadOrders(<%= ordersPagination.currentPage + 1 %>)"
+                                                        aria-label="Next">
+                                                        <span aria-hidden="true">&raquo;</span>
+                                                        <span class="sr-only">Next</span>
+                                                    </a>
+                                                </li>
+                                    </ul>
+                                </nav>
 
-                                                <% } else if(item.status === 'order placed' || item.status === 'pending') { %>
-                                                    <span type="button" onclick="cancelProductUser('<%= order._id %>','<%= item._id %>')" class="text-danger font-weight-bold">Cancel?</span>
-                                                <% } %>  
-                                            </td>
-                                           
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div> 
-                            <% }) %> 
-                        </div>
-                    <% }) %>
-                    </div>    
-                    <!-- order section end              -->
-                    
-                     <!-- personal information section    -->
-                    <div id="profileDetails" class="card" style="display: none;">
-                        <div class="card-body">
-                            <div class="profile-info">
-
-                              <div class="d-flex justify-content-between mb-5">
-                                <h5 class="font-weight-bold ">Profile Information</h5>
-                                <div type="button" class="fs-14 text-danger  text-end  font-weight-bold" id="edit-button" data-toggle="modal" data-target="#editProfile" >Edit Profile</div>
-                              </div>
-
-                                <p><strong>Name:</strong> <%= user.username %></p>
-                                <p><strong>Email Address:</strong> <%= user.email %></p>
-                                <p><strong>Contact:</strong> <%= user.phone? user.phone: 'N/A' %></p>
-                                <p><strong>Referral Code: </strong><span class="text-primary"><%= user.referralCode %></span></p>
-                                <p><strong>Role:</strong> <%= user.isAdmin ? 'Admin': 'User' %></p>
-
-                                <% if (!user.googleId) { %>
-                                    <button class="mt-5 text-danger  border-0" data-toggle="modal" data-target="#changePassword">Change Password</button>
                                 <% } %>
-                                
-                            </div>
                         </div>
-                        
-                    </div>
-                    <!-- personal informatin section end -->
-                    
-                    <!-- address section  -->
-                    <div id="addressBook" class="card" style="display: none;">
-                        <div class="card-body">
-                    
-                            <div id="addressList">
-                              <% if (address) { %>
-                                <% address.addresses.forEach(address => { %>
-                                    <div id="currAddress-<%= address._id%>" class=" mb-2 px-4 py-4 saved-address">
-                                       <div class="d-flex justify-content-between mb-3"><span class="font-weight-bold text-uppercase"><%= address.fullName %></span><span class="text-right rounded  px-2 font-weight-bold" style="background: 	#e4e5f1;"><%= address.typeOfAddress %></span></div>
-                                       <div><%= address.localAddress %></div>
-                                       <div><%= address.city %></div>
-                                       <div><%= address.state %></div>
-                                       <div class="mt-2">mobile: <span class="font-weight-bold"><%= address.mobile %></span></div>
-                                       <div><%= address.email || '' %></div> 
-                                       <hr>
-                                       <div class="d-flex justify-content-between">
-                                           <div type="button" class="text-danger font-weight-bold"  onclick="editAddress('/myProfile/editAddres/<%= address._id %>?profile=1')">Edit</div>
-                                          <div class="bg-dark" style="max-height: 100%; width: 1px;"></div> 
-                                           <div type="button" onclick="deleteAddress('/myProfile/deleteAddress/<%= address._id %>')" class="text-danger font-weight-bold" >Remove</div>
-                                       </div>
+                        <!-- order section end              -->
+
+                        <!-- personal information section    -->
+                        <div id="profileDetails" class="card" style="display: none;">
+                            <div class="card-body">
+                                <div class="profile-info">
+
+                                    <div class="d-flex justify-content-between mb-5">
+                                        <h5 class="font-weight-bold ">Profile Information</h5>
+                                        <div type="button" class="fs-14 text-danger  text-end  font-weight-bold"
+                                            id="edit-button" data-toggle="modal" data-target="#editProfile">Edit Profile
+                                        </div>
                                     </div>
-                                <% }) %> 
-                               <% } %>
-                               <div onclick="checkAccess('/myProfile/addAddress?profile=1')" class="mb-2 px-4 py-4 saved-address text-uppercase text-danger font-weight-bold pointer">+ add new address</div>
+
+                                    <p><strong>Name:</strong>
+                                        <%= user.username %>
+                                    </p>
+                                    <p><strong>Email Address:</strong>
+                                        <%= user.email %>
+                                    </p>
+                                    <p><strong>Contact:</strong>
+                                        <%= user.phone? user.phone: 'N/A' %>
+                                    </p>
+                                    <p><strong>Referral Code: </strong><span class="text-primary">
+                                            <%= user.referralCode %>
+                                        </span></p>
+                                    <p><strong>Role:</strong>
+                                        <%= user.isAdmin ? 'Admin' : 'User' %>
+                                    </p>
+
+                                    <% if (!user.googleId) { %>
+                                        <button class="mt-5 text-danger  border-0" data-toggle="modal"
+                                            data-target="#changePassword">Change Password</button>
+                                        <% } %>
+
+                                </div>
+                            </div>
+
+                        </div>
+                        <!-- personal informatin section end -->
+
+                        <!-- address section  -->
+                        <div id="addressBook" class="card" style="display: none;">
+                            <div class="card-body">
+
+                                <div id="addressList">
+                                    <% if (address) { %>
+                                        <% address.addresses.forEach(address=> { %>
+                                            <div id="currAddress-<%= address._id%>"
+                                                class=" mb-2 px-4 py-4 saved-address">
+                                                <div class="d-flex justify-content-between mb-3"><span
+                                                        class="font-weight-bold text-uppercase">
+                                                        <%= address.fullName %>
+                                                    </span><span class="text-right rounded  px-2 font-weight-bold"
+                                                        style="background: 	#e4e5f1;">
+                                                        <%= address.typeOfAddress %>
+                                                    </span></div>
+                                                <div>
+                                                    <%= address.localAddress %>
+                                                </div>
+                                                <div>
+                                                    <%= address.city %>
+                                                </div>
+                                                <div>
+                                                    <%= address.state %>
+                                                </div>
+                                                <div class="mt-2">mobile: <span class="font-weight-bold">
+                                                        <%= address.mobile %>
+                                                    </span></div>
+                                                <div>
+                                                    <%= address.email || '' %>
+                                                </div>
+                                                <hr>
+                                                <div class="d-flex justify-content-between">
+                                                    <div type="button" class="text-danger font-weight-bold"
+                                                        onclick="editAddress('/myProfile/editAddres/<%= address._id %>?profile=1')">
+                                                        Edit</div>
+                                                    <div class="bg-dark" style="max-height: 100%; width: 1px;"></div>
+                                                    <div type="button"
+                                                        onclick="deleteAddress('/myProfile/deleteAddress/<%= address._id %>')"
+                                                        class="text-danger font-weight-bold">Remove</div>
+                                                </div>
+                                            </div>
+                                            <% }) %>
+                                                <% } %>
+                                                    <div onclick="checkAccess('/myProfile/addAddress?profile=1')"
+                                                        class="mb-2 px-4 py-4 saved-address text-uppercase text-danger font-weight-bold pointer">
+                                                        + add new address</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <!-- address section end -->
+                        <!-- address section end -->
 
-                    <!-- wallet section  -->
+                        <!-- wallet section  -->
 
-                    <div id="userWallet" class="card" style="display: none;">
-                        <div class="card-body">
-                            <% if (wallet && wallet.history.length > 0) { %>
-                                <div>
-                                    <h5 class="red font-weight-bold mb-3">Balance</h5>
-                                    <p><strong><%= wallet.balance %></strong></p>
-                                    <h5 class="mt-4 mb-2">history</h5>
-                                    <table class="table table-bordered">
-                                        <thead>
-                                          <tr>
-                                            <th scope="col">Amount</th>
-                                            <th scope="col">Status</th>
-                                            <th scope="col">Description</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                            <% wallet.history.forEach(history => { %>
-                                                <tr>
-                                                    <td><%= history.amount %></td>
-                                                    <td><%= history.status %></td>
-                                                    <td><%= history.description %></td>
-                                                </tr>
-                                            <% }) %>                   
-                                        </tbody>
-                                      </table>
-                                </div>
-                            <% } else {%>
-                                <div class="d-flex justify-content-center align-items-center font-weight-bold " style="height: 28.9rem;" >SORRY YOU DONT HAVE WALLET</div>
-                            <% } %>
+                        <div id="userWallet" class="card" style="display: none;">
+                            <div class="card-body">
+                                <% if (wallet && wallet.balance !==undefined) { %>
+                                    <div>
+                                        <h5 class="red font-weight-bold mb-3">Balance</h5>
+                                        <p><strong>₹<%= wallet.balance %></strong></p>
+
+                                        <div id="walletHistoryContainer">
+                                            <% if (wallet.history && wallet.history.length> 0) { %>
+                                                <h5 class="mt-4 mb-2">Transaction History</h5>
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered" id="walletHistoryTable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th scope="col">Amount</th>
+                                                                <th scope="col">Status</th>
+                                                                <th scope="col">Description</th>
+                                                                <th scope="col">Date</th>
+                                                                <th scope="col">Time</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <% wallet.history.forEach(history=> { %>
+                                                                <tr>
+                                                                    <td>₹<%= history.amount %>
+                                                                    </td>
+                                                                    <td>
+                                                                        <span
+                                                                            class="badge <%= history.status === 'credit' ? 'badge-success' : 'badge-danger' %>">
+                                                                            <%= history.status %>
+                                                                        </span>
+                                                                    </td>
+                                                                    <td>
+                                                                        <%= history.description %>
+                                                                    </td>
+                                                                    <td>
+                                                                        <%= history.createdAt ? new
+                                                                            Date(history.createdAt).toLocaleDateString()
+                                                                            : 'N/A' %>
+                                                                    </td>
+                                                                    <td>
+                                                                        <%= history.createdAt ? new
+                                                                            Date(history.createdAt).toLocaleTimeString()
+                                                                            : 'N/A' %>
+                                                                    </td>
+                                                                </tr>
+                                                                <% }) %>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+
+                                                <!-- Wallet Pagination -->
+                                                <% if (walletPagination && walletPagination.totalPages> 1) { %>
+                                                    <nav id="wallet-pagination" aria-label="Page navigation example">
+                                                        <ul class="pagination mt-2 justify-content-end">
+                                                            <li
+                                                                class="page-item <%= walletPagination.currentPage === 1 ? 'disabled' : '' %>">
+                                                                <a class="page-link" href="#"
+                                                                    onclick="loadWallet(<%= walletPagination.currentPage - 1 %>)"
+                                                                    aria-label="Previous">
+                                                                    <span aria-hidden="true">&laquo;</span>
+                                                                    <span class="sr-only">Previous</span>
+                                                                </a>
+                                                            </li>
+                                                            <% for (let i=1; i <=walletPagination.totalPages; i++) { %>
+                                                                <li
+                                                                    class="page-item <%= walletPagination.currentPage === i ? 'active' : '' %>">
+                                                                    <a class="page-link" href="#"
+                                                                        onclick="loadWallet(<%= i %>)">
+                                                                        <%= i %>
+                                                                    </a>
+                                                                </li>
+                                                                <% } %>
+
+                                                                    <li
+                                                                        class="page-item <%= walletPagination.currentPage === walletPagination.totalPages ? 'disabled' : '' %>">
+                                                                        <a class="page-link" href="#"
+                                                                            onclick="loadWallet(<%= walletPagination.currentPage + 1 %>)"
+                                                                            aria-label="Next">
+                                                                            <span aria-hidden="true">&raquo;</span>
+                                                                            <span class="sr-only">Next</span>
+                                                                        </a>
+                                                                    </li>
+                                                        </ul>
+                                                    </nav>
+                                                    <% } %>
+                                                        <% } else { %>
+                                                            <div class="text-center mt-4">
+                                                                <h6>No transaction history</h6>
+                                                                <p>You haven't made any transactions yet.</p>
+                                                            </div>
+                                                            <% } %>
+                                        </div>
+                                    </div>
+                                    <% } else { %>
+                                        <div class="d-flex justify-content-center align-items-center font-weight-bold"
+                                            style="height: 28.9rem;">
+                                            SORRY YOU DON'T HAVE WALLET
+                                        </div>
+                                        <% } %>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- wallet section end -->
+                        <!-- wallet section end -->
 
                     </div>
                 </div>
-          </div>
-      </div>
+            </div>
+        </div>
     </section>
 
     <!-- return reaon modal -->
-    <div class="modal fade" id="returnReason" tabindex="-1" role="dialog" aria-labelledby="returnReasonLabel" aria-hidden="true">
+    <div class="modal fade" id="returnReason" tabindex="-1" role="dialog" aria-labelledby="returnReasonLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -249,9 +416,9 @@
                 </div>
                 <div class="modal-body">
                     <form id="returnProductForm">
-                         <!-- order id and product id -->
-                         <input type="hidden" name="orderId" id="orderIdInput">
-                         <input type="hidden" name="itemId" id="itemIdInput">
+                        <!-- order id and product id -->
+                        <input type="hidden" name="orderId" id="orderIdInput">
+                        <input type="hidden" name="itemId" id="itemIdInput">
 
                         <label for="returnReasonSelect" class=" mb-1">Reason</label>
                         <select class="d-block mb-2 form-control" name="reason" id="returnReasonSelect">
@@ -263,87 +430,95 @@
                             <option value="delayed_delivery">Delivery took too long</option>
                             <option value="other">Other</option>
                         </select>
-                        <p id="returnReasonError" class="text-danger d-none fs-14">Please select a reason for return.</p> 
-    
+                        <p id="returnReasonError" class="text-danger d-none fs-14">Please select a reason for return.
+                        </p>
+
                         <button type="submit" class="btn btn-danger mt-3">Submit</button>
                     </form>
                 </div>
             </div>
         </div>
-      </div>
+    </div>
 
-     <!--edit profile Modal -->
-     <div class="modal fade" id="editProfile" tabindex="-1" role="dialog" aria-labelledby="editProfileLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" class="font-weight-bold bg-danger" id="editProfileLabel">Edit Profile</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-          <form id="edit-profile-form">
-            <label for="user-name" class="d-block mb-1">Username</label>
-            <input type="text" class="d-block mb-2 form-control" name="username" value="<%= user.username %>">
-            <p id="username-notValid" class="text-danger d-none fs-14"></p>
-  
-            <label for="email" class="d-block mb-1">Email</label>
-            <input type="email" class="d-block mb-2 form-control" name="email" value="<%= user.email %>" readonly>
-            <p id="email-noValid" class="text-danger d-none fs-14"></p>
-  
-            <label for="phone" class="d-block mb-1">Mobile</label>
-            <input type="number" class="d-block mb-2 form-control" name="phone" value="<%= user.phone %>">
-            <p id="phone-notValid" class="text-danger d-none fs-14"></p>
-  
-          </form>
-          <p id="no-change-msg" class="text-danger d-none fs-14 mt-3"></p>
-          </div>
-          <div class="modal-footer">
-            
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-danger" onclick="editProfile('/myProfile/editProfile')">Save changes</button>
-          </div>
+    <!--edit profile Modal -->
+    <div class="modal fade" id="editProfile" tabindex="-1" role="dialog" aria-labelledby="editProfileLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" class="font-weight-bold bg-danger" id="editProfileLabel">Edit Profile</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-profile-form">
+                        <label for="user-name" class="d-block mb-1">Username</label>
+                        <input type="text" class="d-block mb-2 form-control" name="username"
+                            value="<%= user.username %>">
+                        <p id="username-notValid" class="text-danger d-none fs-14"></p>
+
+                        <label for="email" class="d-block mb-1">Email</label>
+                        <input type="email" class="d-block mb-2 form-control" name="email" value="<%= user.email %>"
+                            readonly>
+                        <p id="email-noValid" class="text-danger d-none fs-14"></p>
+
+                        <label for="phone" class="d-block mb-1">Mobile</label>
+                        <input type="number" class="d-block mb-2 form-control" name="phone" value="<%= user.phone %>">
+                        <p id="phone-notValid" class="text-danger d-none fs-14"></p>
+
+                    </form>
+                    <p id="no-change-msg" class="text-danger d-none fs-14 mt-3"></p>
+                </div>
+                <div class="modal-footer">
+
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" onclick="editProfile('/myProfile/editProfile')">Save
+                        changes</button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 
     <!-- changePassword -->
-    <div class="modal fade" id="changePassword" tabindex="-1" role="dialog" aria-labelledby="changePasswordLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered" role="document">
-          <div class="modal-content">
-              <div class="modal-header">
-                  <h5 class="modal-title font-weight-bold " id="changePasswordLabel">Change Password</h5>
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                  </button>
-              </div>
-              <div class="modal-body">
-                  <form id="change-password-form">
-                      <label for="current-password" class="d-block mb-1">Current Password</label>
-                      <input type="password" class="d-block mb-2 form-control" name="currentPassword" id="current-password" >
-                      <p id="current-password-notValid" class="text-danger d-none fs-14"></p>
-  
-                      <label for="new-password" class="d-block mb-1">New Password</label>
-                      <input type="password" class="d-block mb-2 form-control" name="newPassword" id="new-password" >
-                      <p id="new-password-notValid" class="text-danger d-none fs-14"></p>
-  
-                      <label for="confirm-password" class="d-block mb-1">Confirm New Password</label>
-                      <input type="password" class="d-block mb-2 form-control" name="confirmPassword" id="confirm-password" >
-                      <p id="confirm-password-notValid" class="text-danger d-none fs-14"></p>
-  
-                      <button type="submit" class="btn btn-danger mt-3">Change Password</button>
-                  </form>
-              </div>
-          </div>
-      </div>
+    <div class="modal fade" id="changePassword" tabindex="-1" role="dialog" aria-labelledby="changePasswordLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title font-weight-bold " id="changePasswordLabel">Change Password</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="change-password-form">
+                        <label for="current-password" class="d-block mb-1">Current Password</label>
+                        <input type="password" class="d-block mb-2 form-control" name="currentPassword"
+                            id="current-password">
+                        <p id="current-password-notValid" class="text-danger d-none fs-14"></p>
+
+                        <label for="new-password" class="d-block mb-1">New Password</label>
+                        <input type="password" class="d-block mb-2 form-control" name="newPassword" id="new-password">
+                        <p id="new-password-notValid" class="text-danger d-none fs-14"></p>
+
+                        <label for="confirm-password" class="d-block mb-1">Confirm New Password</label>
+                        <input type="password" class="d-block mb-2 form-control" name="confirmPassword"
+                            id="confirm-password">
+                        <p id="confirm-password-notValid" class="text-danger d-none fs-14"></p>
+
+                        <button type="submit" class="btn btn-danger mt-3">Change Password</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
 
-        
-          <script>
-          
-          
+
+    <script>
+
+
         function showProfileDetails() {
             hideAllSections();
             document.getElementById('profileDetails').style.display = 'block';
@@ -362,7 +537,7 @@
             setActiveLink(2);
         }
 
-        function showWallet(){
+        function showWallet() {
             hideAllSections()
             document.getElementById('userWallet').style.display = 'block'
             setActiveLink(3)
@@ -387,7 +562,7 @@
             if (activeSection !== null) {
                 const index = parseInt(activeSection, 10);
                 hideAllSections();
-                switch(index) {
+                switch (index) {
                     case 0:
                         showProfileDetails();
                         break;
@@ -410,158 +585,135 @@
 
         window.onload = showStoredSection
 
-        
-        
+
+
     </script>
-        
-    <script src="/js/addAddress.js"></script>
+
+    <script src="/js/addAddress.js">
+
+        let currentOrdersPage = <%= ordersPagination ?ordersPagination.currentPage: 1 %>;
+    </script>
 
     <script>
- 
-      function editProfile(url){
-        const userNameValidation = document.getElementById('username-notValid')
-        const emailValidation = document.getElementById('email-notValid')
-        const phoneValidation = document.getElementById('phone-notValid')
-  
-        const noChange = document.getElementById('no-change-msg')
-  
-          const editProfileForm = document.getElementById('edit-profile-form')
-          const formData = new FormData(editProfileForm)
-          const data = {
-              username:formData.get('username'),
-              email:formData.get('email'),
-              phone:formData.get('phone')
-          }
-          try {
-  
-              fetch(url,{
-                  method:'PUT',
-                  headers:{
-                      'Content-Type': 'application/json'
-                  },
-                  body:JSON.stringify(data)
-              })
-              .then(response => response.json())
-              .then(result =>{
-  
-                //clear previous errors
-                if (userNameValidation) userNameValidation.classList.add('d-none')
-                if (emailValidation) emailValidation.classList.add('d-none')
-                if (phoneValidation) phoneValidation.classList.add('d-none')
-                if(noChange)  noChange.classList.add('d-none')
-                console.log('result',result)
-                  if(result.validationError){
-                      Object.entries(result.validationErrors).forEach(([field,message])=>{
-                        const validationFaild = document.getElementById(`${field}-notValid`)
-                        console.log('validation faild',validationFaild)
-                        if(validationFaild){
-                          validationFaild.classList.remove('d-none')
-                          validationFaild.textContent = message
+
+        function editProfile(url) {
+            const userNameValidation = document.getElementById('username-notValid')
+            const emailValidation = document.getElementById('email-notValid')
+            const phoneValidation = document.getElementById('phone-notValid')
+
+            const noChange = document.getElementById('no-change-msg')
+
+            const editProfileForm = document.getElementById('edit-profile-form')
+            const formData = new FormData(editProfileForm)
+            const data = {
+                username: formData.get('username'),
+                email: formData.get('email'),
+                phone: formData.get('phone')
+            }
+            try {
+
+                fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(response => response.json())
+                    .then(result => {
+
+                        //clear previous errors
+                        if (userNameValidation) userNameValidation.classList.add('d-none')
+                        if (emailValidation) emailValidation.classList.add('d-none')
+                        if (phoneValidation) phoneValidation.classList.add('d-none')
+                        if (noChange) noChange.classList.add('d-none')
+                        console.log('result', result)
+                        if (result.validationError) {
+                            Object.entries(result.validationErrors).forEach(([field, message]) => {
+                                const validationFaild = document.getElementById(`${field}-notValid`)
+                                console.log('validation faild', validationFaild)
+                                if (validationFaild) {
+                                    validationFaild.classList.remove('d-none')
+                                    validationFaild.textContent = message
+                                }
+                            })
+                        } else if (result.noChange) {
+                            noChange.classList.remove('d-none')
+                            noChange.textContent = result.message
+                        } else if (result.success) {
+                            $('#editProfile').modal('hide');
+
+                            localStorage.setItem('successMessage', result.message);
+                            location.reload()
+                        } else {
+                            localStorage.setItem('errorMessage', 'something went wrong please try again later');
+                            location.reload()
                         }
-                      })
-                  }else if(result.noChange){
-                        noChange.classList.remove('d-none')
-                        noChange.textContent = result.message
-                  }else if(result.success){
-                    $('#editProfile').modal('hide');
-                    
-                    localStorage.setItem('successMessage', result.message);
-                    location.reload()
-                  }else{
-                    localStorage.setItem('errorMessage', 'something went wrong please try again later');
-                    location.reload()
-                  }
-              })
-              .catch(error => console.error('error',error))
-  
-          } catch (error) {
-              console.error('something went wrong',error)
-          }
-      }
-  
-  
-    const changePasswordForm = document.getElementById('change-password-form');
-  
-    if(changePasswordForm){
-      changePasswordForm.addEventListener('submit', function(event) {
-          event.preventDefault();
-  
-          const currentPassword = document.getElementById('current-password').value;
-          const newPassword = document.getElementById('new-password').value;
-          const confirmPassword = document.getElementById('confirm-password').value;
-  
-          // Client-side validation
-          let isValid = true;
-          if (newPassword !== confirmPassword) {
-              document.getElementById('confirm-password-notValid').textContent = 'Passwords do not match';
-              document.getElementById('confirm-password-notValid').classList.remove('d-none');
-              isValid = false;
-          } else {
-              document.getElementById('confirm-password-notValid').classList.add('d-none');
-          }
-  
-          // Submit form if valid
-          if (isValid) {
-              fetch('/change-password', {
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({
-                      currentPassword,
-                      newPassword
-                  })
-              })
-              .then(response => response.json())
-              .then(data => {
-                  if (data.success) {
-                    Swal.fire({
-                    icon:'success',
-                    title:'success',
-                    text: successMessage,
-                    confirmButtonText:'ok'
                     })
-                      $('#changePassword').modal('hide');
-                  } else {
-                      document.getElementById('current-password-notValid').textContent = data.message;
-                      document.getElementById('current-password-notValid').classList.remove('d-none');
-                  }
-              })
-              .catch(error => console.error('Error:', error));
-          }
-      });
-    }  
+                    .catch(error => console.error('error', error))
 
-    //passing order id and produt id to the modal
-//  const returnReasonModal = document.getElementById('returnReason');
-    
-//     returnReasonModal.addEventListener('shown.bs.modal', function (event) {
-//         const button = event.relatedTarget; // Button that triggered the modal
-//         console.log('button',button)
-//         const orderId = button.getAttribute('data-order-id');
-//         const itemId = button.getAttribute('data-item-id');
+            } catch (error) {
+                console.error('something went wrong', error)
+            }
+        }
 
-//         // Set the values of the hidden input fields
-//         document.getElementById('orderId').value = orderId;
-//         document.getElementById('itemId').value = itemId;
-//     });
-  
-      //passing order id and produt id to the modal
-//  $('#returnReason').on('shown.bs.modal', function (event) {
-//     // Get the button that triggered the modal
-//     const button = $(event.relatedTarget);
 
-//     // Extract values from the button's data attributes
-//     const orderId = button.data('order-id');
-//     const itemId = button.data('item-id');
+        const changePasswordForm = document.getElementById('change-password-form');
 
-//     // Set the values of the hidden input fields
-//     $('#orderId').val(orderId);   // Set orderId
-//     $('#itemId').val(itemId); // Set itemId
-// });
-  
-  </script>
+        if (changePasswordForm) {
+            changePasswordForm.addEventListener('submit', function (event) {
+                event.preventDefault();
 
-<script src="/js/placeOrder.js"></script>
+                const currentPassword = document.getElementById('current-password').value;
+                const newPassword = document.getElementById('new-password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
 
-  <%- include('partials/footer') %> 
+                // Client-side validation
+                let isValid = true;
+                if (newPassword !== confirmPassword) {
+                    document.getElementById('confirm-password-notValid').textContent = 'Passwords do not match';
+                    document.getElementById('confirm-password-notValid').classList.remove('d-none');
+                    isValid = false;
+                } else {
+                    document.getElementById('confirm-password-notValid').classList.add('d-none');
+                }
+
+                // Submit form if valid
+                if (isValid) {
+                    fetch('/change-password', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            currentPassword,
+                            newPassword
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'success',
+                                    text: successMessage,
+                                    confirmButtonText: 'ok'
+                                })
+                                $('#changePassword').modal('hide');
+                            } else {
+                                document.getElementById('current-password-notValid').textContent = data.message;
+                                document.getElementById('current-password-notValid').classList.remove('d-none');
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                }
+            });
+        }
+
+
+    </script>
+
+    <script src="/js/placeOrder.js"></script>
+    <script src="/js/wallet.js"></script>
+
+    <%- include('partials/footer') %>

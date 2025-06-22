@@ -7,6 +7,7 @@ const connect_db = require('./config/db')
 const passport = require('./config/passport')
 const adminroute = require('./routes/admin')
 const userroute = require('./routes/users')
+const HttpStatusCode = require('./utils/statsCode')
 const PORT = process.env.PORT || 5050;
 
 connect_db()
@@ -49,7 +50,7 @@ app.get('*', (req, res) =>{
 //Error handling middleware
 app.use((err, req, res, next) =>{
     console.error(err.stack);
-    res.status(500).send('error')
+    res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).send('error')
 })
 
 app.listen(PORT,()=> console.log(`server is running on ${PORT}`))

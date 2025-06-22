@@ -15,25 +15,18 @@
                 </div>
                 <div class="row">
                     <div class="col-lg-3 col-md-3">
-                        <ul class="nav nav-tabs" role="tablist">
-                            <% product.variants[0].images.forEach(img => { %>
-                            <li class="nav-item">
-                                <a class="nav-link active" data-toggle="tab" href="<%= img %>" role="tab">
-                                    <div class="product__thumb__pic ">
-                                        <img class="single-image" src="\<%= img %>" alt="">
-                                    </div>
-                                </a>
-                            </li>
-                            <% }) %>
-                        </ul>  
+                        <ul class="nav nav-tabs" id="variant-images" role="tablist">
+
+                        </ul>
                     </div>
                     <div class="col-lg-6 col-md-9">
                         <div class="tab-content">
                             <div class="tab-pane active" id="tabs-1" role="tabpanel">
-                                <div class="product__details__pic__item" data-image-url="<%= product.variants[0].images[0] %>"> 
+                                <div class="product__details__pic__item"
+                                    data-image-url="<%= product.variants[0].images[0] %>">
                                     <img id="selected-image" src="\<%= product.variants[0].images[0] %>" alt="">
                                 </div>
-                            </div>       
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -44,83 +37,103 @@
                 <div class="row d-flex justify-content-center">
                     <div class="col-lg-8">
                         <div class="product__details__text">
-                            <h4><%= product.productName %></h4>
+                            <h4>
+                                <%= product.productName %>
+                            </h4>
 
                             <div class="rating">
-                                <% for( let index = 1; index <= 5; index++ ) { %>
-                                   <% if (avgRating >= index) { %>
-                                    <i class="fa-solid fa-star text-warning"></i>
-                                   <% } else{ %>
-                                    <i class="fa-regular fa-star text-warning"></i>
-                                    <% } %>
-                                <% } %>
-                                <span> - <%= review.length %> Reviews</span>
+                                <% for( let index=1; index <=5; index++ ) { %>
+                                    <% if (avgRating>= index) { %>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <% } else{ %>
+                                            <i class="fa-regular fa-star text-warning"></i>
+                                            <% } %>
+                                                <% } %>
+                                                    <span> - <%= review.length %> Reviews</span>
                             </div>
-                            
-                            <% if (product.offer && product.offer.expirAt && new Date(product.offer.expirAt) >= new Date()) { %>
 
-                                <% const originalPrice = product.variants[0].price %>
-                                <% const offerPrice = Math.round(originalPrice - (originalPrice * product.offer.discountPercentage/100)) %>
-                                <h3 class="d-inline mr-2" id="dicoutedPrice-<%= product._id %>">₹<%= offerPrice %></h3>
-                                <h6 class="d-inline" id="mrp-<%= product._id %>" style="text-decoration: line-through;">₹ <%= product.variants[0].price%></h6>
-                                <span class="ml-2 red">(<%= product.offer.discountPercentage %>%)off</span>
+                            <% if (product.offer && product.offer.expirAt && new Date(product.offer.expirAt)>= new
+                                Date()) { %>
 
-                            <% }else { %>
-                                <h3 id="mrp-<%= product._id %>">₹ <%= product.variants[0].price%></h3>
-                                <% } %>
-                            
-                            <p><%= product.productDescription %></p>
-                            <div class="product__details__option">
-                                <div class="product__details__option__size" id="sizeOption">
-                                    <!-- <span>Size:</span> -->
-                                    
-                                            <!-- <label id="availableSizes" for="xxl active"> -->
-                                                <input type="radio" id="xxl">
-                                            </label>
-                                        
-                                </div>
-                                <div class="product__details__option__color">
-                                    <span>Color:</span>
-                                    <% product.variants.forEach((variant, index) => { %>
-                                    <label class="c-<%= variant.color %>" for="<%= variant._id %>">
-                                        <input 
-                                        type="radio"
-                                        value="<%= variant.color%>" 
-                                        id="<%= variant._id %>" 
-                                        name="colorVariant"
-                                        <%= index === 0 ?'checked': '' %>
-                                        onchange="handleVariantChange('<%= variant._id  %>', '<%= variant.color %>')"
-                                        >                                        
-                                    </label>
-                                    <% }) %>
-                                </div>
-                            </div>
-                            <div class="product__details__cart__option">
-                                <div class="quantity">
-                                    <p id="max-limit" class="text-danger fw-14"></p>
-                                    <div class="pro-qty">
-                                        <input type="number" id="quantity-<%= product._id %>" name="quantity" value="1" readonly/>
-                                    </div>
-                                </div>
-                                <% if ((product.variants[0].sizes[0].stock) === 0) { %>
-                                    <span class="text-warning fs-14">out of stock</span>
-                                  <% } else { %> 
-                                    <button onclick="addCart('/addToCart/<%= product._id %>')" id="cart-action-<%= product._id %>" class="primary-btn border-0">
-                                        <%- productInCart? '<i class="fa-solid fa-arrow-right"></i>  go to cart' : 'add to cart' %>
-                                    </button>
-                                  <% } %>   
-                            </div>
-                            <div class="product__details__btns__option"> 
-                                <a href="#" onclick="addwishlist(event, '/addWishlist/<%= product._id %>')"><i class="fa fa-heart"></i> add to wishlist</a> 
-                                <a href="#"><i class="fa fa-exchange"></i> Add To Compare</a>
-                            </div>
-                            <div class="product__details__last__option">
-                                <h5><span>Guaranteed Safe Checkout</span></h5>
-                                <ul>
-                                    <li><span>category:</span> <%= product.category%></li>
-                                    <li><span>Brand:</span> <%= product.brand %></li>
-                                </ul>
-                            </div>
+                                <% const originalPrice=product.variants[0].price %>
+                                    <% const offerPrice=Math.round(originalPrice - (originalPrice *
+                                        product.offer.discountPercentage/100)) %>
+                                        <h3 class="d-inline mr-2" id="dicoutedPrice-<%= product._id %>">₹<%= offerPrice
+                                                %>
+                                        </h3>
+                                        <h6 class="d-inline" id="mrp-<%= product._id %>"
+                                            style="text-decoration: line-through;">₹ <%= product.variants[0].price%>
+                                        </h6>
+                                        <span class="ml-2 red">(<%= product.offer.discountPercentage %>%)off</span>
+
+                                        <% }else { %>
+                                            <h3 id="mrp-<%= product._id %>">₹ <%= product.variants[0].price%>
+                                            </h3>
+                                            <% } %>
+
+                                                <p>
+                                                    <%= product.productDescription %>
+                                                </p>
+                                                <div class="product__details__option">
+                                                    <div class="product__details__option__size" id="sizeOption">
+                                                        <!-- <span>Size:</span> -->
+
+                                                        <!-- <label id="availableSizes" for="xxl active"> -->
+                                                        <input type="radio" id="xxl">
+                                                        </label>
+
+                                                    </div>
+                                                    <div class="product__details__option__color">
+                                                        <span>Color:</span>
+                                                        <% product.variants.forEach((variant, index)=> { %>
+                                                            <label class="c-<%= variant.color %>"
+                                                                for="<%= variant._id %>">
+                                                                <input type="radio" value="<%= variant.color%>"
+                                                                    id="<%= variant._id %>" name="colorVariant"
+                                                                    <%=index===0 ?'checked': '' %>
+                                                                onchange="handleVariantChange('<%= variant._id %>', '<%=
+                                                                        variant.color %>')"
+                                                                        >
+                                                            </label>
+                                                            <% }) %>
+                                                    </div>
+                                                </div>
+                                                <div class="product__details__cart__option">
+                                                    <div class="quantity">
+                                                        <p id="max-limit" class="text-danger fw-14"></p>
+                                                        <div class="pro-qty">
+                                                            <input type="number" id="quantity-<%= product._id %>"
+                                                                name="quantity" value="1" readonly />
+                                                        </div>
+                                                    </div>
+                                                    <% if ((product.variants[0].sizes[0].stock)===0) { %>
+                                                        <span class="text-warning fs-14">out of stock</span>
+                                                        <% } else { %>
+                                                            <button onclick="addCart('/addToCart/<%= product._id %>')"
+                                                                id="cart-action-<%= product._id %>"
+                                                                class="primary-btn border-0">
+                                                                <%- productInCart? '<i class="fa-solid fa-arrow-right"></i>  go to cart'
+                                                                    : 'add to cart' %>
+                                                            </button>
+                                                            <% } %>
+                                                </div>
+                                                <div class="product__details__btns__option">
+                                                    <a href="#"
+                                                        onclick="addwishlist(event, '/addWishlist/<%= product._id %>')"><i
+                                                            class="fa fa-heart"></i> add to wishlist</a>
+                                                    <a href="#"><i class="fa fa-exchange"></i> Add To Compare</a>
+                                                </div>
+                                                <div class="product__details__last__option">
+                                                    <h5><span>Guaranteed Safe Checkout</span></h5>
+                                                    <ul>
+                                                        <li><span>category:</span>
+                                                            <%= product.category%>
+                                                        </li>
+                                                        <li><span>Brand:</span>
+                                                            <%= product.brand %>
+                                                        </li>
+                                                    </ul>
+                                                </div>
                         </div>
                     </div>
                 </div>
@@ -130,24 +143,26 @@
                             <ul class="nav nav-tabs" role="tablist">
                                 <li class="nav-item">
                                     <a class="nav-link active" data-toggle="tab" href="#tabs-5"
-                                    role="tab">Description</a>
+                                        role="tab">Description</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" data-toggle="tab" href="#tabs-6" role="tab">Customer
-                                    Previews(<%= review.length %>)</a>
+                                        Previews(<%= review.length %>)</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" data-toggle="tab" href="#tabs-7" role="tab">Additional
-                                    information</a>
+                                        information</a>
                                 </li>
                             </ul>
                             <div class="tab-content">
                                 <div class="tab-pane active" id="tabs-5" role="tabpanel">
                                     <div class="product__details__tab__content">
-                                        
+
                                         <div class="product__details__tab__content__item">
                                             <h5>Products Infomation</h5>
-                                            <p><%= product.productDescription %></p>
+                                            <p>
+                                                <%= product.productDescription %>
+                                            </p>
                                         </div>
                                         <div class="product__details__tab__content__item">
                                             <h5>Material used</h5>
@@ -157,7 +172,7 @@
                                                 tend to have a shine to them compared to wool and cotton suits, this can
                                                 make the suit look cheap. The texture of velvet is luxurious and
                                                 breathable. Velvet is a great choice for dinner party jacket and can be
-                                            worn all year round.</p>
+                                                worn all year round.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -171,13 +186,13 @@
                                                 file, coordinate appointments, surf the internet, exchange text messages
                                                 and more. Every product that is labeled as a Pocket PC must be
                                                 accompanied with specific software to operate the unit and must feature
-                                            a touchscreen and touchpad.</p>
+                                                a touchscreen and touchpad.</p>
                                             <p>As is the case with any new technology product, the cost of a Pocket PC
                                                 was substantial during it’s early release. For approximately $700.00,
                                                 consumers could purchase one of top-of-the-line Pocket PCs in 2003.
                                                 These days, customers are finding that prices have become much more
                                                 reasonable now that the newness is wearing off. For approximately
-                                            $350.00, a new Pocket PC can now be purchased.</p>
+                                                $350.00, a new Pocket PC can now be purchased.</p>
                                         </div>
                                         <div class="product__details__tab__content__item">
                                             <h5>Material used</h5>
@@ -187,7 +202,7 @@
                                                 tend to have a shine to them compared to wool and cotton suits, this can
                                                 make the suit look cheap. The texture of velvet is luxurious and
                                                 breathable. Velvet is a great choice for dinner party jacket and can be
-                                            worn all year round.</p>
+                                                worn all year round.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -196,7 +211,7 @@
                                         <p class="note">Nam tempus turpis at metus scelerisque placerat nulla deumantos
                                             solicitud felis. Pellentesque diam dolor, elementum etos lobortis des mollis
                                             ut risus. Sedcus faucibus an sullamcorper mattis drostique des commodo
-                                        pharetras loremos.</p>
+                                            pharetras loremos.</p>
                                         <div class="product__details__tab__content__item">
                                             <h5>Products Infomation</h5>
                                             <p>A Pocket PC is a handheld computer, which features many of the same
@@ -205,13 +220,13 @@
                                                 file, coordinate appointments, surf the internet, exchange text messages
                                                 and more. Every product that is labeled as a Pocket PC must be
                                                 accompanied with specific software to operate the unit and must feature
-                                            a touchscreen and touchpad.</p>
+                                                a touchscreen and touchpad.</p>
                                             <p>As is the case with any new technology product, the cost of a Pocket PC
                                                 was substantial during it’s early release. For approximately $700.00,
                                                 consumers could purchase one of top-of-the-line Pocket PCs in 2003.
                                                 These days, customers are finding that prices have become much more
                                                 reasonable now that the newness is wearing off. For approximately
-                                            $350.00, a new Pocket PC can now be purchased.</p>
+                                                $350.00, a new Pocket PC can now be purchased.</p>
                                         </div>
                                         <div class="product__details__tab__content__item">
                                             <h5>Material used</h5>
@@ -221,7 +236,7 @@
                                                 tend to have a shine to them compared to wool and cotton suits, this can
                                                 make the suit look cheap. The texture of velvet is luxurious and
                                                 breathable. Velvet is a great choice for dinner party jacket and can be
-                                            worn all year round.</p>
+                                                worn all year round.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -232,59 +247,19 @@
             </div>
         </div>
     </section>
-    <!-- Shop Details Section End -->
 
-    <!-- Related Section Begin -->
-    <!-- <section class="related spad">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <h3 class="related-title">Related Product</h3>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-3 col-md-6 col-sm-6 col-sm-6">
-                    <div class="product__item">
-                        <div class="product__item__pic">
-                            <span class="label">New</span>
-                            <ul class="product__hover">
-                                <li><a href="#"><img src="img/icon/heart.png" alt=""></a></li>
-                                <li><a href="#"><img src="img/icon/compare.png" alt=""> <span>Compare</span></a></li>
-                                <li><a href="#"><img src="img/icon/search.png" alt=""></a></li> 
-                            </ul>
-                        </div>
-                        <div class="product__item__text">
-                            <h6>Piqué Biker Jacket</h6>
-                            <a href="#" class="add-cart">+ Add To Cart</a>
-                            <div class="rating">
-                                
-                            </div>
-                            <h5>$467.24</h5>
-                            <div class="product__color__select">
-                                <label for="pc-1">
-                                    <input type="radio" id="pc-1">
-                                </label>
-                                <label class="active black" for="pc-2">
-                                    <input type="radio" id="pc-2">
-                                </label>
-                                <label class="grey" for="pc-3">
-                                    <input type="radio" id="pc-3">
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section> -->
-    <!-- Related Section End -->
+    <script>
+        const product = <%- JSON.stringify(product) %>
+
+            console.log('product', product)
+    </script>
 
     <script>
         //zooming functionality
-        document.querySelectorAll('.product__details__pic__item').forEach(item =>{
+        document.querySelectorAll('.product__details__pic__item').forEach(item => {
             const img = item.querySelector('img')
 
-            item.addEventListener('mousemove',(e)=>{
+            item.addEventListener('mousemove', (e) => {
                 const { left, top, width, height } = item.getBoundingClientRect();
                 const x = (e.clientX - left) / width;
                 const y = (e.clientY - top) / height;
@@ -294,54 +269,176 @@
             })
 
             item.addEventListener('mouseleave', () => {
-            img.style.transformOrigin = 'center center';
-            img.style.transform = 'scale(1)';
-        })
+                img.style.transformOrigin = 'center center';
+                img.style.transform = 'scale(1)';
+            })
         })
 
-        const product = <%-JSON.stringify(product) %>
-        console.log('product',product)
 
         //variant selction
 
         const defaultSelectedVariant = document.querySelector('input[name="colorVariant"]:checked')
-        if(defaultSelectedVariant){
+        // const defaultSelectedVariant = product.variants[0]
+        if (defaultSelectedVariant) {
             handleVariantChange(defaultSelectedVariant.id, defaultSelectedVariant.value)
         }
 
-        function handleVariantChange(variantId,color){
+        function handleVariantChange(variantId, color) {
             console.log('hello')
             try {
-            console.log('variantId',variantId)
-            console.log('color',color)
+                console.log('variantId', variantId)
+                console.log('color', color)
 
-            //find the selected variant
-            const selectedVariant = product.variants.find(variant => variant._id === variantId)
-            console.log('selected variant',selectedVariant)
+                //find the selected variant
+                const selectedVariant = product.variants.find(variant => variant._id === variantId)
+                console.log('selected variant', selectedVariant)
 
-            if(selectedVariant){
-              const sizeOptionContainer = document.getElementById('sizeOption') 
-              sizeOptionContainer.innerHTML = '<span>Size:</span>'
-              selectedVariant.sizes.forEach((size, index)=>{
-                const label = document.createElement('label')
-                label.textContent = size.size
-                sizeOptionContainer.appendChild(label)
-              })
-            } 
+                if (selectedVariant) {
+
+                    // size
+                    const sizeOptionContainer = document.getElementById('sizeOption')
+                    sizeOptionContainer.innerHTML = '<span>Size:</span>'
+                    selectedVariant.sizes.forEach((size, index) => {
+                        const label = document.createElement('label')
+                        label.textContent = size.size
+                        sizeOptionContainer.appendChild(label)
+                    })
+
+                    //Update Images
+                    updateVariantImages(selectedVariant)
+
+                    //Update Price
+                    updateVariantPrice(selectedVariant)
+
+                    //Update Stock Status
+                    updateStockStatus(selectedVariant)
+
+
+                }
             } catch (error) {
-                console.error('something went wrong',error)
-            }           
+                console.error('something went wrong', error)
+            }
         }
 
-        document.querySelectorAll('.single-image').forEach(item =>{
-        
-            item.addEventListener('click', (img)=>{
-            let clickImage = img.target.getAttribute('src')
-            
-            document.getElementById('selected-image').setAttribute('src',clickImage)
+        function updateStockStatus(selectedVariant) {
+
+            // Check if any size has stock
+            const hasStock = selectedVariant.sizes.some(size => size.stock > 0);
+            const productId = product._id;
+
+            const cartButton = document.getElementById(`cart-action-${productId}`);
+            const maxLimitElement = document.getElementById('max-limit');
+
+            if (!hasStock) {
+                // All sizes out of stock
+                if (cartButton) {
+                    cartButton.disabled = true;
+                    cartButton.innerHTML = 'Out of Stock';
+                    cartButton.className = 'primary-btn border-0 disabled';
+                }
+
+                if (maxLimitElement) {
+                    maxLimitElement.textContent = 'This variant is currently out of stock';
+                }
+            } else {
+                // Has stock - enable button
+                if (cartButton) {
+                    cartButton.disabled = false;
+                    cartButton.className = 'primary-btn border-0';
+                }
+
+                if (maxLimitElement) {
+                    maxLimitElement.textContent = '';
+                }
+            }
+        }
+
+        document.querySelectorAll('.single-image').forEach(item => {
+
+            item.addEventListener('click', (img) => {
+                let clickImage = img.target.getAttribute('src')
+
+                document.getElementById('selected-image').setAttribute('src', clickImage)
             })
         })
-        
+
+
+        function updateVariantImages(selectedVariant) {
+            console.log('started updating image ', selectedVariant)
+            // Update thumbnail images
+            const navTabs = document.getElementById('variant-images');
+            navTabs.innerHTML = '';
+
+            selectedVariant.images.forEach((img, index) => {
+                console.log('image ', img)
+                const li = document.createElement('li');
+                li.className = 'nav-item';
+
+                const a = document.createElement('a');
+                a.className = index === 0 ? 'nav-link active' : 'nav-link';
+                a.setAttribute('data-toggle', 'tab');
+                a.setAttribute('href', img);
+                a.setAttribute('role', 'tab');
+
+                const div = document.createElement('div');
+                div.className = 'product__thumb__pic';
+
+                const imgElement = document.createElement('img');
+                imgElement.className = 'single-image';
+                imgElement.src = `\\${img}`
+                imgElement.alt = '';
+
+                // Add click event for thumbnail
+                imgElement.addEventListener('click', (e) => {
+                    const clickedImage = e.target.getAttribute('src');
+                    document.getElementById('selected-image').setAttribute('src', clickedImage);
+
+                    // Update active thumbnail
+                    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+                    a.classList.add('active');
+                });
+
+                div.appendChild(imgElement);
+                a.appendChild(div);
+                li.appendChild(a);
+                navTabs.appendChild(li);
+            });
+
+            // Update main image
+            if (selectedVariant.images.length > 0) {
+                document.getElementById('selected-image').src = `\\${selectedVariant.images[0]}`;
+                document.querySelector('.product__details__pic__item').setAttribute('data-image-url', `\\${selectedVariant.images[0]}`);
+            }
+        }
+
+        function updateVariantPrice(selectedVariant) {
+            const productId = product._id;
+            const originalPrice = selectedVariant.price;
+
+            // Check if there's an active offer
+            if (product.offer && product.offer.expirAt && new Date(product.offer.expirAt) >= new Date()) {
+                const offerPrice = Math.round(originalPrice - (originalPrice * product.offer.discountPercentage / 100));
+
+                // Update discounted price
+                const discountedPriceElement = document.getElementById(`dicoutedPrice-${productId}`);
+                if (discountedPriceElement) {
+                    discountedPriceElement.textContent = `₹${offerPrice}`;
+                }
+
+                // Update original price (struck through)
+                const mrpElement = document.getElementById(`mrp-${productId}`);
+                if (mrpElement) {
+                    mrpElement.textContent = `₹ ${originalPrice}`;
+                }
+            } else {
+                // No offer - just update the regular price
+                const mrpElement = document.getElementById(`mrp-${productId}`);
+                if (mrpElement) {
+                    mrpElement.textContent = `₹ ${originalPrice}`;
+                }
+            }
+        }
+
     </script>
 
-     <%- include('partials/footer') %> 
+    <%- include('partials/footer') %>

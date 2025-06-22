@@ -40,28 +40,28 @@
                                 <tr id="cart-item-<%= item._id  %>">   
                                     <td class="product__cart__item">
                                         <div class="product__cart__item__pic">
-                                            <img src="<%= item.product.variants[0].images[0] %>" alt="">
+                                            <img src="<%= item.variant.images[0] %>" alt="">
                                         </div>
                                         <div class="product__cart__item__text">
                                             <a href="/viewProduct/<%= item.product._id %>"><h6><%= item.product.productName %></h6></a>
                                             <% let offer = false %>
                                             <% if (item.product.offer && item.product.offer.expirAt && new Date(item.product.offer.expirAt) >= new Date()) { %>
                                                 <% offer = true %>
-                                                <% const originalPrice = item.product.variants[0].price %>
+                                                <% const originalPrice = item.variant.price %>
                                                 <% const offerPrice = Math.round(originalPrice - (originalPrice * item.product.offer.discountPercentage/100)) %>
                                                 <h5 class="d-inline mr-2" id="dicoutedPrice-<%= item._id %>">₹<%= offerPrice %></h5>
-                                                <h6 class="d-inline" id="mrp-<%= item._id %>" style="text-decoration: line-through;">₹ <%= item.product.variants[0].price%></h6>
+                                                <h6 class="d-inline" id="mrp-<%= item._id %>" style="text-decoration: line-through;">₹ <%= item.variant.price%></h6>
                                                 <span class="ml-2 red">(<%= item.product.offer.discountPercentage %>%)off</span>
                 
                                             <% }else { %>
-                                                <h5 id="mrp-<%= item._id %>">₹ <%= item.product.variants[0].price%></h5>
+                                                <h5 id="mrp-<%= item._id %>">₹ <%= item.variant.price%></h5>
                                                 <% } %>
                                         </div>
                                     </td>
                                     <td class="quantity__item">
                                         <div class="quantity">
                                             <div class="pro-qty-2">  
-                                                <% const stock = item.product.variants[0].sizes[0].stock %>
+                                                <% const stock = item.variant.sizes[0].stock %>
                                                 <input id="itemQuantity" data-stock="<%= stock %>" type="text" value="<%= item.quantity %>" readonly>
                                             </div>
                                             <p id="max-limit-<%= item._id %>" class="text-danger fw-14"></p>
@@ -90,7 +90,7 @@
                         <h6>Cart total</h6>
                         <ul> 
                             <% const totalMrp = cart.items.reduce((acc,curr) =>{ %>
-                                <% acc += curr.product.variants[0].price * curr.quantity%>
+                                <% acc += curr.variant.price * curr.quantity%>
                                 <% return acc %>
                             <% },0) %> 
                             <li>Total MRP <span id="cart-total-mrp">₹ <%= totalMrp %></span></li> 
@@ -156,7 +156,7 @@
                       if (result.success) {
                            // Update cart totals dynamically
                             let totalMrp = result.updatedCart[0].items.reduce((acc, curr) => {
-                                let price = curr.product.variants[0].price;
+                                let price = curr.variant.price;
                                 return acc + (price * curr.quantity);
                             }, 0);
                             console.log('totalmrp',totalMrp)

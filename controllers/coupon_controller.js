@@ -3,6 +3,7 @@ const couponCollection = require('../models/couponModel')
 const cartCollection = require('../models/cartModel')
 
 const { validationResult } = require('express-validator')
+const HttpStatusCode = require('../utils/statsCode')
 
 
 exports.couponManagment = async (req, res) => {
@@ -11,14 +12,14 @@ exports.couponManagment = async (req, res) => {
         const searchQuery = req.query.search || ''
         const page = parseInt(req.query.page) || 1
         const limit = parseInt(req.query.limit) || 10
-        const skip = (page-1)*limit
+        const skip = (page - 1) * limit
 
-        const searchCriteria = {code: new RegExp(searchQuery,'i')}  
+        const searchCriteria = { code: new RegExp(searchQuery, 'i') }
 
         const coupansList = await couponCollection.find(searchCriteria).skip(skip).limit(limit)
 
         const totalCoupons = await couponCollection.countDocuments()     //total coupons
-        const totalPages = Math.ceil(totalCoupons/limit)                 //total pages
+        const totalPages = Math.ceil(totalCoupons / limit)                 //total pages
 
         res.render('Admin/couponManagment', {
             coupansList,
@@ -43,7 +44,7 @@ exports.addCoupon = async (req, res) => {
                 return acc
             }, {})
             console.log('validation error', validationErrors)
-            return res.status(400).json({ validationError: true, validationErrors })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
         }
 
         const existingCoupon = await couponCollection.findOne({ code: code })
@@ -55,7 +56,7 @@ exports.addCoupon = async (req, res) => {
 
         //create coupon
         await couponCollection.create(req.body)
-        return res.json({ success: true, message: 'coupon added successfully' })
+        return res.status(HttpStatusCode.CREATED).json({ success: true, message: 'coupon added successfully' })
 
     } catch (error) {
         console.error('sometihng went wrong', error)
@@ -72,7 +73,7 @@ exports.editCoupon = async (req, res) => {
                 return acc
             }, {})
             console.log('validation error', validationErrors)
-            return res.status(400).json({ validationError: true, validationErrors })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
         }
 
         const couponId = req.params.id
@@ -92,7 +93,7 @@ exports.editCoupon = async (req, res) => {
         )
 
         if (!updatedCoupon) {
-            return res.status(404).json({ success: false, message: 'Coupon not found' })
+            return res.status(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Coupon not found' })
         }
 
         return res.json({ success: true, message: 'successfully updated the coupon' })
@@ -114,7 +115,7 @@ exports.couponDelete = async (req, res) => {
 
     } catch (error) {
         console.error('something went wrong', error)
-        return res.status(500).josn({ success: false, message: 'something went wrong while deleting the coupon' })
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).josn({ success: false, message: 'something went wrong while deleting the coupon' })
     }
 }
 

@@ -1,8 +1,8 @@
 
 const productCollection = require('../models/productModel')
 const categoryCollection = require('../models/categoryModel')
-const variantCollection = require('../models/variantModel')
-const { deleteOne } = require('../models/cartModel')
+// const variantCollection = require('../models/variantModel')
+// const { deleteOne } = require('../models/cartModel')
 
 
 exports.loadOfferManagment = async (req,res)=>{

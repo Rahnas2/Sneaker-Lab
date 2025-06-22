@@ -18,12 +18,14 @@ const shippingService = require('../services/applyShippingCharge')
 const invoiceService = require('../services/invoiceDownload')
 
 const mongoose = require('mongoose')
-const { render } = require('ejs')
-const { set } = require('../config/email')
+// const { render } = require('ejs')
+// const { set } = require('../config/email')
 const { json } = require('body-parser')
 
 const Razorpay = require('razorpay')
-const { error } = require('console')
+const HttpStatusCode = require('../utils/statsCode')
+const variantModel = require('../models/variantModel')
+// const { error } = require('console')
 
 const razorpayInstance = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -58,7 +60,7 @@ exports.home = async (req, res) => {
 
 
         //new arrivels 
-        const newArrivals = await productCollection.find({deleted:false}).populate('variants')
+        const newArrivals = await productCollection.find({ deleted: false }).populate('variants')
             .sort({ createdAt: -1 }).limit(4)
 
         //average rating
@@ -71,7 +73,7 @@ exports.home = async (req, res) => {
             const avg = rating / product.review.length
             averageRating[product._id] = Math.ceil(avg)
         })
-        
+
 
 
         return res.render("User/index", {
@@ -82,7 +84,7 @@ exports.home = async (req, res) => {
             averageRating
         })
     } catch (error) {
-        return res.status(500).json('someting went wrong',error)
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json('someting went wrong', error)
     }
 }
 
@@ -156,7 +158,7 @@ exports.postsignup = async (req, res) => {
     //validation
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-        
+
         const validationErrors = errors.array().reduce((acc, error) => {
             acc[error.path] = error.msg
             return acc
@@ -285,7 +287,7 @@ exports.resendOtp = async (req, res) => {
             error: 'A new OTP has been sent to your email.'
         });
     } catch (error) {
-        return res.status(500).json('someting went wrong',error)
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json('someting went wrong', error)
     }
 
 };
@@ -301,7 +303,7 @@ exports.emailVerification = (req, res) => {
     try {
         res.render('User/emailVerification')
     } catch (error) {
-        return res.status(500).json('something went wrong',error)
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json('something went wrong', error)
     }
 }
 
@@ -328,7 +330,7 @@ exports.postEmailVerification = async (req, res) => {
         return res.json({ inValidEmail: true, message: 'invalid email' })
 
     } catch (error) {
-        return res.status(500).json('sometihng went wrong',error)
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json('sometihng went wrong', error)
     }
 }
 
@@ -401,7 +403,7 @@ exports.PostchangePassword = async (req, res) => {
         return res.json({ success: true })
 
     } catch (error) {
-        return res.status(500).json('sometihng went wrong',error)
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json('sometihng went wrong', error)
     }
 }
 
@@ -527,7 +529,7 @@ exports.getShop = async (req, res) => {
             const avg = rating / product.review.length
             averageRating[product._id] = Math.ceil(avg)
         })
-        
+
 
         res.render('User/shop', {
             user: req.session.user,
@@ -562,7 +564,7 @@ exports.getViewProduct = async (req, res) => {
         const userId = req.session.user   //users id
 
         const product = await productCollection.findOne({ _id: productId }).populate('variants')   //product details
-        
+
         const categoryId = product.category
         const brandId = product.brand
 
@@ -578,8 +580,8 @@ exports.getViewProduct = async (req, res) => {
 
         const review = product.review
 
-        const totalStars = review.reduce((acc,curr) =>  acc += curr.rating ,0)
-        
+        const totalStars = review.reduce((acc, curr) => acc += curr.rating, 0)
+
         const avgRating = Math.ceil(totalStars / review.length)
 
         res.render('User/viewProduct', {
@@ -605,12 +607,13 @@ exports.getCart = async (req, res) => {
         userId = req.session.user //user id
 
         //cart
-        const cart = await cartCollection.findOne({ userId: userId }).populate({
-            path: 'items.product',
+        const cart = await cartCollection.findOne({ userId: userId }).populate([
+            {path: 'items.product',
             populate: {
                 path: 'variants'
-            }
-        })
+            },},
+            { path: 'items.variant' }
+        ])
 
 
         const couponDiscount = req.session.coupon ? req.session.coupon.couponDiscount : 0    //coupon
@@ -619,14 +622,16 @@ exports.getCart = async (req, res) => {
             cart.items.forEach(item => {
                 // Check if the product has a valid offer
                 const product = item.product;
+                const variant = item.variant
+
                 if (product.offer && product.offer.expirAt && new Date(product.offer.expirAt) >= new Date()) {
                     // Calculate the offer price
-                    const originalPrice = product.variants[0].price;
+                    const originalPrice = variant.price;
                     const discount = product.offer.discountPercentage;
                     item.itemTotal = Math.round(originalPrice - (originalPrice * discount / 100)) * item.quantity;
                 } else {
                     // No offer, use the original price
-                    item.itemTotal = product.variants[0].price * item.quantity;
+                    item.itemTotal = variant.variants[0].price * item.quantity;
                 }
             });
             await cart.save()
@@ -649,8 +654,12 @@ exports.addToCart = async (req, res) => {
     try {
         const userId = req.session.user
         const product = req.params.id
+
         const quantity = req.body.quantity || 1
+
         const itemTotal = req.body.itemTotal
+
+        const variant = req.body.variantId
 
         const cart = await cartCollection.findOne({ userId: userId }).populate({
             path: 'items.product',
@@ -679,7 +688,7 @@ exports.addToCart = async (req, res) => {
             //if user dont have cart, so create new cart
             const newCart = await cartCollection.create({
                 userId,
-                items: [{ product, quantity, itemTotal }],
+                items: [{ product, variant, quantity, itemTotal }],
             })
 
             await shippingService.applyShippingCharge(userId, newCart.totalPrice)
@@ -687,7 +696,8 @@ exports.addToCart = async (req, res) => {
             return res.json({ success: true, message: 'Added to cart' })
         }
     } catch (error) {
-        return res.status(500).json({ success: false, message: 'sever error' })
+        console.error('add to cart error ', error)
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'sever error' })
     }
 }
 
@@ -736,17 +746,14 @@ exports.deleteCartItem = async (req, res) => {
             }
         )
 
-        const updatedCart = await cartCollection.find({ userId: userId }).populate({
-            path: 'items.product',
-            populate: {
-                path: 'variants'
-            }
-        })
+        const updatedCart = await cartCollection.find({ userId: userId }).populate([
+            {path: 'items.product'}, 
+            {path: 'items.variant'}
+        ])
 
         return res.json({ success: true, updatedCart: updatedCart })
     } catch (error) {
-        return res.status(500).json('something went wrong',error)
-        console.log('something went wrong', error)
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json('something went wrong', error)
     }
 }
 
@@ -788,12 +795,10 @@ exports.updatedCartQuantity = async (req, res) => {
         //apply shipping fee
         await shippingService.applyShippingCharge(userId, updatedCartTotal)
 
-        const updatedCart = await cartCollection.find({ userId: userId }).populate({
-            path: 'items.product',
-            populate: {
-                path: 'variants'
-            }
-        })
+        const updatedCart = await cartCollection.find({ userId: userId }).populate([
+            {path: 'items.product'}, 
+            {path: 'items.variant'}
+        ])
 
         return res.json({ success: true, updatedCart: updatedCart })
 
@@ -808,20 +813,67 @@ exports.updatedCartQuantity = async (req, res) => {
 
 //=========profile start=========// 
 
+
 exports.getProfile = async (req, res) => {
     try {
-        const userId = req.session.user
+        const userId = req.session.user;
+        const { section = 'profile', page = 1, limit = 5 } = req.query;
 
-        const user = await usersCollection.findById(userId)
+        const user = await usersCollection.findById(userId);
+        const address = await addressCollection.findOne({ userId: userId });
 
-        const address = await addressCollection.findOne({ userId: userId })
+        let orders = [];
+        let ordersPagination = null;
+        let wallet = null;
+        let walletPagination = null;
 
-        const orders = await orderCollection.find({ userId: user }).sort({ createdAt: -1 })
+        // Handle Orders Pagination
+        if (section === 'orders' || section === 'profile') {
+            const ordersCount = await orderCollection.countDocuments({ userId: user });
+            const ordersLimit = parseInt(limit);
+            const ordersPage = parseInt(page);
+            const ordersSkip = (ordersPage - 1) * ordersLimit;
 
-        const wallet = await walletCollection.findOne({ userId: userId })
+            orders = await orderCollection
+                .find({ userId: user })
+                .sort({ createdAt: -1 })
+                .skip(ordersSkip)
+                .limit(ordersLimit);
 
-        if (wallet) {
-            wallet.history.reverse()
+            ordersPagination = {
+                currentPage: ordersPage,
+                limit: ordersLimit,
+                totalPages: Math.ceil(ordersCount / ordersLimit),
+            };
+        }
+
+        // Handle Wallet Pagination
+        const walletDoc = await walletCollection.findOne({ userId: userId });
+        if (walletDoc) {
+            wallet = { balance: walletDoc.balance };
+
+            if (section === 'wallet' || section === 'profile') {
+                const historyCount = walletDoc.history.length;
+                const walletLimit = parseInt(limit);
+                const walletPage = parseInt(page);
+                const walletSkip = (walletPage - 1) * walletLimit;
+
+                console.log('before sort ', walletDoc.history)
+                // Sort history by date (newest first) and paginate
+                const sortedHistory = walletDoc.history
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                    .slice(walletSkip, walletSkip + walletLimit);
+
+                wallet.history = sortedHistory;
+
+                console.log('after sort ', sortedHistory)
+
+                walletPagination = {
+                    currentPage: walletPage,
+                    limit: walletLimit,
+                    totalPages: Math.ceil(historyCount / walletLimit)
+                };
+            }
         }
 
         return res.render('User/profile', {
@@ -829,12 +881,55 @@ exports.getProfile = async (req, res) => {
             address,
             orders,
             wallet,
+            ordersPagination,
+            walletPagination,
+            currentSection: section,
+            currentPage: parseInt(page),
             page: null
-        })
+        });
+
     } catch (error) {
-        console.error('something went wrong')
+        console.error('Error in getProfile:', error);
+        res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).render('error', { message: 'Something went wrong' });
     }
-}
+};
+
+// Separate API endpoints for AJAX pagination
+exports.getOrdersPaginated = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        const { page = 1, limit = 5 } = req.query;
+
+        const ordersCount = await orderCollection.countDocuments({ userId: userId });
+        const ordersLimit = parseInt(limit);
+        const ordersPage = parseInt(page);
+        const ordersSkip = (ordersPage - 1) * ordersLimit;
+
+        const orders = await orderCollection
+            .find({ userId: userId })
+            .sort({ createdAt: -1 })
+            .skip(ordersSkip)
+            .limit(ordersLimit);
+
+        const pagination = {
+            currentPage: ordersPage,
+            limit,
+            totalPages: Math.ceil(ordersCount / ordersLimit),
+        };
+
+        res.json({
+            success: true,
+            orders,
+            pagination
+        });
+
+    } catch (error) {
+        console.error('Error in getOrdersPaginated:', error);
+        res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Error fetching orders' });
+    }
+};
+
+
 
 exports.editProfile = async (req, res) => {
     try {
@@ -847,41 +942,41 @@ exports.editProfile = async (req, res) => {
             }, {})
             return res.json({ validationError: true, validationErrors })
         }
-        
+
         const userId = req.session.user
         const { username, phone } = req.body
         const user = await usersCollection.findById(userId)
 
-        if(user.googleId){
-            if(user.username === username && !phone){
-                return res.json({noChange: true, message: 'sorry you didnt make any changes'})
+        if (user.googleId) {
+            if (user.username === username && !phone) {
+                return res.json({ noChange: true, message: 'sorry you didnt make any changes' })
             }
         }
 
         if (user.username === username && user.phone?.toString() === phone) {
             return res.json({ noChange: true, message: 'sorry you didit make any changes' })
         }
-        
-        if(user.username !== username){
+
+        if (user.username !== username) {
             await usersCollection.updateOne(
-                {_id:userId},
-                {$set:{username:username}}
+                { _id: userId },
+                { $set: { username: username } }
             )
         }
 
-        if(phone && phone.length === 10 && user.phone?.toString() !== phone){
+        if (phone && phone.length === 10 && user.phone?.toString() !== phone) {
             await usersCollection.updateOne(
-                {_id:userId},
-                {$set:{phone:Number(phone)}}
+                { _id: userId },
+                { $set: { phone: Number(phone) } }
             )
         }
 
         return res.json({ success: true, message: 'successfully updated your profile' })
-        
+
 
     } catch (error) {
-        console.error('error',error)
-        return res.status(500).json('something went wrong',error)
+        console.error('error', error)
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json('something went wrong', error)
     }
 }
 
@@ -1093,7 +1188,7 @@ exports.orderDetail = async (req, res) => {
         })
     } catch (error) {
         console.error('error', error)
-        return res.status(500).json({ success: false, message: 'error', error })
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'error', error })
     }
 }
 
@@ -1104,7 +1199,7 @@ exports.downloadInvoice = (req, res) => {
         invoiceService.invoiceDownload(res, orderId)
     } catch (error) {
         console.error('something went wrong', error)
-        return res.status(500).json({ success: false, message: 'somethng went wrong', error })
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'somethng went wrong', error })
     }
 }
 
@@ -1129,7 +1224,7 @@ exports.cancelProduct = async (req, res) => {
 
         const variant = await variantCollection.findOne({ _id: variantId });
         if (!variant) {
-            return res.status(500).json({ success: false, message: 'Variant not found' });
+            return res.status(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Variant not found' });
         }
 
 
@@ -1138,7 +1233,7 @@ exports.cancelProduct = async (req, res) => {
         // Save the updated variant
         await variant.save();
 
-        const { status } = orders.items[itemIndex]
+        const { status, paymentStatus } = orders.items[itemIndex]
 
 
         if (status === 'order placed' || status === 'pending') {
@@ -1153,7 +1248,7 @@ exports.cancelProduct = async (req, res) => {
         }
 
         // handinling wallet refunds for online or wallet payment methods
-        if (orders.paymentMethod === 'RAZORPAY' || orders.paymentMethod === 'WALLET') {
+        if ((orders.paymentMethod === 'RAZORPAY' || orders.paymentMethod === 'WALLET') && paymentStatus === 'paid') {
             const cancelItem = orders.items[itemIndex]
             const amount = cancelItem.itemTotal
 
@@ -1186,7 +1281,7 @@ exports.cancelProduct = async (req, res) => {
 
     } catch (error) {
         console.error('somethig went wrong', error)
-        return res.status(500).json({ success: false, message: 'something went wrong' })
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'something went wrong' })
     }
 }
 
@@ -1219,7 +1314,7 @@ exports.returnProduct = async (req, res) => {
 
     } catch (error) {
         console.error('something went wrong', error)
-        return res.status(500).json({ success: false, message: 'someting went wrong' })
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'someting went wrong' })
     }
 }
 
@@ -1339,167 +1434,172 @@ exports.placeOrder = async (req, res) => {
         }
 
         //cart
-        const cart = await cartCollection.findOne({ userId: userId }).populate({
-            path: 'items.product',
-            populate: {
+        const cart = await cartCollection.findOne({ userId: userId }).populate([
+            { path: 'items.product', 
+                populate: {
                 path: 'variants'
             }
-        })
+             },
+            { path: 'items.variant' },
+            
+        ])
 
-        if (!cart || cart.items.length === 0) {
-            console.log('cart is empty')
-            return res.json({ error: true, message: 'your cart is empty' })
-        } else {
-            cart.items.forEach(item => {
-                // Check if the product has a valid offer
-                const product = item.product;
-                if (product.offer && product.offer.expirAt && new Date(product.offer.expirAt) >= new Date()) {
-                    // Calculate the offer price
-                    const originalPrice = product.variants[0].price;
-                    const discount = product.offer.discountPercentage;
-                    const offerPrice = Math.round(originalPrice - (originalPrice * discount / 100))
-                    item.offerPrice = offerPrice
-                    item.itemTotal = Math.round(originalPrice - (originalPrice * discount / 100)) * item.quantity;
-                } else {
-                    // No offer, use the original price
-                    item.itemTotal = product.variants[0].price * item.quantity;
+    if (!cart || cart.items.length === 0) {
+        console.log('cart is empty')
+        return res.json({ error: true, message: 'your cart is empty' })
+    } else {
+        cart.items.forEach(item => {
+            // Check if the product has a valid offer
+            const product = item.product;
+            const variant = item.variant
+
+            if (product.offer && product.offer.expirAt && new Date(product.offer.expirAt) >= new Date()) {
+                // Calculate the offer price
+                const originalPrice = variant.price
+                const discount = product.offer.discountPercentage;
+
+                const offerPrice = Math.round(originalPrice - (originalPrice * discount / 100))
+                item.offerPrice = offerPrice
+                item.itemTotal = Math.round(originalPrice - (originalPrice * discount / 100)) * item.quantity;
+            } else {
+                // No offer, use the original price
+                item.itemTotal = variant.price * item.quantity;
+            }
+        });
+
+        //if a couon applied
+        const appliedCouponCode = req.session.coupon ? req.session.coupon.code : false;
+        if (appliedCouponCode) {
+            const coupon = await couponCollection.findOne({ code: appliedCouponCode });
+            if (coupon && coupon.isActive) {
+
+                const subTotal = cart.items.reduce((total, item) => total + item.itemTotal, 0);
+
+                const discountPercentage = coupon.discountPercentage;
+                let couponDiscount = subTotal * (discountPercentage / 100);
+
+                if (couponDiscount > coupon.maxAmount) {
+                    couponDiscount = coupon.maxAmount;
                 }
-            });
 
-            //if a couon applied
-            const appliedCouponCode = req.session.coupon ? req.session.coupon.code : false;
-            if (appliedCouponCode) {
-                const coupon = await couponCollection.findOne({ code: appliedCouponCode });
-                if (coupon && coupon.isActive) {
+                let remainingDiscount = couponDiscount;
+                cart.items.forEach(item => {
+                    const itemProportionalDiscount = Math.round((item.itemTotal / subTotal) * couponDiscount);
+                    const discountToApply = Math.min(item.itemTotal, itemProportionalDiscount);
+                    item.itemTotal -= discountToApply;
+                    remainingDiscount -= discountToApply;
+                });
 
-                    const subTotal = cart.items.reduce((total, item) => total + item.itemTotal, 0);
-
-                    const discountPercentage = coupon.discountPercentage;
-                    let couponDiscount = subTotal * (discountPercentage / 100);
-
-                    if (couponDiscount > coupon.maxAmount) {
-                        couponDiscount = coupon.maxAmount;
-                    }
-
-                    let remainingDiscount = couponDiscount;
-                    cart.items.forEach(item => {
-                        const itemProportionalDiscount = Math.round((item.itemTotal / subTotal) * couponDiscount);
-                        const discountToApply = Math.min(item.itemTotal, itemProportionalDiscount);
-                        item.itemTotal -= discountToApply;
-                        remainingDiscount -= discountToApply;
-                    });
-
-                    if (remainingDiscount > 0) {
-                        let maxItem = cart.items.reduce((prev, curr) => (prev.itemTotal > curr.itemTotal ? prev : curr));
-                        maxItem.itemTotal -= remainingDiscount;
-                    }
-
-                    // req.session.coupon = {
-                    //     code: appliedCouponCode,
-                    //     couponDiscount: couponDiscount,
-                    //     cartTotal: subTotal 
-                    // };
-                } else {
-                    delete req.session.coupon
+                if (remainingDiscount > 0) {
+                    let maxItem = cart.items.reduce((prev, curr) => (prev.itemTotal > curr.itemTotal ? prev : curr));
+                    maxItem.itemTotal -= remainingDiscount;
                 }
+
+                // req.session.coupon = {
+                //     code: appliedCouponCode,
+                //     couponDiscount: couponDiscount,
+                //     cartTotal: subTotal 
+                // };
+            } else {
+                delete req.session.coupon
             }
-
-            await cart.save();
         }
 
-        const orderItems = cart.items.map(item => ({
-            productId: item.product._id,
-            productName: item.product.productName,
-            variantId: item.product.variants[0]._id,
-            size: item.product.variants[0].sizes[0].size,
-            image: item.product.variants[0].images[0],
-            price: item.product.variants[0].price,
-            offerPrice: item.offerPrice || item.product.variants[0].price,
-            quantity: item.quantity,
-            itemTotal: item.itemTotal,
-            status: 'order placed'
-        }));
-
-        const totalAmount = cart.totalPrice
-
-        const orderDetails = {
-            userId,
-            deliveryAddress: {
-                fullName: userAddress.fullName,
-                mobile: userAddress.mobile,
-                localAddress: userAddress.localAddress,
-                pinCode: userAddress.pinCode,
-                country: userAddress.country,
-                state: userAddress.state,
-                city: userAddress.city,
-                typeOfAddress: userAddress.typeOfAddress,
-                email: userAddress.email || null,
-            },
-            items: orderItems,
-            couponCode: req.session.coupon ? req.session.coupon.code : null,
-            couponDiscount: req.session.coupon ? req.session.coupon.couponDiscount : 0,
-            shippingFee: cart.shippingFee,
-            paymentMethod,
-            // paymentStatus:'pending', 
-            totalAmount
-        }
-
-        if (req.session.coupon) {
-            //delete the coupon session
-            delete req.session.coupon
-        }
-
-
-        // if(paymentMethod === 'WALLET'){
-        //     wallet = await walletCollection.findOne({userId:userId})
-        //     if(wallet.balance < totalAmount){
-        //         return res.json({error:true, message:'insufficient balance in your wallet, please try another option'})
-        //     }
-
-        // }
-
-        if (paymentMethod === 'RAZORPAY') {
-
-            // const createdOrder = await orderCollection.create(orderDetails)
-            // req.session.orderId = createdOrder._id
-            req.session.tempOrderDetails = orderDetails
-
-            // await processOrderPostPayment(orderDetails, orderItems)
-
-            const options = {
-                amount: totalAmount * 100,
-                currency: 'INR',
-                receipt: `${userId}_${Date.now()}`,
-                payment_capture: 1
-            }
-
-            const razorpayOrder = await razorpayInstance.orders.create(options)
-
-            return res.json({
-                success: true,
-                message: 'please complete the payment',
-                // orderId:newOrder._id,
-                razorpayOrderId: razorpayOrder.id,
-                amount: totalAmount,
-                razorpay: true,
-                key: process.env.RAZORPAY_KEY_ID
-            })
-        }
-
-        if (paymentMethod === 'COD') {
-            //COD Not allowed for above 1000
-            if (orderDetails.totalAmount > 1000) {
-                return res.json({ error: true, message: 'sorry cash on delivery is not allowed for above 1000,plese go with another methods' })
-            }
-            const createdOrder = await orderCollection.create(orderDetails)
-            await processOrderPostPayment(orderDetails, orderItems)
-            return res.json({ success: true, message: 'order placed successfully' })
-        }
-
-    } catch (error) {
-        console.error('something went wrong', error)
-        return res.json({ error: true, message: 'An error occurred while placing the order' });
+        await cart.save();
     }
+
+    const orderItems = cart.items.map(item => ({
+        productId: item.product._id,
+        productName: item.product.name,
+        size: item.variant.sizes[0].size,
+        image: item.variant.images[0],
+        price: item.variant.price,
+        offerPrice: item.offerPrice || item.variant.price,
+        quantity: item.quantity,
+        itemTotal: item.itemTotal,
+        status: 'order placed'
+    }));
+
+    const totalAmount = cart.totalPrice
+
+    const orderDetails = {
+        userId,
+        deliveryAddress: {
+            fullName: userAddress.fullName,
+            mobile: userAddress.mobile,
+            localAddress: userAddress.localAddress,
+            pinCode: userAddress.pinCode,
+            country: userAddress.country,
+            state: userAddress.state,
+            city: userAddress.city,
+            typeOfAddress: userAddress.typeOfAddress,
+            email: userAddress.email || null,
+        },
+        items: orderItems,
+        couponCode: req.session.coupon ? req.session.coupon.code : null,
+        couponDiscount: req.session.coupon ? req.session.coupon.couponDiscount : 0,
+        shippingFee: cart.shippingFee,
+        paymentMethod,
+        // paymentStatus:'pending', 
+        totalAmount
+    }
+
+    if (req.session.coupon) {
+        //delete the coupon session
+        delete req.session.coupon
+    }
+
+
+    // if(paymentMethod === 'WALLET'){
+    //     wallet = await walletCollection.findOne({userId:userId})
+    //     if(wallet.balance < totalAmount){
+    //         return res.json({error:true, message:'insufficient balance in your wallet, please try another option'})
+    //     }
+
+    // }
+
+    if (paymentMethod === 'RAZORPAY') {
+
+        // const createdOrder = await orderCollection.create(orderDetails)
+        // req.session.orderId = createdOrder._id
+        req.session.tempOrderDetails = orderDetails
+
+        // await processOrderPostPayment(orderDetails, orderItems)
+
+        const options = {
+            amount: totalAmount * 100,
+            currency: 'INR',
+            receipt: `${userId}_${Date.now()}`,
+            payment_capture: 1
+        }
+
+        const razorpayOrder = await razorpayInstance.orders.create(options)
+
+        return res.json({
+            success: true,
+            message: 'please complete the payment',
+            // orderId:newOrder._id,
+            razorpayOrderId: razorpayOrder.id,
+            amount: totalAmount,
+            razorpay: true,
+            key: process.env.RAZORPAY_KEY_ID
+        })
+    }
+
+    if (paymentMethod === 'COD') {
+        //COD Not allowed for above 1000
+        if (orderDetails.totalAmount > 1000) {
+            return res.json({ error: true, message: 'sorry cash on delivery is not allowed for above 1000,plese go with another methods' })
+        }
+        const createdOrder = await orderCollection.create(orderDetails)
+        await processOrderPostPayment(orderDetails, orderItems)
+        return res.json({ success: true, message: 'order placed successfully' })
+    }
+
+} catch (error) {
+    console.error('something went wrong', error)
+    return res.json({ error: true, message: 'An error occurred while placing the order' });
+}
 }
 
 //function to handle order post logic
@@ -1677,7 +1777,7 @@ exports.payAfter = async (req, res) => {
 
     } catch (error) {
         console.log('something went wrong', error)
-        return res.status(500).json('something wnet wrong', error)
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json('something wnet wrong', error)
     }
 }
 
@@ -1685,7 +1785,7 @@ exports.payAfter = async (req, res) => {
 exports.submitReview = async (req, res) => {
     try {
         const { rating, review, product, item } = req.body
-        
+
         const userId = req.session.user
 
         //add review to the ordered product
@@ -1705,7 +1805,7 @@ exports.submitReview = async (req, res) => {
                 }
             }
         )
-        return res.json({ success: true, message: 'Thanks for your feedback', item})
+        return res.json({ success: true, message: 'Thanks for your feedback', item })
 
     } catch (error) {
         console.error('something went wrong', error)

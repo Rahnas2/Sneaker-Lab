@@ -116,6 +116,10 @@
         const quantity = document.getElementById(`quantity-${productId}`)?
          document.getElementById(`quantity-${productId}`).value:1
 
+        //Varient
+        const selectedVariant = document.querySelector('input[name="colorVariant"]:checked')
+        const variantId = selectedVariant.id
+
          //product mrp
          const mrp = parseInt(document.getElementById(`mrp-${productId}`).textContent.replace(/([^0-9])+/i, ""))
         //  const itemTotal = mrp * quantity
@@ -136,7 +140,7 @@
                 headers: {
                 'Content-Type': 'application/json',
             },
-                body:JSON.stringify({quantity:quantity,itemTotal:itemTotal})
+                body:JSON.stringify({quantity:quantity, itemTotal:itemTotal, variantId })
             })
             .then(response => response.json()) 
             .then(result =>{

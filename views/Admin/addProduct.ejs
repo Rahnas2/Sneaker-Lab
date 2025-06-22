@@ -251,7 +251,7 @@
 
     <!-- cropper modal -->
 
-    <div class="modal " id="cropModal" tabindex="-1" aria-labelledby="cropModalLabel" aria-hidden="true">
+    <div class="modal" id="cropModal" tabindex="-1" aria-labelledby="cropModalLabel" aria-hidden="true">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
@@ -283,7 +283,7 @@
 </div>
 </main> 
 
-<script src="https://cdn.jsdelivr.net/npm/cropperjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
 
 <script>
  
@@ -401,20 +401,26 @@
         }
     }
 
+
     function initCropper(imageId) {
         currentImageId = imageId;
         console.log('currnetimageid',currentImageId)
         const image = document.getElementById('cropper-image');
         image.src = document.getElementById(`preview-${currentImageId}`).src;
         
-
+         console.log('Cropper global check: before ', window.Cropper);
+         
         if (cropper) {
             cropper.destroy();
         }
+
         cropper = new Cropper(image, {
             aspectRatio: 1,
             viewMode: 1
         });
+
+        console.log('Cropper global check: after ', window.Cropper);
+ 
     }
 
     document.getElementById('crop-button').addEventListener('click', () => {

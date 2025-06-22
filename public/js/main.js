@@ -176,34 +176,34 @@
     proQty.append('<span class="fa fa-angle-down inc qtybtn"></span>');
 
     
-    proQty.on('click', '.qtybtn', function () { 
-        const productQuantity = product.variants[0].sizes[0].stock
-        let $button = $(this);
-        let $input = $button.parent().find('input')
-        let oldValue = parseInt($input.val());
-        let newVal;
-        if ($button.hasClass('inc')) {
-            if(oldValue >= productQuantity){
-                newVal = oldValue
-                $("#max-limit").text("out of stock!");
-            }
-            else if(oldValue >= 10){
-                newVal = 10
-                $("#max-limit").text("you hit your max limit!");
-            }else{
-                newVal = parseFloat(oldValue) + 1;
-            }
-        } else {
-            // not allowed below one
-            if (oldValue > 1) {
-                newVal = parseFloat(oldValue) - 1;
-                $("#max-limit").text('')
-            } else {
-                newVal = 1;
-            }
-        }
-        $input.val(newVal).trigger('input')
-    });
+    // proQty.on('click', '.qtybtn', function () { 
+    //     const productQuantity = product.variants[0].sizes[0].stock
+    //     let $button = $(this);
+    //     let $input = $button.parent().find('input')
+    //     let oldValue = parseInt($input.val());
+    //     let newVal;
+    //     if ($button.hasClass('inc')) {
+    //         if(oldValue >= productQuantity){
+    //             newVal = oldValue
+    //             $("#max-limit").text("out of stock!");
+    //         }
+    //         else if(oldValue >= 10){
+    //             newVal = 10
+    //             $("#max-limit").text("you hit your max limit!");
+    //         }else{
+    //             newVal = parseFloat(oldValue) + 1;
+    //         }
+    //     } else {
+    //         // not allowed below one
+    //         if (oldValue > 1) {
+    //             newVal = parseFloat(oldValue) - 1;
+    //             $("#max-limit").text('')
+    //         } else {
+    //             newVal = 1;
+    //         }
+    //     }
+    //     $input.val(newVal).trigger('input')
+    // });
 
     var proQty = $('.pro-qty-2');
 
@@ -289,7 +289,7 @@
             if(result.success){
                // Update cart totals dynamically
             let totalMrp = result.updatedCart[0].items.reduce((acc, curr) => {
-                let price = curr.product.variants[0].price;
+                let price = curr.variant.price;
                 return acc + (price * curr.quantity);
             }, 0);
             console.log('totalmrp',totalMrp)

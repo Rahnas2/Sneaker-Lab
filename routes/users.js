@@ -84,6 +84,8 @@ router.delete('/myProfile/deleteAddress/:id',userAuth,users_controller.deleteAdd
 
 router.get('/myProfile/wallet',userAuth,wallet_controller.getWallet)
 
+router.get('/myProfile/orders', userAuth, users_controller.getOrdersPaginated);
+
 router.get('/orderDetail/:id',userAuth,users_controller.orderDetail)
 router.get('/downloadInvoice',userAuth,users_controller.downloadInvoice)
 router.put('/payAfter',userAuth,users_controller.payAfter)
