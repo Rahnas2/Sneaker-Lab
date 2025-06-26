@@ -91,6 +91,7 @@ exports.blockUser = async(req,res)=>{
       const user = await usersCollection.findByIdAndUpdate(req.params.userId,{isBlock:true},{new:true})
       const message = 'sucessfully block the user'
       req.session.user = undefined
+      console.log('lock user ', req.session.user)
 
       return res.status(HttpStatusCode.OK).json({success:true, user, message})
    } catch (error) {

@@ -4,8 +4,12 @@
             <div class="col-lg-6  col-md-6 col-sm-6">
                 <div class="footer__widget">
                     <h6 class="" style="font-size: 1.5em;">SNEAKER LAB</h6>
-                    <p style="color: #b7b7b7;">Discover your perfect pair at Sneaker Lab, where style meets comfort. From casual sneakers to elegant heels, we offer footwear for every occasion. Our curated collection features the latest trends and timeless classics. With a focus on quality and customer satisfaction,
-                         Sneaker Lab is your go-to destination for all your shoe needs. Visit us today and step into style!.</p>
+                    <p style="color: #b7b7b7;">Discover your perfect pair at Sneaker Lab, where style meets comfort.
+                        From casual sneakers to elegant heels, we offer footwear for every occasion. Our curated
+                        collection features the latest trends and timeless classics. With a focus on quality and
+                        customer satisfaction,
+                        Sneaker Lab is your go-to destination for all your shoe needs. Visit us today and step into
+                        style!.</p>
                     <!-- <a href="#"><img src="img/payment.png" alt=""></a> -->
                 </div>
             </div>
@@ -49,8 +53,8 @@
                         <script>
                             document.write(new Date().getFullYear());
                         </script>-2020
-                        All rights reserved 
-                        
+                        All rights reserved
+
                     </p>
                     <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
                 </div>
@@ -60,211 +64,213 @@
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    function Confirm(){
-       return confirm('are you sure you want to sign out')
+    function Confirm() {
+        return confirm('are you sure you want to sign out')
     }
-    
+
     //get cart page
-    function checkAccess(url){
-        console.log(url)
+    function checkAccess(url) {
+        console.log('checking access ', url)
         try {
             fetch(url)
-            .then(response =>{
-                let contentType = response.headers.get('content-type')
-                console.log(contentType)
-                if(contentType && contentType.includes('application/json')){
-                    return response.json().then(data => ({type:'json', data}))
-                }else if(contentType && contentType.includes('text/html')){
-                    return response.text().then(html => ({type:'html', data:html}))
-                }
-                
-            })
-            .then(result =>{   
-                console.log('result')
-                if(result.type == 'json'){
-                    Swal.fire({
-                    icon: 'error',
-                    title: 'Access Denied',
-                    html: result.data.message,  
-                    confirmButtonText: 'OK'
-                });
-            }else if(result.type == 'html'){
-                console.log('success')
-                // document.body.innerHTML = result.data
-                window.location.href = `${url}`
-            }
-            })
-            .catch(error => console.log('error here',error))
+                .then(response => {
+                    let contentType = response.headers.get('content-type')
+                    console.log(contentType)
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json().then(data => ({ type: 'json', data }))
+                    } else if (contentType && contentType.includes('text/html')) {
+                        return response.text().then(html => ({ type: 'html', data: html }))
+                    }
+
+                })
+                .then(result => {
+                    console.log('result')
+                    if (result.type == 'json') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Access Denied',
+                            html: result.data.message,
+                            confirmButtonText: 'OK'
+                        });
+                    } else if (result.type == 'html') {
+                        console.log('success')
+                        window.location.href = `${url}`
+                    }
+                })
+                .catch(error => console.log('error here', error))
         } catch (error) {
-            console.error('something went wrong',error)
+            console.error('something went wrong', error)
             swal.fire({
-                icon:'error',
-                title:'Error',
-                text:'Something went wrong. Please try again later',
-                confirmButtonText:'ok'
+                icon: 'error',
+                title: 'Error',
+                text: 'Something went wrong. Please try again later',
+                confirmButtonText: 'ok'
             })
         }
     }
 
     //add products to cart
-    function addCart(url){
+    function addCart(url) {
         const parts = url.split('/')
-        const productId = parts[parts.length -1]
-        console.log('productid',productId)
+        const productId = parts[parts.length - 1]
 
         //product quantity
-        const quantity = document.getElementById(`quantity-${productId}`)?
-         document.getElementById(`quantity-${productId}`).value:1
+        const quantity = document.getElementById(`quantity-${productId}`) ?
+            document.getElementById(`quantity-${productId}`).value : 1
 
         //Varient
         const selectedVariant = document.querySelector('input[name="colorVariant"]:checked')
-        const variantId = selectedVariant.id
+        const variantId = selectedVariant?.id
 
-         //product mrp
-         const mrp = parseInt(document.getElementById(`mrp-${productId}`).textContent.replace(/([^0-9])+/i, ""))
+        // Selected Size
+        const selectedSize = document.querySelector('input[name="size"]:checked')
+        const size = selectedSize ? selectedSize.value : undefined
+
+        //product mrp
+        const mrp = parseInt(document.getElementById(`mrp-${productId}`).textContent.replace(/([^0-9])+/i, ""))
         //  const itemTotal = mrp * quantity
 
-         let itemTotal = 0
-         const discountedPriceElement = document.getElementById(`dicoutedPrice-${productId}`)
-         if(discountedPriceElement){
+        let itemTotal = 0
+        const discountedPriceElement = document.getElementById(`dicoutedPrice-${productId}`)
+        if (discountedPriceElement) {
             const discountedPrice = parseInt(discountedPriceElement.textContent.replace(/([^0-9])+/i, ""));
             itemTotal = discountedPrice * quantity
-         }else{
+        } else {
             itemTotal = mrp * quantity
-         }
-         
+        }
+
 
         try {
-            fetch(url,{
-                method:'POST',
+            fetch(url, {
+                method: 'POST',
                 headers: {
-                'Content-Type': 'application/json',
-            },
-                body:JSON.stringify({quantity:quantity, itemTotal:itemTotal, variantId })
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ quantity: quantity, itemTotal: itemTotal, variantId, size })
             })
-            .then(response => response.json()) 
-            .then(result =>{
-                if(result.userNotAuthenticated){
-                    Swal.fire({
-                    icon: 'error',
-                    title: 'Access Denied',
-                    html: result.message,
-                    confirmButtonText: 'OK'
-                }) 
-                }else if(result.productExist){
-                     console.log('product exist')
-                     window.location.href = '/cart'
-                }
-                else if(result.success){  
-
-                    const actionElement = document.getElementById(`cart-action-${productId}`);
-                    console.log('action element',actionElement)
-                    actionElement.innerHTML = '<i class="fa-solid fa-arrow-right"></i> GO TO CART'
-    
-                    Swal.fire({
-                    text: result.message, 
-                    showConfirmButton: false,
-                    timer: 3000, 
-                    backdrop: false,
-                    customClass: {
-                        popup: 'swal2-popup-custom', 
+                .then(response => response.json())
+                .then(result => {
+                    if (result.userNotAuthenticated) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Access Denied',
+                            html: result.message,
+                            confirmButtonText: 'OK'
+                        })
+                    } else if (result.productExist) {
+                        console.log('product exist')
+                        window.location.href = '/cart'
                     }
-                    });
-                }
-            })
-            .catch(error => console.log(error))
+                    else if (result.success) {
+
+                        const actionElement = document.getElementById(`cart-action-${productId}`);
+                        console.log('action element', actionElement)
+                        actionElement.innerHTML = '<i class="fa-solid fa-arrow-right"></i> GO TO CART'
+
+                        Swal.fire({
+                            text: result.message,
+                            showConfirmButton: false,
+                            timer: 3000,
+                            backdrop: false,
+                            customClass: {
+                                popup: 'swal2-popup-custom',
+                            }
+                        });
+                    }
+                })
+                .catch(error => console.log(error))
         } catch (error) {
             console.log('something went wrong')
             Swal.fire({
-            icon:'error',
-            title:'Error',
-            text:'Something went wrong. Please try again later',
-            confirmButtonText:'ok'
+                icon: 'error',
+                title: 'Error',
+                text: 'Something went wrong. Please try again later',
+                confirmButtonText: 'ok'
             })
         }
-            
+
     }
 
     //add products to wishlist
-    function addwishlist(event,url){
+    function addwishlist(event, url) {
         try {
             event.preventDefault();
-            fetch(url,{
-                method:'POST',
-                headers:{
-                    'Content-Type':'application/json'
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
                 }
             })
-            .then(response => response.json())
-            .then(result => {
-                if(result.userNotAuthenticated){
-                   Swal.fire({
-                   icon: 'error',
-                   title: 'Access Denied',
-                   html: result.message,
-                   confirmButtonText: 'OK'
-                   })  
-                }else if(result.alreadyExist || result.success){
-                    Swal.fire({
-                    text: result.message, 
-                    showConfirmButton: false,
-                    timer: 3000, 
-                    backdrop: false,
-                    customClass: {
-                        popup: 'swal2-popup-custom', 
+                .then(response => response.json())
+                .then(result => {
+                    if (result.userNotAuthenticated) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Access Denied',
+                            html: result.message,
+                            confirmButtonText: 'OK'
+                        })
+                    } else if (result.alreadyExist || result.success) {
+                        Swal.fire({
+                            text: result.message,
+                            showConfirmButton: false,
+                            timer: 3000,
+                            backdrop: false,
+                            customClass: {
+                                popup: 'swal2-popup-custom',
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Access Denied',
+                            text: result.message,
+                            confirmButtonText: 'OK'
+                        })
                     }
-                    });
-                }else{
-                    Swal.fire({
-                   icon: 'error',
-                   title: 'Access Denied',
-                   text: result.message,
-                   confirmButtonText: 'OK'
-                   })
-                }
-            })
-            .catch(err => {
-                console.error('error',err)
-            })
+                })
+                .catch(err => {
+                    console.error('error', err)
+                })
         } catch (error) {
-           console.error('someting went wrong',error) 
+            console.error('someting went wrong', error)
         }
     }
-    
+
     const successMessage = localStorage.getItem('successMessage')
-    if(successMessage){
+    if (successMessage) {
         Swal.fire({
-            icon:'success',
-            title:'success',
+            icon: 'success',
+            title: 'success',
             text: successMessage,
-            confirmButtonText:'ok'
-            })
-        localStorage.removeItem('successMessage')   
+            confirmButtonText: 'ok'
+        })
+        localStorage.removeItem('successMessage')
     }
 
     const errorMessage = localStorage.getItem('errorMessage')
-    if(errorMessage){
+    if (errorMessage) {
         Swal.fire({
-            icon:'error',
+            icon: 'error',
             text: errorMessage,
-            confirmButtonText:'ok'
-            })
+            confirmButtonText: 'ok'
+        })
         localStorage.removeItem('errorMessage')
     }
-   
- </script>
 
- <!-- Js Plugins -->
- <script src="/js/jquery-3.3.1.min.js"></script>
- <script src="/js/bootstrap.min.js"></script>
- <!-- <script src="/js/jquery.nice-select.min.js"></script> -->
- <script src="/js/jquery.nicescroll.min.js"></script>
- <script src="/js/jquery.magnific-popup.min.js"></script>
- <script src="/js/jquery.countdown.min.js"></script>
- <script src="/js/jquery.slicknav.js"></script> 
- <script src="/js/mixitup.min.js"></script>
- <script src="/js/owl.carousel.min.js"></script>
- <script src="/js/main.js"></script>
+</script>
+
+<!-- Js Plugins -->
+<script src="/js/jquery-3.3.1.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<!-- <script src="/js/jquery.nice-select.min.js"></script> -->
+<script src="/js/jquery.nicescroll.min.js"></script>
+<script src="/js/jquery.magnific-popup.min.js"></script>
+<script src="/js/jquery.countdown.min.js"></script>
+<script src="/js/jquery.slicknav.js"></script>
+<script src="/js/mixitup.min.js"></script>
+<script src="/js/owl.carousel.min.js"></script>
+<script src="/js/main.js"></script>
 </body>
 
 </html>

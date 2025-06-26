@@ -76,11 +76,6 @@
                                                 </p>
                                                 <div class="product__details__option">
                                                     <div class="product__details__option__size" id="sizeOption">
-                                                        <!-- <span>Size:</span> -->
-
-                                                        <!-- <label id="availableSizes" for="xxl active"> -->
-                                                        <input type="radio" id="xxl">
-                                                        </label>
 
                                                     </div>
                                                     <div class="product__details__option__color">
@@ -98,33 +93,29 @@
                                                             <% }) %>
                                                     </div>
                                                 </div>
+                                                <p id="max-limit" class="text-danger fw-14 mb-2 text-start"></p>
                                                 <div class="product__details__cart__option">
+
                                                     <div class="quantity">
-                                                        <p id="max-limit" class="text-danger fw-14"></p>
                                                         <div class="pro-qty">
                                                             <input type="number" id="quantity-<%= product._id %>"
                                                                 name="quantity" value="1" readonly />
                                                         </div>
                                                     </div>
-                                                    <% if ((product.variants[0].sizes[0].stock)===0) { %>
-                                                        <span class="text-warning fs-14">out of stock</span>
-                                                        <% } else { %>
-                                                            <button onclick="addCart('/addToCart/<%= product._id %>')"
-                                                                id="cart-action-<%= product._id %>"
-                                                                class="primary-btn border-0">
-                                                                <%- productInCart? '<i class="fa-solid fa-arrow-right"></i>  go to cart'
-                                                                    : 'add to cart' %>
-                                                            </button>
-                                                            <% } %>
+                                                    <button onclick="addCart('/addToCart/<%= product._id %>')"
+                                                        id="cart-action-<%= product._id %>"
+                                                        class="primary-btn border-0">
+                                                        <%- productInCart? '<i class="fa-solid fa-arrow-right"></i>  go to cart'
+                                                            : 'add to cart' %>
+                                                    </button>
                                                 </div>
                                                 <div class="product__details__btns__option">
                                                     <a href="#"
                                                         onclick="addwishlist(event, '/addWishlist/<%= product._id %>')"><i
                                                             class="fa fa-heart"></i> add to wishlist</a>
-                                                    <a href="#"><i class="fa fa-exchange"></i> Add To Compare</a>
                                                 </div>
                                                 <div class="product__details__last__option">
-                                                    <h5><span>Guaranteed Safe Checkout</span></h5>
+                                                    <h5 class=""><span>Guaranteed Safe Checkout</span></h5>
                                                     <ul>
                                                         <li><span>category:</span>
                                                             <%= product.category%>
@@ -145,14 +136,14 @@
                                     <a class="nav-link active" data-toggle="tab" href="#tabs-5"
                                         role="tab">Description</a>
                                 </li>
-                                <li class="nav-item">
+                                <!-- <li class="nav-item">
                                     <a class="nav-link" data-toggle="tab" href="#tabs-6" role="tab">Customer
                                         Previews(<%= review.length %>)</a>
-                                </li>
-                                <li class="nav-item">
+                                </li> -->
+                                <!-- <li class="nav-item">
                                     <a class="nav-link" data-toggle="tab" href="#tabs-7" role="tab">Additional
                                         information</a>
-                                </li>
+                                </li> -->
                             </ul>
                             <div class="tab-content">
                                 <div class="tab-pane active" id="tabs-5" role="tabpanel">
@@ -165,78 +156,6 @@
                                             </p>
                                         </div>
                                         <div class="product__details__tab__content__item">
-                                            <h5>Material used</h5>
-                                            <p>Polyester is deemed lower quality due to its none natural quality’s. Made
-                                                from synthetic materials, not natural like wool. Polyester suits become
-                                                creased easily and are known for not being breathable. Polyester suits
-                                                tend to have a shine to them compared to wool and cotton suits, this can
-                                                make the suit look cheap. The texture of velvet is luxurious and
-                                                breathable. Velvet is a great choice for dinner party jacket and can be
-                                                worn all year round.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="tab-pane" id="tabs-6" role="tabpanel">
-                                    <div class="product__details__tab__content">
-                                        <div class="product__details__tab__content__item">
-                                            <h5>Customers Reviews</h5>
-                                            <p>A Pocket PC is a handheld computer, which features many of the same
-                                                capabilities as a modern PC. These handy little devices allow
-                                                individuals to retrieve and store e-mail messages, create a contact
-                                                file, coordinate appointments, surf the internet, exchange text messages
-                                                and more. Every product that is labeled as a Pocket PC must be
-                                                accompanied with specific software to operate the unit and must feature
-                                                a touchscreen and touchpad.</p>
-                                            <p>As is the case with any new technology product, the cost of a Pocket PC
-                                                was substantial during it’s early release. For approximately $700.00,
-                                                consumers could purchase one of top-of-the-line Pocket PCs in 2003.
-                                                These days, customers are finding that prices have become much more
-                                                reasonable now that the newness is wearing off. For approximately
-                                                $350.00, a new Pocket PC can now be purchased.</p>
-                                        </div>
-                                        <div class="product__details__tab__content__item">
-                                            <h5>Material used</h5>
-                                            <p>Polyester is deemed lower quality due to its none natural quality’s. Made
-                                                from synthetic materials, not natural like wool. Polyester suits become
-                                                creased easily and are known for not being breathable. Polyester suits
-                                                tend to have a shine to them compared to wool and cotton suits, this can
-                                                make the suit look cheap. The texture of velvet is luxurious and
-                                                breathable. Velvet is a great choice for dinner party jacket and can be
-                                                worn all year round.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="tab-pane" id="tabs-7" role="tabpanel">
-                                    <div class="product__details__tab__content">
-                                        <p class="note">Nam tempus turpis at metus scelerisque placerat nulla deumantos
-                                            solicitud felis. Pellentesque diam dolor, elementum etos lobortis des mollis
-                                            ut risus. Sedcus faucibus an sullamcorper mattis drostique des commodo
-                                            pharetras loremos.</p>
-                                        <div class="product__details__tab__content__item">
-                                            <h5>Products Infomation</h5>
-                                            <p>A Pocket PC is a handheld computer, which features many of the same
-                                                capabilities as a modern PC. These handy little devices allow
-                                                individuals to retrieve and store e-mail messages, create a contact
-                                                file, coordinate appointments, surf the internet, exchange text messages
-                                                and more. Every product that is labeled as a Pocket PC must be
-                                                accompanied with specific software to operate the unit and must feature
-                                                a touchscreen and touchpad.</p>
-                                            <p>As is the case with any new technology product, the cost of a Pocket PC
-                                                was substantial during it’s early release. For approximately $700.00,
-                                                consumers could purchase one of top-of-the-line Pocket PCs in 2003.
-                                                These days, customers are finding that prices have become much more
-                                                reasonable now that the newness is wearing off. For approximately
-                                                $350.00, a new Pocket PC can now be purchased.</p>
-                                        </div>
-                                        <div class="product__details__tab__content__item">
-                                            <h5>Material used</h5>
-                                            <p>Polyester is deemed lower quality due to its none natural quality’s. Made
-                                                from synthetic materials, not natural like wool. Polyester suits become
-                                                creased easily and are known for not being breathable. Polyester suits
-                                                tend to have a shine to them compared to wool and cotton suits, this can
-                                                make the suit look cheap. The texture of velvet is luxurious and
-                                                breathable. Velvet is a great choice for dinner party jacket and can be
-                                                worn all year round.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -255,6 +174,7 @@
     </script>
 
     <script>
+        let selectedVariant = null
         //zooming functionality
         document.querySelectorAll('.product__details__pic__item').forEach(item => {
             const img = item.querySelector('img')
@@ -276,9 +196,7 @@
 
 
         //variant selction
-
         const defaultSelectedVariant = document.querySelector('input[name="colorVariant"]:checked')
-        // const defaultSelectedVariant = product.variants[0]
         if (defaultSelectedVariant) {
             handleVariantChange(defaultSelectedVariant.id, defaultSelectedVariant.value)
         }
@@ -290,8 +208,11 @@
                 console.log('color', color)
 
                 //find the selected variant
-                const selectedVariant = product.variants.find(variant => variant._id === variantId)
+                selectedVariant = product.variants.find(variant => variant._id === variantId)
                 console.log('selected variant', selectedVariant)
+
+                const selectedSize = selectedVariant?.sizes[0].size
+
 
                 if (selectedVariant) {
 
@@ -301,6 +222,21 @@
                     selectedVariant.sizes.forEach((size, index) => {
                         const label = document.createElement('label')
                         label.textContent = size.size
+                        label.setAttribute('for', `size-${index}`)
+
+                        const input = document.createElement('input')
+                        input.type = 'radio'
+                        input.name = 'size'
+                        input.value = size.size
+                        input.id = `size-${index}`
+                        input.style.display = 'none'
+
+                        if (index === 0) {
+                            input.checked = true
+                            label.classList.add('active')
+                        }
+
+                        sizeOptionContainer.appendChild(input)
                         sizeOptionContainer.appendChild(label)
                     })
 
@@ -311,7 +247,7 @@
                     updateVariantPrice(selectedVariant)
 
                     //Update Stock Status
-                    updateStockStatus(selectedVariant)
+                    updateStockStatus(selectedVariant, selectedSize)
 
 
                 }
@@ -320,33 +256,37 @@
             }
         }
 
-        function updateStockStatus(selectedVariant) {
-
+        function updateStockStatus(selectedVariant, selectedSize) {
+            const productInCart = <%- productInCart %>
+                console.log('product ', productInCart)
+            console.log('selected docuemtn stock status', selectedVariant)
+            console.log('selectedSize ', selectedSize)
             // Check if any size has stock
-            const hasStock = selectedVariant.sizes.some(size => size.stock > 0);
+            const hasStock = selectedVariant.sizes.find(size => size.size == selectedSize && size.stock > 0)
             const productId = product._id;
 
             const cartButton = document.getElementById(`cart-action-${productId}`);
             const maxLimitElement = document.getElementById('max-limit');
 
             if (!hasStock) {
-                // All sizes out of stock
+                // No stock
                 if (cartButton) {
                     cartButton.disabled = true;
                     cartButton.innerHTML = 'Out of Stock';
-                    cartButton.className = 'primary-btn border-0 disabled';
+                    cartButton.className = 'text-warning fs-14 border-0';
                 }
-
                 if (maxLimitElement) {
-                    maxLimitElement.textContent = 'This variant is currently out of stock';
+                    maxLimitElement.textContent = 'This size is currently out of stock';
                 }
             } else {
-                // Has stock - enable button
+                // Has stock
                 if (cartButton) {
                     cartButton.disabled = false;
                     cartButton.className = 'primary-btn border-0';
+                    cartButton.innerHTML = productInCart
+                        ? '<i class="fa-solid fa-arrow-right"></i>  go to cart'
+                        : 'add to cart';
                 }
-
                 if (maxLimitElement) {
                     maxLimitElement.textContent = '';
                 }

@@ -1318,9 +1318,9 @@ ol {
 	list-style: none;
 }
 
-.shop__sidebar__categories ul li a,
-.shop__sidebar__price ul li a,
-.shop__sidebar__brand ul li a {
+.shop__sidebar__categories ul li span,
+.shop__sidebar__price ul li span,
+.shop__sidebar__brand ul li span {
 	color: #b7b7b7;
 	font-size: 15px;
 	line-height: 32px;
@@ -1329,10 +1329,17 @@ ol {
 	transition: all, 0.3s;
 }
 
-.shop__sidebar__categories ul li a:hover,
-.shop__sidebar__price ul li a:hover,
-.shop__sidebar__brand ul li a:hover {
+.shop__sidebar__categories ul li span:hover,
+.shop__sidebar__price ul li span:hover,
+.shop__sidebar__brand ul li span:hover {
 	color: #111111;
+}
+
+.shop__sidebar__categories ul li span.active,
+.shop__sidebar__price ul li span.active,
+.shop__sidebar__brand ul li span.active {
+	color: #111111;
+	font-weight: bold;
 }
 
 .shop__sidebar__brand ul {
@@ -1550,10 +1557,11 @@ ol {
 	line-height: 30px;
 	text-align: center;
 }
-
 .product__pagination a.active {
 	border-color: #111111;
 }
+
+
 
 .product__pagination a:hover {
 	border-color: #111111;
@@ -1564,8 +1572,25 @@ ol {
 	font-size: 16px;
 	font-weight: 700;
 	color: #111111;
-	padding-left: 10px;
-	padding-right: 15px;
+	height: 30px;
+	width: 30px;
+	border: 1px solid #111111;
+	border-radius: 50%;
+	line-height: 30px;
+	text-align: center;
+}
+
+.product__pagination span:hover {
+	cursor: pointer;
+	border-color: #111111;
+}
+
+
+.product__pagination span.active {
+	background-color: #111111;
+	color: #ffffff;
+	border: 2px solid ;
+	border-color: #ffffff;
 }
 
 /*---------------------
@@ -1916,7 +1941,7 @@ ol {
 }
 
 .product__details__last__option ul {
-	padding-top: 40px;
+	padding-top: 20px;
 }
 
 .product__details__last__option ul li {

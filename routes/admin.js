@@ -9,7 +9,6 @@ const auth = require('../middleware/adminAuth')
 const upload = require('../config/multerConfig')
 
 const provalidation = require('../middleware/productValidation')
-const variantValid = require('../middleware/variantValidation')
 const catogoryValid = require('../middleware/categoryValidation')
 const brandValid = require('../middleware/brandValidation')
 const couponValid = require('../middleware/couponValidation')

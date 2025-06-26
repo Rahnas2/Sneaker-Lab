@@ -61,8 +61,10 @@
                                     <td class="quantity__item">
                                         <div class="quantity">
                                             <div class="pro-qty-2">  
-                                                <% const stock = item.variant.sizes[0].stock %>
-                                                <input id="itemQuantity" data-stock="<%= stock %>" type="text" value="<%= item.quantity %>" readonly>
+                                                <!-- <% const stock = item.variant.sizes[0].stock %> -->
+                                                <% const variant = item.variant %>
+                                                <% const size = item.size %>
+                                                <input id="itemQuantity" data-variant="<%= JSON.stringify(variant) %>" data-size="<%= size %>" type="text" value="<%= item.quantity %>" readonly>
                                             </div>
                                             <p id="max-limit-<%= item._id %>" class="text-danger fw-14"></p>
                                         </div>

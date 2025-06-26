@@ -10,6 +10,8 @@ const addressValidation = require('../middleware/addressValidation')
 const editProfileValidation = require('../middleware/editProfileValidation')
 const router = express.Router()
 
+
+// Auth Routes
 router.get('/',users_controller.home)
 router.get('/login',users_controller.login)
 router.post('/login',validater.formValidation,users_controller.postlogin)
@@ -34,7 +36,7 @@ router.get('/auth/google/callback',passport.authenticate('google',{failureRedire
    
 })
 
-//forgot password start
+// Forgot password start
 router.get('/forgotPassword/emailVerification',users_controller.emailVerification)
 router.post('/forgotPassword/emailVerify',users_controller.postEmailVerification) 
 router.get('/forgotPassword/otpVerify',users_controller.getOtpVerificationFrg)
@@ -43,11 +45,12 @@ router.post('/forgotPassword/resendOtp',users_controller.resendOtpFrg)
 router.get('/changePassword',users_controller.changePassword)
 router.post('/changePassword',users_controller.PostchangePassword)
 
-
+// Shop
 router.get('/shop',users_controller.getShop)
-router.get('/viewProduct/:id',users_controller.getViewProduct)    
+router.get('/viewProduct/:id',users_controller.getViewProduct) 
+router.get('/products', users_controller.getProducts)   
 
-//cart start
+// cart start
 router.get('/cart',userAuth,users_controller.getCart)
 router.post('/addToCart/:id',userAuth,users_controller.addToCart)
 router.put('/updatedCartItemQuantity',userAuth,users_controller.updatedCartQuantity)

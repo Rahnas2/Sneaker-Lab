@@ -36,7 +36,7 @@ const proValidation = [
     .isInt({min:1}).withMessage('invalid'),
 
     body('variants.*.sizes.*.stock')
-    .isInt({min:1}).withMessage('invalid'),
+    .isInt({min:0}).withMessage('invalid'),
     
     body('description')
     .trim()

@@ -25,12 +25,12 @@
             <div class="row">
                 <div class="col-lg-3">
                     <div class="shop__sidebar">
-                        <div class="shop__sidebar__search">
+                        <!-- <div class="shop__sidebar__search">
                             <form action="#">
                                 <input type="text" placeholder="Search...">
                                 <button type="submit"><span class="icon_search"></span></button>
                             </form>
-                        </div>
+                        </div> -->
                         <div class="shop__sidebar__accordion">
                             <div class="accordion" id="accordionExample">
                                 <div class="card">
@@ -40,10 +40,13 @@
                                     <div id="collapseOne" class="collapse show" data-parent="#accordionExample">
                                         <div class="card-body">
                                             <div class="shop__sidebar__categories">
-                                                <ul class="nice-scroll">   
-                                                    <% categories.forEach(category=>{ %>  
-                                                       <li><a href="#" onclick="categoryFilter(event, '<%= category.categoryName %>')" ><%= category.categoryName%></a></li> 
-                                                   <% }) %>
+                                                <ul class="nice-scroll">
+                                                    <% categories.forEach(category=>{ %>
+                                                        <li><span
+                                                                onclick="categoryFilter(event, '<%= category.categoryName %>')">
+                                                                <%= category.categoryName%>
+                                                            </span></li>
+                                                        <% }) %>
                                                 </ul>
                                             </div>
                                         </div>
@@ -57,69 +60,17 @@
                                         <div class="card-body">
                                             <div class="shop__sidebar__brand">
                                                 <ul>
-                                                  <% brands.forEach(brand=>{ %>
-                                                      <li><a href="#" onclick="brandFilter(event, '<%= brand.brandName %>')" ><%= brand.brandName%></a></li> 
-                                                  <% }) %>
+                                                    <% brands.forEach(brand=>{ %>
+                                                        <li><span
+                                                                onclick="brandFilter(event, '<%= brand.brandName %>')">
+                                                                <%= brand.brandName%>
+                                                            </span></li>
+                                                        <% }) %>
                                                 </ul>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="card">
-                                    <div class="card-heading">
-                                        <a data-toggle="collapse" data-target="#collapseThree">Filter Price</a>
-                                    </div>
-                                    <div id="collapseThree" class="collapse show" data-parent="#accordionExample">
-                                        <div class="card-body">
-                                            <div class="shop__sidebar__price">
-                                                <ul>
-                                                    <li><a href="#">$0.00 - $50.00</a></li>
-                                                    <li><a href="#">$50.00 - $100.00</a></li>
-                                                    <li><a href="#">$100.00 - $150.00</a></li>
-                                                    <li><a href="#">$150.00 - $200.00</a></li>
-                                                    <li><a href="#">$200.00 - $250.00</a></li>
-                                                    <li><a href="#">250.00+</a></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card">
-                                    <div class="card-heading">
-                                        <a data-toggle="collapse" data-target="#collapseFour">Size</a>
-                                    </div>
-                                    <div id="collapseFour" class="collapse show" data-parent="#accordionExample">
-                                        <div class="card-body">
-                                            <div class="shop__sidebar__size">
-                                                <label for="xs">xs
-                                                    <input type="radio" id="xs">
-                                                </label>
-                                                <label for="sm">s
-                                                    <input type="radio" id="sm">
-                                                </label>
-                                                <label for="md">m
-                                                    <input type="radio" id="md">
-                                                </label>
-                                                <label for="xl">xl
-                                                    <input type="radio" id="xl">
-                                                </label>
-                                                <label for="2xl">2xl
-                                                    <input type="radio" id="2xl">
-                                                </label>
-                                                <label for="xxl">xxl
-                                                    <input type="radio" id="xxl">
-                                                </label>
-                                                <label for="3xl">3xl
-                                                    <input type="radio" id="3xl">
-                                                </label>
-                                                <label for="4xl">4xl
-                                                    <input type="radio" id="4xl">
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                        
                             </div>
                         </div>
                     </div>
@@ -136,8 +87,8 @@
                                 <div class="shop__product__option__right">
                                     <p>Sort by:</p>
                                     <select id="filter" name="filter" onchange="applyFilter()">
-                                        <option value="">select</option>
-                                        <option value="price-low-high">Low to High</option>
+                                        <option default value="">select</option>
+                                        <option value="price-low-high" <%= filter === 'price-low-high' ? 'selected' : '' %>>Low to High</option>
                                         <option value="price-high-low">High to Low</option>
                                         <option value="a-z">A-Z</option>
                                         <option value="z-a">Z-A</option>
@@ -148,82 +99,95 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row">
-                        
-                        <% products.forEach(product => { %>
-                        <a href="/viewProduct/<%= product._id %>">
-                        <div class="col-lg-4 col-md-6 col-sm-6">
-                            <div class="product__item">
-                                <div class="img-hover-zoom  overflow-hidden" >
-                                    <img src="<%= product.variants[0].images[0] %>" alt="image">
-                                </div>
-                                <div class="product__item__text"> 
-                                    <h6><%= product.productName %></h6>
-                                    <a href=""></a>
-                                    <% if ((product.variants[0].sizes[0].stock) === 0) { %>
-                                      <span class="text-warning fs-14">out of stock</span>
-                                    <% } else { %> 
-                                       <span id="cart-action-<%= product._id %>" onclick="<%= productsInCart[product._id]? `checkAccess('/cart')`:`addCart('/addToCart/${product._id}')` %>">
-                                           <%- productsInCart[product._id]? '<i class="fa-solid fa-arrow-right"></i>  GO TO CART': '+ ADD TO CART'%>
-                                       </span> 
-                                    <% } %>
-                                    
-                                    <div class="rating">
+                    <div class="row" id="product-list">
+                        <% products.forEach(product=> { %>
+                            <a href="/viewProduct/<%= product._id %>">
+                                <div class="col-lg-4 col-md-6 col-sm-6">
+                                    <div class="product__item">
+                                        <div class="img-hover-zoom  overflow-hidden">
+                                            <img src="<%= product.variants[0].images[0] %>" alt="image">
+                                        </div>
+                                        <div class="product__item__text">
+                                            <h6>
+                                                <%= product.productName %>
+                                            </h6>
+                                            <a href=""></a>
+                                            <% if ((product.variants[0].sizes[0].stock)===0) { %>
+                                                <span class="text-warning fs-14">out of stock</span>
+                                                <% } else { %>
+                                                    <span id="cart-action-<%= product._id %>"
+                                                        onclick="<%= productsInCart[product._id]? `checkAccess('/cart')`:`addCart('/addToCart/${product._id}')` %>">
+                                                        <%- productsInCart[product._id]? '<i class="fa-solid fa-arrow-right"></i>  GO TO CART'
+                                                            : '+ ADD TO CART' %>
+                                                    </span>
+                                                    <% } %>
+                                                        <div class="rating">
+                                                            <!-- average rating for the product -->
+                                                            <% const avgRating=averageRating[product._id] %>
+                                                                <% for( let index=1; index <=5; index++ ) { %>
+                                                                    <% if (avgRating>= index) { %>
+                                                                        <i class="fa-solid fa-star text-warning"> </i>
+                                                                        <% } else { %>
+                                                                            <i class="fa-regular fa-star text-warning">
+                                                                            </i>
+                                                                            <% } %>
+                                                                                <% } %>
+                                                        </div>
 
-                                        <!-- average rating for the product -->
-    
-                                    <% const avgRating = averageRating[product._id] %>  
-                                        <% for( let index = 1; index <= 5; index++ ) { %>
-                                            <% if (avgRating >= index) { %>
-                                                <i class="fa-solid fa-star text-warning"></i>
-                                            <% } else { %>
-                                            <i class="fa-regular fa-star text-warning"></i> 
-                                            <% } %>
-                                        <% } %>                   
+                                                        <% if (product.offer && product.offer.expirAt && new
+                                                            Date(product.offer.expirAt)>= new Date()) { %>
+
+                                                            <% const originalPrice=product.variants[0].price %>
+                                                                <% const offerPrice=Math.round(originalPrice -
+                                                                    (originalPrice *
+                                                                    product.offer.discountPercentage/100)) %>
+                                                                    <h5 class="d-inline mr-2"
+                                                                        id="dicoutedPrice-<%= product._id %>">₹<%=
+                                                                            offerPrice %>
+                                                                    </h5>
+                                                                    <h6 class="d-inline" id="mrp-<%= product._id %>"
+                                                                        style="text-decoration: line-through;">₹ <%=
+                                                                            product.variants[0].price%>
+                                                                    </h6>
+                                                                    <span class="ml-2 red">(<%=
+                                                                            product.offer.discountPercentage %>
+                                                                            %)off</span>
+
+                                                                    <% }else { %>
+                                                                        <h5 id="mrp-<%= product._id %>">₹ <%=
+                                                                                product.variants[0].price%>
+                                                                        </h5>
+                                                                        <% } %>
+
+                                                                            <div class="product__color__select">
+                                                                                <label for="pc-4">
+                                                                                    <input type="radio" id="pc-4">
+                                                                                </label>
+                                                                                <label class="active black" for="pc-5">
+                                                                                    <input type="radio" id="pc-5">
+                                                                                </label>
+                                                                                <label class="grey" for="pc-6">
+                                                                                    <input type="radio" id="pc-6">
+                                                                                </label>
+                                                                            </div>
+                                        </div>
                                     </div>
-
-                                        <% if (product.offer && product.offer.expirAt && new Date(product.offer.expirAt) >= new Date()) { %>
-
-                                            <% const originalPrice = product.variants[0].price %>
-                                            <% const offerPrice = Math.round(originalPrice - (originalPrice * product.offer.discountPercentage/100)) %>
-                                            <h5 class="d-inline mr-2" id="dicoutedPrice-<%= product._id %>">₹<%= offerPrice %></h5>
-                                            <h6 class="d-inline" id="mrp-<%= product._id %>" style="text-decoration: line-through;">₹ <%= product.variants[0].price%></h6>
-                                            <span class="ml-2 red">(<%= product.offer.discountPercentage %>%)off</span>
-    
-                                        <% }else { %>
-                                        <h5 id="mrp-<%= product._id %>">₹ <%= product.variants[0].price%></h5>
-                                        <% } %>
-                                    
-                                    <div class="product__color__select">
-                                        <label for="pc-4">
-                                            <input type="radio" id="pc-4">
-                                        </label>
-                                        <label class="active black" for="pc-5">
-                                            <input type="radio" id="pc-5">
-                                        </label>
-                                        <label class="grey" for="pc-6">
-                                            <input type="radio" id="pc-6">
-                                        </label>
-                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </a>
-                        <% }) %>
-                    
-                       
+                            </a>
+                            <% }) %>
                     </div>
                     <div class="row">
                         <div class="col-lg-12">
-                            <div class="product__pagination">
-                                <% for(let i = 1; i <= totalPages; i++) { %>
-                                    <a class="<%= page === i ? 'active' : '' %>" href="?page=<%= i %>&limit=<%= limit %><%= selectedCategory ? `&category=${selectedCategory}` : '' %><%= selectedBrand ? `&brand=${selectedBrand}` : '' %><%= filter ? `&filter=${filter}` : '' %><%= search ? `&search=${search}` : '' %>"><%= i %></a>
-                                <% } %>
-                                <!-- <a class="active" href="?">1</a> -->
-                                <!-- <a href="#">2</a>
-                                <a href="#">3</a>
-                                <span>...</span> -->
-                                <!-- <a href="#">21</a> -->
+                            <div class="product__pagination" id="shope-pagination">
+                                <% for(let i=1; i <=totalPages; i++) { %>
+                                    <!-- <a class="<%= page === i ? 'active' : '' %>"
+                                        href="?page=<%= i %>&limit=<%= limit %><%= selectedCategory ? `&category=${selectedCategory}` : '' %><%= selectedBrand ? `&brand=${selectedBrand}` : '' %><%= filter ? `&filter=${filter}` : '' %><%= search ? `&search=${search}` : '' %>">
+                                        <%= i %>
+                                    </a> -->
+                                    <span class="<%= page === i ? 'active' : '' %>" onclick="changePage(${i})">
+                                        <%= i %>
+                                    </span>
+                                    <% } %>
                             </div>
                         </div>
                     </div>
@@ -232,28 +196,6 @@
         </div>
     </section>
     <!-- Shop Section End -->
+    <script src="/js/products.js"></script>
 
-    <script>
-        function applyFilter() {
-        const filterValue = document.getElementById('filter').value;
-        const url = new URL(window.location.href);
-        url.searchParams.set('filter', filterValue);
-        window.location.href = url;
-    }
-
-    //category filter
-    function categoryFilter(event, category){
-        event.preventDefault()
-        window.location.href = `/shop?category=${category}`
-    }
-
-    //brand filter
-    function brandFilter(event, brand){
-        event.preventDefault()
-        window.location.href = `/shop?brand=${brand}`
-    }
-    
-
-    </script>
-
-    <%- include('partials/footer') %> 
+    <%- include('partials/footer') %>

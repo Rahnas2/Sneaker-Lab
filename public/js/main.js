@@ -53,13 +53,19 @@
     $('#search-form').on('submit', function (e) {
         e.preventDefault();
         const query = $('#search-input').val();
-    
-        window.location.href = `/shop?search=${encodeURIComponent(query)}`;
+        const url = window.location.pathname
+        if (url !== '/shop') {
+            window.location.href = `/shop?search=${encodeURIComponent(query)}`
+        } else {
+            searchFilter(query)
+            $('.search-model').fadeOut(400);
+        }
+
     });
 
     /*------------------
-		Navigation
-	--------------------*/
+        Navigation
+    --------------------*/
     $(".mobile-menu").slicknav({
         prependTo: '#mobile-menu-wrap',
         allowParentLinks: true
@@ -110,16 +116,30 @@
     // $("select").niceSelect();
 
     /*-------------------
-		Radio Btn
-	--------------------- */
+        Radio Btn
+    --------------------- */
     // $(".product__color__select label, .shop__sidebar__size label, .product__details__option__size label").on('click', function () {
     //     $(".product__color__select label, .shop__sidebar__size label, .product__details__option__size label").removeClass('active');
     //     $(this).addClass('active');
     // });
 
+    $(document).on('click', '.product__details__option__size label', function () {
+        $('.product__details__option__size label').removeClass('active');
+        $(this).addClass('active');
+
+        const quantityInput = $('#quantity-' + product._id);
+        quantityInput.val(1);
+
+        // Get selected size value
+        const selectedSize = parseInt($(this).text());
+
+        // Update stock status based on selected size
+        updateStockStatus(selectedVariant, selectedSize);
+    });
+
     /*-------------------
-		Scroll
-	--------------------- */
+        Scroll
+    --------------------- */
     $(".nice-scroll").niceScroll({
         cursorcolor: "#0d0d0d",
         cursorwidth: "5px",
@@ -138,7 +158,7 @@
     var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
     var yyyy = today.getFullYear();
 
-    if(mm == 12) {
+    if (mm == 12) {
         mm = '01';
         yyyy = yyyy + 1;
     } else {
@@ -158,91 +178,108 @@
     });
 
     /*------------------
-		Magnific
-	--------------------*/
+        Magnific
+    --------------------*/
     $('.video-popup').magnificPopup({
         type: 'iframe'
     });
 
     /*-------------------
-		Quantity change
-	--------------------- */
+        Quantity change
+    --------------------- */
+
+    // View Product
     var proQty = $('.pro-qty');
 
     // var limitWar = $('#max-limit')
-    
+
     //increment and decrement button 
     proQty.prepend('<span class="fa fa-angle-up dec qtybtn"></span>');
     proQty.append('<span class="fa fa-angle-down inc qtybtn"></span>');
 
-    
-    // proQty.on('click', '.qtybtn', function () { 
-    //     const productQuantity = product.variants[0].sizes[0].stock
-    //     let $button = $(this);
-    //     let $input = $button.parent().find('input')
-    //     let oldValue = parseInt($input.val());
-    //     let newVal;
-    //     if ($button.hasClass('inc')) {
-    //         if(oldValue >= productQuantity){
-    //             newVal = oldValue
-    //             $("#max-limit").text("out of stock!");
-    //         }
-    //         else if(oldValue >= 10){
-    //             newVal = 10
-    //             $("#max-limit").text("you hit your max limit!");
-    //         }else{
-    //             newVal = parseFloat(oldValue) + 1;
-    //         }
-    //     } else {
-    //         // not allowed below one
-    //         if (oldValue > 1) {
-    //             newVal = parseFloat(oldValue) - 1;
-    //             $("#max-limit").text('')
-    //         } else {
-    //             newVal = 1;
-    //         }
-    //     }
-    //     $input.val(newVal).trigger('input')
-    // });
 
-    var proQty = $('.pro-qty-2');
-
-    proQty.prepend('<span class="fa fa-angle-left dec qtybtn"></span>');
-    proQty.append('<span class="fa fa-angle-right inc qtybtn"></span>');
-    
     proQty.on('click', '.qtybtn', function () {
+        const selectedSizeInput = document.querySelector('input[name="size"]:checked');
+        if (!selectedSizeInput) {
+            $("#max-limit").text("Please select a size!");
+            return;
+        }
+        const selectedSize = parseInt(selectedSizeInput.value);
+
+        const sizeObj = selectedVariant.sizes.find(s => s.size === selectedSize);
+        const availableStock = sizeObj ? sizeObj.stock : 0;
+
         let $button = $(this);
-        console.log($button)
         let $input = $button.parent().find('input')
-        console.log('input field',$input[0].outerHTML)
-
-        const availableStock = parseInt($input.data('stock'))
-        console.log('avalilabel stock',availableStock)
-
-        let itemId = $input.closest('td').find('p').attr('id').replace('max-limit-', '');  // Extract actual item ID
-        let $errorMsg = $("#max-limit-" + itemId);
-        console.log('eror path',$errorMsg)
-
         let oldValue = parseInt($input.val());
         let newVal;
-
         if ($button.hasClass('inc')) {
-            if(oldValue >= availableStock){
-                $errorMsg.text('out of stock!')
+            if (oldValue >= availableStock) {
                 newVal = oldValue
+                $("#max-limit").text("out of stock!");
             }
-            else if(oldValue >= 10){
+            else if (oldValue >= 10) {
                 newVal = 10
-                $errorMsg.text("you hit your max limit!");
-            }else{
+                $("#max-limit").text("you hit your max limit!");
+            } else {
                 newVal = parseFloat(oldValue) + 1;
             }
         } else {
             // not allowed below one
             if (oldValue > 1) {
-                 newVal = parseFloat(oldValue) - 1;
-                 $errorMsg.text('')
-            } 
+                newVal = parseFloat(oldValue) - 1;
+                $("#max-limit").text('')
+            } else {
+                newVal = 1;
+            }
+        }
+        $input.val(newVal).trigger('input')
+    });
+
+
+    // Cart 
+    var proQty = $('.pro-qty-2');
+
+    proQty.prepend('<span class="fa fa-angle-left dec qtybtn"></span>');
+    proQty.append('<span class="fa fa-angle-right inc qtybtn"></span>');
+
+    proQty.on('click', '.qtybtn', function () {
+        let $button = $(this);
+        console.log($button)
+        let $input = $button.parent().find('input')
+
+        // const availableStock = parseInt($input.data('stock'))
+        const variantData = $input.data('variant')
+        const variant = typeof variantData === 'string' ? JSON.parse(variantData) : variantData
+        const size = parseInt($input.data('size'))
+        const sizeObj = variant.sizes.find(s => s.size === size);
+        console.log('size obj ', sizeObj)
+        const availableStock = sizeObj ? sizeObj.stock : 0;
+
+        let itemId = $input.closest('td').find('p').attr('id').replace('max-limit-', '');  // Extract actual item ID
+        let $errorMsg = $("#max-limit-" + itemId);
+        console.log('eror path', $errorMsg)
+
+        let oldValue = parseInt($input.val());
+        let newVal;
+
+        if ($button.hasClass('inc')) {
+            if (oldValue >= availableStock) {
+                $errorMsg.text('out of stock!')
+                newVal = oldValue
+            }
+            else if (oldValue >= 10) {
+                newVal = 10
+                $errorMsg.text("you hit your max limit!");
+            } else {
+                newVal = parseFloat(oldValue) + 1;
+            }
+        } else {
+            // not allowed below one
+            if (oldValue > 1) {
+                newVal = parseFloat(oldValue) - 1;
+                $errorMsg.text('')
+            }
             // not allowed above ten
             else {
                 newVal = 1;
@@ -250,12 +287,12 @@
         }
         $input.val(newVal).trigger('input')
 
-        
+
 
         // Get the item price or offer price
         let $priceElement = $button.closest('tr').find('#dicoutedPrice-' + itemId);
         let itemPrice;
-        
+
         if ($priceElement.length) {
             // Use the offer price if it exists
             itemPrice = parseInt($priceElement.text().replace(/[^0-9]/g, ''));
@@ -263,54 +300,54 @@
             // Otherwise, use the regular price
             itemPrice = parseInt($button.closest('tr').find('#mrp-' + itemId).text().replace(/[^0-9]/g, ''));
         }
-    
+
         // Calculate item total
         var itemTotal = newVal * itemPrice;
-    
+
         // Update the item total in the DOM
         $('#itemTotal-' + itemId).html('₹ ' + itemTotal);  //.toFixed(2)
-        
-        console.log('new value',newVal)
+
+        console.log('new value', newVal)
 
 
-        fetch('/updatedCartItemQuantity',{
-            method:'PUT',
-            headers:{
-                'Content-Type':'application/json'
+        fetch('/updatedCartItemQuantity', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
             },
-            body:JSON.stringify({
+            body: JSON.stringify({
                 itemId: itemId,
                 quantity: newVal,
-                itemTotal:itemTotal,
+                itemTotal: itemTotal,
             })
         })
-        .then(response => response.json())
-        .then(result =>{
-            if(result.success){
-               // Update cart totals dynamically
-            let totalMrp = result.updatedCart[0].items.reduce((acc, curr) => {
-                let price = curr.variant.price;
-                return acc + (price * curr.quantity);
-            }, 0);
-            console.log('totalmrp',totalMrp)
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    // Update cart totals dynamically
+                    let totalMrp = result.updatedCart[0].items.reduce((acc, curr) => {
+                        let price = curr.variant.price;
+                        return acc + (price * curr.quantity);
+                    }, 0);
+                    console.log('totalmrp', totalMrp)
 
-            let totalDiscount = totalMrp - result.updatedCart[0].totalPrice;
-            let shippingFee = result.updatedCart[0].shippingFee
-            let totalAmount = result.updatedCart[0].totalPrice;
+                    let totalDiscount = totalMrp - result.updatedCart[0].totalPrice;
+                    let shippingFee = result.updatedCart[0].shippingFee
+                    let totalAmount = result.updatedCart[0].totalPrice;
 
-            // Update Total MRP, Discount, and Total Amount in DOM
-            $('#cart-total-mrp').html('₹ ' + totalMrp); //.toFixed(2)
-            $('#discout-amout').html('₹ ' + totalDiscount); //.toFixed(2)
-            $('#delevery-fee').html(shippingFee)
-            $('#cart-total').html('₹ ' + totalAmount);  //.toFixed(2)
-            }else{
-                console.log('error updating quantity')
-            }
-        })
-        .catch(error => console.log('something went wrong',error))
+                    // Update Total MRP, Discount, and Total Amount in DOM
+                    $('#cart-total-mrp').html('₹ ' + totalMrp); //.toFixed(2)
+                    $('#discout-amout').html('₹ ' + totalDiscount); //.toFixed(2)
+                    $('#delevery-fee').html(shippingFee)
+                    $('#cart-total').html('₹ ' + totalAmount);  //.toFixed(2)
+                } else {
+                    console.log('error updating quantity')
+                }
+            })
+            .catch(error => console.log('something went wrong', error))
     });
-    
-    
+
+
 
     /*------------------
         Achieve Counter
