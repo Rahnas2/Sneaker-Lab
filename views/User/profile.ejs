@@ -670,6 +670,14 @@
 
                 // Client-side validation
                 let isValid = true;
+                if (newPassword.trim().length < 8) {
+                    document.getElementById('new-password-notValid').textContent = 'password should length should be atleast 8'
+                    document.getElementById('new-password-notValid').classList.remove('d-none');
+                    isValid = false
+                } else {
+                    document.getElementById('new-password-notValid').classList.add('d-none');
+                }
+
                 if (newPassword !== confirmPassword) {
                     document.getElementById('confirm-password-notValid').textContent = 'Passwords do not match';
                     document.getElementById('confirm-password-notValid').classList.remove('d-none');
@@ -701,8 +709,13 @@
                                 })
                                 $('#changePassword').modal('hide');
                             } else {
-                                document.getElementById('current-password-notValid').textContent = data.message;
-                                document.getElementById('current-password-notValid').classList.remove('d-none');
+                                if (data.error === 'newPassword') {
+                                    document.getElementById('new-password-notValid').textContent = data.message
+                                    document.getElementById('new-password-notValid').classList.remove('d-none')
+                                } else {
+                                    document.getElementById('current-password-notValid').textContent = data.message;
+                                    document.getElementById('current-password-notValid').classList.remove('d-none');
+                                }
                             }
                         })
                         .catch(error => console.error('Error:', error));

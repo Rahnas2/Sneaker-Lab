@@ -9,7 +9,7 @@ exports.salesManagment = async (req,res)=>{
 
        const searchQuery = req.query.search || ''
        const page = parseInt(req.query.page) || 1
-       const limit = parseInt(req.query.limit) || 2
+       const limit = parseInt(req.query.limit) || 10
        const skip = (page-1)*limit
  
  
@@ -27,7 +27,8 @@ exports.salesManagment = async (req,res)=>{
        totalOrders,
        currentPage:page,
        totalPages,
-       limit
+       limit,
+       sort
     })
  
     } catch (error) {
@@ -49,7 +50,7 @@ exports.salesManagment = async (req,res)=>{
  
        }else if(format === 'excel'){
  
-          salesReportService.generateSalesReportEXCEL(res, orders, totalSales, totalDiscount, totalOrders,  endDate)
+          salesReportService.generateSalesReportEXCEL(res, orders, totalSales, totalDiscount, totalOrders, startedDate, endDate)
  
        }
  

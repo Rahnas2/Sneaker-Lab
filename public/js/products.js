@@ -1,8 +1,8 @@
 let searchQuery = new URLSearchParams(window.location.search).get('search') || '';
-let selectedCategory = '';
-let selectedBrand = '';
-let selectedFilter = '';
-let currentPage = 1;
+let selectedCategory = new URLSearchParams(window.location.search).get('category') || '';
+let selectedBrand = new URLSearchParams(window.location.search).get('brand') || '';
+let selectedFilter =  new URLSearchParams(window.location.search).get('filter') || '';
+let currentPage =  parseInt(new URLSearchParams(window.location.search).get('page')) || 1;
 
 function fetchProducts() {
   const query = new URLSearchParams({
@@ -26,6 +26,16 @@ function renderProducts(products, productsInCart, averageRating) {
   const productList = document.getElementById('product-list');
   productList.innerHTML = '';
 
+  if (!products.length) {
+    const EmtyProductList = `<div class="col-12 text-center my-5">
+                                <h5 class="text-muted">No products found</h5>
+                                <p class="text-secondary">Try adjusting your filters or search terms.</p>
+                            </div>`
+
+    productList.innerHTML += EmtyProductList
+    return
+  }
+  
   products.forEach(product => {
     const productId = product._id;
     const name = product.productName;
@@ -109,12 +119,23 @@ function renderPagination(totalProducts) {
 
 function changePage(page) {
   currentPage = page;
+
+  const url = new URL(window.location);
+  url.searchParams.set('page', currentPage);
+  history.pushState({}, '', url)
+
   fetchProducts();
 }
 
 function applyFilter() {
   selectedFilter = document.getElementById('filter').value;
   currentPage = 1;
+
+  const url = new URL(window.location);
+  url.searchParams.set('filter', selectedFilter);
+  url.searchParams.set('page', currentPage);
+  history.pushState({}, '', url);
+
   fetchProducts();
 }
 
@@ -130,6 +151,12 @@ function categoryFilter(event, category) {
 
   selectedCategory = category;
   currentPage = 1;
+
+  const url = new URL(window.location);
+  url.searchParams.set('category', selectedCategory);
+  url.searchParams.set('page', currentPage);
+  history.pushState({}, '', url);
+
   fetchProducts();
 }
 
@@ -144,6 +171,12 @@ function brandFilter(event, brand) {
 
   selectedBrand = brand;
   currentPage = 1;
+
+  const url = new URL(window.location);
+  url.searchParams.set('brand', selectedBrand);
+  url.searchParams.set('page', currentPage);
+  history.pushState({}, '', url);
+
   fetchProducts();
 }
 
@@ -153,8 +186,9 @@ function searchFilter(search) {
   currentPage = 1
 
   const url = new URL(window.location.href);
-  url.searchParams.delete('search');
-  window.history.replaceState({}, '', url);
+  url.searchParams.set('search', searchQuery);
+  url.searchParams.set('page', currentPage);
+  history.pushState({}, '', url);
 
   fetchProducts()
 }

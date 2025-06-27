@@ -15,11 +15,16 @@ const editProfileValidation = async (req, res, next) => {
 
     body('phone')  
       .custom((value,{req}) =>{
-        if(user.googleId && value){
-          if (!/^\d{10}$/.test(value)) {
-            throw new Error('Please enter a valid 10-digit mobile number');
-          }
-        }else if(!user.googleId){
+        // if(user.googleId && value){
+        //   if (!/^\d{10}$/.test(value)) {
+        //     throw new Error('Please enter a valid 10-digit mobile number');
+        //   }
+        // }else if(!user.googleId){
+        //   if (!/^\d{10}$/.test(value)) {
+        //     throw new Error('Please enter a valid 10-digit mobile number');
+        //   }
+        // }
+        if(user.phone){
           if (!/^\d{10}$/.test(value)) {
             throw new Error('Please enter a valid 10-digit mobile number');
           }

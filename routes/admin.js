@@ -28,22 +28,22 @@ router.post('/userManagment/unblock/:userId',auth,admin_controller.unblockUser)
 //category managment start 
 router.get('/categoryManagment',auth,admin_controller.categoryManagment) 
 router.post('/addCategory',auth,catogoryValid,admin_controller.addCategory)
-router.post('/deleteCategory/:id',auth,admin_controller.softDeleteCategory)  
+router.post('/toggleCategory/:id',auth,admin_controller.toggleCategoryStatus)  
 //category managment end
 
 
 //brand managment start 
 router.get('/brandManagment',auth,admin_controller.brandManagment) 
 router.post('/addBrand',auth,brandValid,admin_controller.addBrand)
-router.post('/deleteBrand/:id',auth,admin_controller.softDeleteBrand)
+router.post('/toggleBrand/:id',auth,admin_controller.toggleBrandStatus)
 //brand managment end
 
 
 //product managment start
 router.get('/productManagment',auth,admin_controller.productManagment)
 router.get('/addProduct',auth,admin_controller.getaddProduct)
-router.post('/addProduct',upload.any(),provalidation,admin_controller.postaddproduct)  
-router.post('/softDeleteProduct/:id',auth,admin_controller.softDeleteProduct)    
+router.post('/addProduct',upload.any(), auth, provalidation, admin_controller.postaddproduct)  
+router.post('/softDeleteProduct/:id',auth,admin_controller.toggleProductStatus)    
 router.get('/editProduct/:id',upload.any(),auth,admin_controller.getEditProduct)
 router.post('/editProduct/:id',upload.any(),auth,provalidation,admin_controller.postUpdatedProduct) 
 //product managment end

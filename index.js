@@ -49,7 +49,7 @@ app.get('*', (req, res) =>{
 
 //Error handling middleware
 app.use((err, req, res, next) =>{
-    console.error(err.stack);
+    console.error('error handling ',err.stack);
     res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).send('error')
 })
 

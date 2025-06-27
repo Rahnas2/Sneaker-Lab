@@ -400,6 +400,7 @@ exports.changePassword = (req, res) => {
 exports.PostchangePassword = async (req, res) => {
     try {
         const { newPassword, confirmPassword } = req.body
+        console.log('change password body ',req.body)
         const email = req.session.emailAuth
         const user = await usersCollection.findOne({ email: email })
         const hashedPassword = await bcrypt.hash(newPassword, 10)
@@ -1030,15 +1031,10 @@ exports.editProfile = async (req, res) => {
         const { username, phone } = req.body
         const user = await usersCollection.findById(userId)
 
-        if (user.googleId) {
-            if (user.username === username && !phone) {
-                return res.json({ noChange: true, message: 'sorry you didnt make any changes' })
-            }
-        }
-
-        if (user.username === username && user.phone?.toString() === phone) {
+        if (user.username === username && (user.phone ? user.phone.toString() === phone : !phone)) {
             return res.json({ noChange: true, message: 'sorry you didit make any changes' })
         }
+
 
         if (user.username !== username) {
             await usersCollection.updateOne(
@@ -1066,11 +1062,15 @@ exports.editProfile = async (req, res) => {
 
 exports.setNewPassword = async (req, res) => {
     const { currentPassword, newPassword } = req.body;
+
+    if(newPassword.trim().length < 8){
+        return res.json({success: false, error: 'newPassword', message: 'password should be atleast length 8'})
+    }
     const userId = req.session.user
     const user = await usersCollection.findById({ _id: userId });
 
     if (!user || !(await bcrypt.compare(currentPassword, user.password))) {
-        return res.json({ success: false, message: 'Current password is incorrect' });
+        return res.json({ success: false, error: 'currentPassword', message: 'Current password is incorrect' });
     }
 
     user.password = await bcrypt.hash(newPassword, 10);

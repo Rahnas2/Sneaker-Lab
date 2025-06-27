@@ -25,7 +25,8 @@ exports.couponManagment = async (req, res) => {
             coupansList,
             currentPage: page,
             totalPages,
-            limit
+            limit,
+            searchQuery
         })
     } catch (error) {
         console.error('something went wrong', error)
@@ -78,6 +79,15 @@ exports.editCoupon = async (req, res) => {
 
         const couponId = req.params.id
         const { code, discountPercentage, maxAmount, minimumSpend, endDate } = req.body
+
+        // Verify CouponCode is Unique
+        const couponCodeCheck = await couponCollection.findOne({
+            code: { $regex: new RegExp(`^${code}$`, 'i') }, 
+            _id: { $ne: couponId }
+        });
+        if(couponCodeCheck){
+            return res.json({ existedCoupon: true, message: 'sorry, this coupon already exist' })
+        }
 
         const updatedCoupon = await couponCollection.findByIdAndUpdate(
             couponId,

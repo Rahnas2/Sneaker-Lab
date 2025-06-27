@@ -1,4 +1,4 @@
-
+const usersCollection = require('../models/usersModel')
 const userAuth = async (req, res, next) => {
     if (req.session.user) {
 
