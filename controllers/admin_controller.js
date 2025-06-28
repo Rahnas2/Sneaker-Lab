@@ -118,7 +118,6 @@ exports.categoryManagment = async (req, res) => {
    const skip = (page - 1) * limit
 
    const searchCriteria = {
-      deleted: false,
       $or: [
          { categoryName: new RegExp(searchQuery, 'i') },
          { categoryDescription: new RegExp(searchQuery, 'i') }

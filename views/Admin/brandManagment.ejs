@@ -73,7 +73,7 @@
                                 <%=brand.brandDescription %>
                             </td>
                             <td class="text-end">
-                                <% if (product.deleted) { %>
+                                <% if (brand.deleted) { %>
                                     <button class="btn btn-sm btn-success" onclick="toggleBrand('<%=brand._id %>')">
                                         Activate
                                     </button>

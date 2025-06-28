@@ -73,7 +73,7 @@
                                 <%=category.categoryDescription %>
                             </td>
                             <td class="text-end">
-                                <% if (product.deleted) { %>
+                                <% if (category.deleted) { %>
                                     <button class="btn btn-sm btn-success"
                                         onclick="toggleCategory('<%=category._id %>')">
                                         Activate
