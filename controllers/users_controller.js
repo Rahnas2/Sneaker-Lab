@@ -1,7 +1,6 @@
 const { validationResult } = require('express-validator')
 const bcrypt = require('bcrypt')
 const crypto = require('crypto')
-const auth_controller = require('./auth_controller')
 const usersCollection = require('../models/usersModel')
 const otpCollection = require('../models/otpModel')
 const productCollection = require('../models/productModel')
@@ -11,14 +10,13 @@ const addressCollection = require('../models/addressModel')
 const orderCollection = require('../models/orderModel')
 const couponCollection = require('../models/couponModel')
 const walletCollection = require('../models/walletModel')
-
 const invoiceService = require('../services/invoiceDownload')
-
 const Razorpay = require('razorpay')
 const HttpStatusCode = require('../utils/statsCode')
 const variantModel = require('../models/variantModel')
-
-
+const { generateOtp } = require('../utils/generateOtp')
+const { sendOtp } = require('../utils/sendOtp')
+const { generateReferralCode } = require('../utils/generateReferalCode')
 
 const razorpayInstance = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -193,10 +191,11 @@ exports.getsignupVerification = async (req, res, next) => {
             return res.redirect('/signup')
 
         }
-        const otp = auth_controller.generateOtp()
+        const otp = generateOtp()
         console.log(otp)
 
-        await auth_controller.sendOtp(userData.email, otp)
+        await sendOtp(userData.email, otp)
+
         const otpExpiryTime = 30 * 1000
         res.render('User/otpVerify', {
             email: userData.email,
@@ -229,7 +228,7 @@ exports.signupVerification = async (req, res, next) => {
             //generate referal code
             const userName = userData.username.slice(0, 3)
 
-            const code = auth_controller.generateReferralCode()
+            const code = generateReferralCode()
 
             const referralCode = userName + code
 
@@ -287,9 +286,9 @@ exports.signupVerification = async (req, res, next) => {
 exports.resendOtp = async (req, res, next) => {
     try {
         const userData = req.session.tempUser
-        const otp = auth_controller.generateOtp();
+        const otp = generateOtp()
 
-        await auth_controller.sendOtp(userData.email, otp); // Send a new OTP
+        await sendOtp(userData.email, otp) // Send Otp
 
         const otpExpiryTime = 30 * 1000
         res.render('User/otpVerify', {
@@ -328,10 +327,9 @@ exports.postEmailVerification = async (req, res, next) => {
                 return res.state(HttpStatusCode.FORBIDDEN).json({ googleUser: true, message: 'You signed up using Google. Please use Google Sign-In to access your account.' })
             }
 
-            const otp = auth_controller.generateOtp()
+            const otp = generateOtp()
 
-
-            await auth_controller.sendOtp(email, otp)
+            await sendOtp(email, otp)
             const otpExpiryTime = 30 * 1000
 
             req.session.emailAuth = email
@@ -379,9 +377,9 @@ exports.resendOtpFrg = async (req, res, next) => {
         if (!email) {
             return res.state(HttpStatusCode.NOT_FOUND).json({ error: true, message: 'Email not found' });
         }
-        const otp = auth_controller.generateOtp()
+        const otp = generateOtp()
 
-        await auth_controller.sendOtp(email, otp)
+        await sendOtp(email, otp)
 
         res.json({ success: true, message: 'A new OTP has been sent to your email' });
     } catch (error) {

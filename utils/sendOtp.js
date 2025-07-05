@@ -1,11 +1,6 @@
-
 const transporter = require('../config/email')
 const otpCollection = require('../models/otpModel')
-const crypto = require('crypto')
 
-exports.generateOtp = ()=>{
-    return crypto.randomInt(1000,9999)
-}
 
 const otpExpiryTime = 30 * 1000
 exports.sendOtp = async (email,otp)=>{
@@ -31,8 +26,3 @@ exports.sendOtp = async (email,otp)=>{
     }
     
 }
-
-exports.generateReferralCode = () => {
-    return crypto.randomInt(10000, 99999)
-}
-

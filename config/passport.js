@@ -1,7 +1,7 @@
 const passport = require('passport')
 const googleStrategy = require('passport-google-oauth20').Strategy
 const usersCollection = require('../models/usersModel')
-const auth_controller = require('../controllers/auth_controller')
+const { generateReferralCode } = require('../utils/generateReferalCode')
 const dotenv = require('dotenv').config()
 
 passport.use(new googleStrategy({
@@ -25,7 +25,7 @@ async (accessToken,refreshToken,profile,done)=>{
         //generate referal code
         const userName = user.username.slice(0,3)
 
-        const code = auth_controller.generateReferralCode()
+        const code = generateReferralCode()
 
         const referralCode = userName + code
 
