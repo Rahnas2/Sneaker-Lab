@@ -6,36 +6,40 @@ const { validationResult } = require('express-validator')
 const HttpStatusCode = require('../utils/statsCode')
 
 //brand managment start
-exports.brandManagment = async (req, res) => {
+exports.brandManagment = async (req, res, next) => {
+   try {
+      const searchQuery = req.query.search || ''
+      const page = parseInt(req.query.page) || 1
+      const limit = parseInt(req.query.limit) || 10
+      const skip = (page - 1) * limit
 
-   const searchQuery = req.query.search || ''
-   const page = parseInt(req.query.page) || 1
-   const limit = parseInt(req.query.limit) || 10
-   const skip = (page - 1) * limit
+      const searchCriteria = {
+         $or: [
+            { brandName: new RegExp(searchQuery, 'i') },
+            { brandDescription: new RegExp(searchQuery, 'i') }
 
-   const searchCriteria = {
-      $or: [
-         { brandName: new RegExp(searchQuery, 'i') },
-         { brandDescription: new RegExp(searchQuery, 'i') }
+         ]
+      }
 
-      ]
+      const brandList = await brandCollection.find(searchCriteria).sort({ createdAt: -1 }).skip(skip).limit(limit)
+
+      const totalBrands = await brandCollection.countDocuments({ deleted: false })
+      const totalPages = Math.ceil(totalBrands / limit)
+
+      res.render('Admin/brandManagment', {
+         brandList,
+         currentPage: page,
+         totalPages,
+         limit,
+         searchQuery
+      })
+   } catch (error) {
+      next(error)
    }
 
-   const brandList = await brandCollection.find(searchCriteria).sort({ createdAt: -1 }).skip(skip).limit(limit)
-
-   const totalBrands = await brandCollection.countDocuments({ deleted: false })
-   const totalPages = Math.ceil(totalBrands / limit)
-
-   res.render('Admin/brandManagment', {
-      brandList,
-      currentPage: page,
-      totalPages,
-      limit,
-      searchQuery
-   })
 }
 
-exports.addBrand = async (req, res) => {
+exports.addBrand = async (req, res, next) => {
    try {
 
       //validation
@@ -67,12 +71,12 @@ exports.addBrand = async (req, res) => {
       return res.status(HttpStatusCode.CREATED).json({ success: true, message: 'brand added successfull' })
 
    } catch (error) {
-      console.log('error', error)
+      next(error)
    }
 }
 
 
-exports.toggleBrandStatus = async (req, res) => {
+exports.toggleBrandStatus = async (req, res, next) => {
    try {
       const brandId = req.params.id
       const brand = await brandCollection.findById(brandId)
@@ -83,9 +87,7 @@ exports.toggleBrandStatus = async (req, res) => {
       const message = status ? 'Activated' : 'De-activated'
       return res.status(HttpStatusCode.OK).json({ success: true, message })
    } catch (error) {
-      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'faild brand delete' })
+      next(error)
    }
 
 }
-
-//brand managment end

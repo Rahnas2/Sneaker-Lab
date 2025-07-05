@@ -3,7 +3,7 @@ const walletCollection = require('../models/walletModel')
 
 
 
-exports.getWallet = async (req, res) => {
+exports.getWallet = async (req, res, next) => {
     try {
         const userId = req.session.user;
         const { page = 1, limit = 5 } = req.query;
@@ -39,7 +39,6 @@ exports.getWallet = async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Error in getWalletPaginated:', error);
-        res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Error fetching wallet data' });
+        next(error)
     }
 };

@@ -533,7 +533,6 @@
                 .then(result => {
                     console.log('result', result)
                     if(result.validationError){
-                        console.log('validatoin error',result.validationErrors)
                         Object.entries(result.validationErrors).forEach(([field,message])=>{
                               const validationFaild = document.getElementById(`${field}-notValid`)
                               if(validationFaild){

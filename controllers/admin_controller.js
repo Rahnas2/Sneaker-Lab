@@ -22,10 +22,9 @@ exports.adminLogin = (req, res) => {
 
 }
 
-exports.adminLoginPost = async (req, res) => {
-   const { email, password } = req.body
+exports.adminLoginPost = async (req, res, next) => {
    try {
-
+      const { email, password } = req.body
       const adminCheck = await usersCollection.findOne({ email: email, isAdmin: true })
       if (adminCheck) {
          const passwordCheck = await bcrypt.compare(password, adminCheck.password)
@@ -33,20 +32,17 @@ exports.adminLoginPost = async (req, res) => {
             req.session.admin = true
             return res.json({ success: true })
          } else {
-            return res.json({ error: 'Invalid password' })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ error: 'Invalid password' })
          }
-      } else {
-         return res.json({ error: 'Admin not found' })
       }
 
+      return res.status(HttpStatusCode.FORBIDDEN).json({ error: 'Admin not found' })
    } catch (error) {
-      console.error(error);
-
+      next(error)
    }
-
 }
 
-exports.userManagment = async (req, res) => {
+exports.userManagment = async (req, res, next) => {
    try {
       const searchQuery = req.query.search || ''
       const page = parseInt(req.query.page) || 1
@@ -77,11 +73,11 @@ exports.userManagment = async (req, res) => {
          searchQuery
       })
    } catch (error) {
-      console.error('error', error)
+      next(error)
    }
 }
 
-exports.blockUser = async (req, res) => {
+exports.blockUser = async (req, res, next) => {
    try {
       const user = await usersCollection.findByIdAndUpdate(req.params.userId, { isBlock: true }, { new: true })
       const message = 'sucessfully block the user'
@@ -90,29 +86,26 @@ exports.blockUser = async (req, res) => {
 
       return res.status(HttpStatusCode.OK).json({ success: true, user, message })
    } catch (error) {
-      console.error('error', error)
-      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'error while blocking the user' })
+      next(error)
    }
 }
 
-exports.unblockUser = async (req, res) => {
+exports.unblockUser = async (req, res, next) => {
    try {
       const user = await usersCollection.findByIdAndUpdate(req.params.userId, { isBlock: false }, { new: true })
       const message = 'sucessfully unblock the user'
       req.session.user = user._id
       return res.status(HttpStatusCode.OK).json({ success: true, user, message })
    } catch (error) {
-      console.error('error', error)
-      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'error while blocking the user' })
+      next(error)
    }
 }
 
 //user managment end
 
-
 //product managment start
 
-exports.productManagment = async (req, res) => {
+exports.productManagment = async (req, res, next) => {
 
    const searchQuery = req.query.search || ''
    const page = parseInt(req.query.page) || 1
@@ -169,12 +162,12 @@ exports.getaddProduct = async (req, res) => {
       res.render('Admin/addProduct', { product, categories, brands })
 
    } catch (error) {
-
+      next(error)
    }
 
 }
 
-exports.postaddproduct = async (req, res) => {
+exports.postaddproduct = async (req, res, next) => {
    try {
       const { productName, category, brand, description } = req.body
 
@@ -187,13 +180,14 @@ exports.postaddproduct = async (req, res) => {
             acc[error.path] = error.msg
             return acc
          }, {})
-         return res.json({ validationError: true, validationErrors })
+
+         return res.status(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
       }
 
       //checking the product is existed
       const productCheck = await productCollection.findOne({ productName: { $regex: new RegExp(`^${productName}$`, 'i') } })
       if (productCheck) {
-         return res.json({ success: false, message: 'sorry the product is already exisited!' })
+         return res.status(HttpStatusCode.CONFLICT).json({ success: false, message: 'sorry the product is already exisited!' })
       }
 
       const regex = /.*[\/\\]public[\/\\](.*)/;
@@ -204,7 +198,7 @@ exports.postaddproduct = async (req, res) => {
       }).filter(path => path !== null) : []
 
       if (uploadedFiles.length < 4) {
-         return res.json({ success: false, message: 'all images are required' })
+         return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'all images are required' })
       }
 
       const variantImagesMap = new Map();
@@ -240,7 +234,7 @@ exports.postaddproduct = async (req, res) => {
 
       variants.forEach(variant => {
          if (!variant.sizes) {
-            return res.json({ success: false, message: 'please select atleast one size and the stock' })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'please select atleast one size and the stock' })
          }
       })
 
@@ -271,14 +265,14 @@ exports.postaddproduct = async (req, res) => {
       }
 
       await savedProduct.save()
-      return res.json({ success: true, message: 'product added successfully' })
+      return res.status(HttpStatusCode.CREATED).json({ success: true, message: 'product added successfully' })
 
    } catch (error) {
-      console.log('something went wrong', error)
+      next(error)
    }
 }
 
-exports.toggleProductStatus = async (req, res) => {
+exports.toggleProductStatus = async (req, res, next) => {
    try {
       const productId = req.params.id
       console.log(productId)
@@ -288,12 +282,11 @@ exports.toggleProductStatus = async (req, res) => {
       const message = status ? 'Activated' : 'De-activated'
       return res.json({ success: true, message })
    } catch (error) {
-      console.log('error')
-      return res.json({ success: false, message: 'something went wrong' })
+      next(error)
    }
 }
 
-exports.getEditProduct = async (req, res) => {
+exports.getEditProduct = async (req, res, next) => {
    try {
       const productId = req.params.id
       const product = await productCollection.findById(productId).populate('variants')
@@ -322,12 +315,12 @@ exports.getEditProduct = async (req, res) => {
          imagePath
       })
    } catch (error) {
-      console.log('error', error)
+      next(error)
    }
 }
 
 
-exports.postUpdatedProduct = async (req, res) => {
+exports.postUpdatedProduct = async (req, res, next) => {
    try {
       //  checking validation error
       const errors = validationResult(req)
@@ -337,7 +330,7 @@ exports.postUpdatedProduct = async (req, res) => {
             return acc
          }, {})
          console.log(validationErrors)
-         return res.json({ validationError: true, validationErrors })
+         return res.status(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
       }
 
       const { productName, category, brand, description } = req.body
@@ -347,7 +340,7 @@ exports.postUpdatedProduct = async (req, res) => {
 
       const existingProduct = await productCollection.findById(productId)
       if (!existingProduct) {
-         return res.json({ success: false, message: 'sorry, the product does not exist!' })
+         return res.status(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'sorry, the product does not exist!' })
       }
 
       const productNameCheck = await productCollection.findOne({
@@ -356,7 +349,7 @@ exports.postUpdatedProduct = async (req, res) => {
       });
 
       if (productNameCheck) {
-         return res.json({ success: false, message: 'sorry the product name is already used' })
+         return res.status(HttpStatusCode.CONFLICT).json({ success: false, message: 'sorry the product name is already used' })
       }
 
 
@@ -396,7 +389,7 @@ exports.postUpdatedProduct = async (req, res) => {
          const variant = variants[i]; // Get the current variant
 
          if (!variant.sizes) {
-            return res.json({ success: false, message: 'plese add atleast one size and stock to the varaints' })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'please add atleast one size and stock to the varaints' })
          }
 
          let existingVariant;
@@ -446,7 +439,7 @@ exports.postUpdatedProduct = async (req, res) => {
 
       return res.json({ success: true, message: 'successfully updated the product' })
    } catch (error) {
-      console.error('something went wrong', error)
+      next(error)
    }
 }
 
@@ -454,7 +447,7 @@ exports.postUpdatedProduct = async (req, res) => {
 
 //order management start
 
-exports.loadOrderManagment = async (req, res) => {
+exports.loadOrderManagment = async (req, res, next) => {
    try {
 
       const searchQuery = req.query.search || ''
@@ -488,7 +481,7 @@ exports.loadOrderManagment = async (req, res) => {
       const totalProducts = await orderCollection.countDocuments()
       const totalPages = Math.ceil(totalProducts / limit)
 
-      const orders = await orderCollection.find(searchCriteria).sort({createdAt: -1}).skip(skip).limit(limit)
+      const orders = await orderCollection.find(searchCriteria).sort({ createdAt: -1 }).skip(skip).limit(limit)
       res.render('Admin/orderManagment', {
          orders,
          currentPage: page,
@@ -497,11 +490,11 @@ exports.loadOrderManagment = async (req, res) => {
          searchQuery
       })
    } catch (error) {
-      console.error('something went wrong', error)
+      next(error)
    }
 }
 
-exports.cancelProductAdm = async (req, res) => {
+exports.cancelProductAdm = async (req, res, next) => {
    try {
       const { orderId, itemId } = req.body
       console.log('req.body', req.body)
@@ -509,38 +502,36 @@ exports.cancelProductAdm = async (req, res) => {
       const orders = await orderCollection.findOne({ _id: orderId })
 
       if (!orders) {
-         return res.json({ success: false, message: 'Order not found' });
+         return res.status(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Order not found' });
       }
 
       const itemIndex = orders.items.findIndex(item => item._id.toString() === itemId);
       if (itemIndex === -1) {
-         return res.json({ success: false, message: 'Item not found in order' });
+         return res.status(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Item not found in order' });
       }
 
-
-      const { itemTotal, variantId, quantity } = orders.items[itemIndex];
       const userId = orders.userId
-      console.log('quantity', quantity)
-      console.log('variantid', variantId)
 
-      await orderCollection.findOneAndUpdate(
-         { _id: orderId, 'items._id': itemId },
-         { $set: { 'items.$.status': 'canceled' } },
-         { new: true }
-      )
+      const { itemTotal, variantId, quantity, size, status, paymentStatus } = orders.items[itemIndex];
 
-      const variant = await variantCollection.findOne({ _id: variantId });
-      if (!variant) {
-         return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Variant not found' });
+      if (status === 'order placed' || status === 'pending') {
+         await orderCollection.findOneAndUpdate(
+            { _id: orderId, 'items._id': itemId },
+            { $set: { 'items.$.status': 'canceled' } },
+            { new: true }
+         )
+      } else {
+         return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'sorry, please make sure your product is not delivered' })
       }
 
 
-      variant.sizes[0].stock += quantity;
+      //Update Size Quantity
+      await variantCollection.updateOne(
+         { _id: variantId, 'sizes.size': size },
+         { $inc: { 'sizes.$.stock': quantity } }
+      );
 
-      // Save the updated variant
-      const updatedVariant = await variant.save();
-
-      if (orders.paymentMethod === 'RAZORPAY' || orders.paymentMethod === 'WALLET') {
+      if ((orders.paymentMethod === 'RAZORPAY' || orders.paymentMethod === 'WALLET') && paymentStatus === 'paid') {
 
 
          const wallet = await walletCollection.findOne({ userId: userId })
@@ -568,11 +559,11 @@ exports.cancelProductAdm = async (req, res) => {
 
       return res.json({ success: true, message: 'order cancel successfully' })
    } catch (error) {
-      console.error('something went wrong', error)
+      next(error)
    }
 }
 
-exports.orderDelivered = async (req, res) => {
+exports.orderDelivered = async (req, res, next) => {
    try {
       const { orderId, itemId } = req.body
 
@@ -588,12 +579,12 @@ exports.orderDelivered = async (req, res) => {
       return res.json({ success: true, message: 'order delivered successfully' })
 
    } catch (error) {
-      console.error('something went wrong', error)
+      next(error)
    }
 }
 
 
-exports.returnApprovel = async (req, res) => {
+exports.returnApprovel = async (req, res, next) => {
    try {
       const { orderId, itemId, status } = req.body
 
@@ -615,19 +606,20 @@ exports.returnApprovel = async (req, res) => {
       }
 
 
-      const { itemTotal, variantId, quantity } = orders.items[itemIndex]
+      const { itemTotal, variantId, quantity, size } = orders.items[itemIndex]
       const userId = orders.userId
 
       //incriment the stock
       const variant = await variantCollection.findOne({ _id: variantId });
       if (!variant) {
-         return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Variant not found' });
+         return res.status(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Variant not found' });
       }
 
-      variant.sizes[0].stock += quantity;
-
-      // Save the updated variant
-      await variant.save()
+      //Update Size Quantity
+      await variantCollection.updateOne(
+         { _id: variantId, 'sizes.size': size },
+         { $inc: { 'sizes.$.stock': quantity } }
+      );
 
 
       const wallet = await walletCollection.findOne({ userId: userId })  //user wallet
@@ -662,7 +654,7 @@ exports.returnApprovel = async (req, res) => {
       return res.json({ success: true, message: 'order approved successfull and the amout credited to the users wallet' })
 
    } catch (error) {
-      console.error('something went wrong', error)
+      next(error)
    }
 }
 

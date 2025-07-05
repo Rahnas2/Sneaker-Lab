@@ -6,7 +6,7 @@ const { validationResult } = require('express-validator')
 const HttpStatusCode = require('../utils/statsCode')
 
 
-exports.couponManagment = async (req, res) => {
+exports.couponManagment = async (req, res, next) => {
     try {
 
         const searchQuery = req.query.search || ''
@@ -29,11 +29,11 @@ exports.couponManagment = async (req, res) => {
             searchQuery
         })
     } catch (error) {
-        console.error('something went wrong', error)
+        next(error)
     }
 }
 
-exports.addCoupon = async (req, res) => {
+exports.addCoupon = async (req, res, next) => {
     try {
         const { code, discountPercentage, maxAmount, minimumSpend, endDate } = req.body
 
@@ -52,7 +52,7 @@ exports.addCoupon = async (req, res) => {
 
         //checking the coupon is already existed 
         if (existingCoupon) {
-            return res.json({ existedCoupon: true, message: 'sorry, this coupon already exist' })
+            return res.status(HttpStatusCode.CONFLICT).json({ existedCoupon: true, message: 'sorry, this coupon already exist' })
         }
 
         //create coupon
@@ -60,11 +60,11 @@ exports.addCoupon = async (req, res) => {
         return res.status(HttpStatusCode.CREATED).json({ success: true, message: 'coupon added successfully' })
 
     } catch (error) {
-        console.error('sometihng went wrong', error)
+        next(error)
     }
 }
 
-exports.editCoupon = async (req, res) => {
+exports.editCoupon = async (req, res, next) => {
     try {
         //validation
         const errors = validationResult(req)
@@ -86,7 +86,7 @@ exports.editCoupon = async (req, res) => {
             _id: { $ne: couponId }
         });
         if(couponCodeCheck){
-            return res.json({ existedCoupon: true, message: 'sorry, this coupon already exist' })
+            return res.status(HttpStatusCode.CONFLICT).json({ existedCoupon: true, message: 'sorry, this coupon already exist' })
         }
 
         const updatedCoupon = await couponCollection.findByIdAndUpdate(
@@ -110,12 +110,12 @@ exports.editCoupon = async (req, res) => {
 
 
     } catch (error) {
-        console.error('something went wrong', error)
+        next(error)
     }
 }
 
 
-exports.couponDelete = async (req, res) => {
+exports.couponDelete = async (req, res, next) => {
     try {
         couponId = req.params.id
 
@@ -124,12 +124,11 @@ exports.couponDelete = async (req, res) => {
         return res.json({ success: true, message: 'coupon deleted successfully' })
 
     } catch (error) {
-        console.error('something went wrong', error)
-        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).josn({ success: false, message: 'something went wrong while deleting the coupon' })
+        next(error)
     }
 }
 
-exports.applyCoupon = async (req, res) => {
+exports.applyCoupon = async (req, res, next) => {
     try {
         const { couponCode } = req.body
         const userId = req.session.user
@@ -140,13 +139,13 @@ exports.applyCoupon = async (req, res) => {
 
 
         if (!cart) {
-            return res.json({ success: false, message: 'sorry, cart not found' })
+            return res.status(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'sorry, cart not found' })
         }
 
 
         if (coupon) {
             if (!coupon.isActive) {
-                return res.json({ success: false, message: 'sorry, coupon expired' })
+                return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'sorry, coupon expired' })
             }
 
             const maxAmount = coupon.maxAmount
@@ -154,7 +153,7 @@ exports.applyCoupon = async (req, res) => {
             const minimumSpend = coupon.minimumSpend
 
             if (cart.totalPrice < minimumSpend) {
-                return res.json({ success: false, message: `sorry, you are not able to use this coupon your total should be greater than or equals ${coupon.minimumSpend}` })
+                return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: `sorry, you are not able to use this coupon your total should be greater than or equals ${coupon.minimumSpend}` })
             }
 
             const subTotal = cart.totalPrice - cart.shippingFee
@@ -193,7 +192,7 @@ exports.applyCoupon = async (req, res) => {
                 console.log('Cart updated and saved successfully.');
             } catch (error) {
                 console.error('Error saving the cart:', error);
-                return res.json({ success: false, message: 'Error saving the cart' });
+                return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'Error saving the cart' });
             }
 
             req.session.coupon = {
@@ -205,14 +204,14 @@ exports.applyCoupon = async (req, res) => {
             return res.json({ success: true, message: 'coupon applied successfully' })
 
         } else {
-            return res.json({ notValid: true, message: 'sorry, invlalid coupon' })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ notValid: true, message: 'sorry, invlalid coupon' })
         }
     } catch (error) {
-        console.error('something went wrong', error)
+        next(error)
     }
 }
 
-exports.userRemoveCoupon = async (req, res) => {
+exports.userRemoveCoupon = async (req, res, next) => {
     try {
         const userId = req.session.user
 
@@ -251,6 +250,6 @@ exports.userRemoveCoupon = async (req, res) => {
         return res.json({ success: true, message: 'coupon removed' })
 
     } catch (error) {
-        console.log('something went wrong', error)
+        next(error)
     }
 }

@@ -178,29 +178,7 @@
             })
                 .catch(error => console.log('something went wrong', error))
         }
-
-        // fetch(`/admin/softDeleteProduct/${productId}`,{
-        //     method:'POST',
-        //     body:JSON.stringify({productId})
-        // })
-        // .then(response => response.json())
-        // .then(result =>{
-        //     successMessage.classList.add('d-none')
-        //     successMessage.classList.add('d-none')
-        //     if (result.success) {
-        //         console.log('sucess')  
-        //         localStorage.setItem('successMessage', result.message)
-        //         location.reload();
-
-        //     } else {
-        //         console.log('error')
-        //         errorMessage.textContent = result.message
-        //         errorMessage.classList.remove('d-none')
-        //     }
-        // })
-        //     .catch(error => console.log('something went wrong',error))
-        // }
-
+        
         //edit product
         function editProduct(productId) {
             Swal.fire({

@@ -26,7 +26,7 @@ const razorpayInstance = new Razorpay({
 })
 
 
-exports.home = async (req, res) => {
+exports.home = async (req, res, next) => {
     try {
         //user id
         const userId = req.session.user
@@ -75,7 +75,7 @@ exports.home = async (req, res) => {
             averageRating
         })
     } catch (error) {
-        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json('someting went wrong', error)
+        next(error)
     }
 }
 
@@ -91,48 +91,48 @@ exports.login = async (req, res) => {
         res.redirect('/')
     }
 }
-exports.postlogin = async (req, res) => {
+exports.postlogin = async (req, res, next) => {
+    try {
+        const { email, password } = req.body
 
-    const { email, password } = req.body
-
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-        const validationErrors = errors.array().reduce((acc, error) => {
-            acc[error.path] = error.msg;
-            return acc;
-        }, {})
-        return res.json({ validationError: true, validationErrors })
-    }
-    userCheck = await usersCollection.findOne({ email: email })
-    if (!userCheck) {
-        return res.json({ error: 'invalid user' });
-    }
-
-    if (userCheck.isBlock) {
-        return res.json({ error: 'you are blocked by admin' })
-    }
-
-    if (userCheck.googleId) {
-        return res.json({ error: 'You signed up using Google. Please use Google Sign-In to access your account.' })
-    }
-    if (userCheck) {
-        const passCheck = await bcrypt.compare(password, userCheck.password)
-        if (passCheck) {
-            req.session.user = userCheck._id
-            return res.json({ success: true })
-
-        } else {
-            return res.json({ error: 'wrong password' })
-
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {
+            const validationErrors = errors.array().reduce((acc, error) => {
+                acc[error.path] = error.msg;
+                return acc;
+            }, {})
+            return res.state(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
         }
+        userCheck = await usersCollection.findOne({ email: email })
+        if (!userCheck) {
+            return res.state(HttpStatusCode.BAD_REQUEST).json({ error: 'invalid user' });
+        }
+
+        if (userCheck.isBlock) {
+            return res.state(HttpStatusCode.FORBIDDEN).json({ error: 'you are blocked by admin' })
+        }
+
+        if (userCheck.googleId) {
+            return res.state(HttpStatusCode.FORBIDDEN).json({ error: 'You signed up using Google. Please use Google Sign-In to access your account.' })
+        }
+        if (userCheck) {
+            const passCheck = await bcrypt.compare(password, userCheck.password)
+            if (passCheck) {
+                req.session.user = userCheck._id
+                return res.json({ success: true })
+
+            } else {
+                return res.state(HttpStatusCode.BAD_REQUEST).json({ error: 'wrong password' })
+
+            }
+        }
+    } catch (error) {
+        next(error)
     }
+
 }
 
-
-
-
 //=========login end=========// 
-
 
 
 //=========signup start=========// 
@@ -141,135 +141,150 @@ exports.signup = (req, res) => {
     res.render('User/signup')
 }
 
-exports.postsignup = async (req, res) => {
-    const data = {
-        username: req.body.username,
-        email: req.body.email,
-        phone: req.body.phone,
-        password: req.body.password,
-        cfpassword: req.body.cfpassword, //This is for checking the password not store into database 
-        refereeCode: req.body.referralCode
-    }
-
-    //validation
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-
-        const validationErrors = errors.array().reduce((acc, error) => {
-            acc[error.path] = error.msg
-            return acc
-        }, {})
-        return res.json({ validationError: true, validationErrors })
-    } else {
-        const user_check = await usersCollection.findOne({ email: data.email })
-        if (user_check) {
-            return res.json({ emailError: 'user is already existed' })
-        } else if (data.password != data.cfpassword) {
-            return res.json({ passError: 'please enter correct password' })
-        } else {
-            req.session.tempUser = {
-                username: data.username,
-                email: data.email,
-                phone: data.phone,
-                password: data.password,
-                refereeCode: data.refereeCode
-            };
-            return res.json({ success: true })
+exports.postsignup = async (req, res, next) => {
+    try {
+        const data = {
+            username: req.body.username,
+            email: req.body.email,
+            phone: req.body.phone,
+            password: req.body.password,
+            cfpassword: req.body.cfpassword, //This is for checking the password not store into database 
+            refereeCode: req.body.referralCode
         }
+
+        //validation
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {
+
+            const validationErrors = errors.array().reduce((acc, error) => {
+                acc[error.path] = error.msg
+                return acc
+            }, {})
+            return res.state(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
+        } else {
+            const user_check = await usersCollection.findOne({ email: data.email })
+            if (user_check) {
+                return res.state(HttpStatusCode.CONFLICT).json({ emailError: 'user is already existed' })
+            } else if (data.password != data.cfpassword) {
+                return res.state(HttpStatusCode.BAD_REQUEST).json({ passError: 'please enter correct password' })
+            } else {
+                req.session.tempUser = {
+                    username: data.username,
+                    email: data.email,
+                    phone: data.phone,
+                    password: data.password,
+                    refereeCode: data.refereeCode
+                };
+                return res.json({ success: true })
+            }
+        }
+    } catch (error) {
+        next(error)
     }
+
 }
 
 //=========otp verification start=========// 
 
-exports.getsignupVerification = async (req, res) => {
-    const userData = req.session.tempUser
-    if (!userData) {
-        return res.redirect('/signup')
-
-    }
-    const otp = auth_controller.generateOtp()
-    console.log(otp)
-
-    await auth_controller.sendOtp(userData.email, otp)
-    const otpExpiryTime = 30 * 1000
-    res.render('User/otpVerify', {
-        email: userData.email,
-        timerDuration: Math.ceil(otpExpiryTime / 1000)
-    })
-}
-
-exports.signupVerification = async (req, res) => {
-    const { email, otp } = req.body
-
-    const otpCheck = await otpCollection.findOne({ email, otp })
-
-    if (otpCheck && new Date() < otpCheck.expiresAt) {
+exports.getsignupVerification = async (req, res, next) => {
+    try {
         const userData = req.session.tempUser
         if (!userData) {
-            res.render('User/otpVerify', {
-                error: 'session expired please try again',
-                email: email
-            })
+            return res.redirect('/signup')
+
         }
-        //hahsPassword
-        const hashedPassword = await bcrypt.hash(userData.password, 10)
-        userData.password = hashedPassword
+        const otp = auth_controller.generateOtp()
+        console.log(otp)
 
-        //generate referal code
-        const userName = userData.username.slice(0, 3)
-
-        const code = auth_controller.generateReferralCode()
-
-        const referralCode = userName + code
-
-        userData.referralCode = referralCode
-
-
-        const refereeCode = userData.refereeCode //store referee code before delete
-
-        delete userData.refereeCode  //delete the refereee code before save userData to database
-
-
-        const newUser = await usersCollection.create(userData)
-        req.session.user = newUser._id
-
-        // add referal bonus to referal user
-        const findReferraUser = await usersCollection.findOne({ referralCode: refereeCode })
-        if (findReferraUser) {
-            referalUserId = findReferraUser._id
-            const referralUserWallet = await walletCollection.findOne({ userId: referalUserId })
-            if (!referralUserWallet) {
-                await walletCollection.create({
-                    userId: referalUserId,
-                    balance: 100,
-                    history: [{ amount: 100, status: 'credit', description: `Credited ${100} via referral` }]
-                })
-            } else {
-                await walletCollection.updateOne(
-                    { userId: referalUserId },
-                    {
-                        $inc: { balance: 100 }, // Increment the wallet balance
-                        $push: {
-                            history: { amount: 1000, status: 'credit', description: `Credited ${100} via referral` }
-                        }
-                    }
-                )
-            }
-        }
-
-        res.redirect('/')
-    } else {
-        const reminingTime = otpCheck ? Math.ceil((otpCheck.expiresAt - new Date()) / 1000) : 0;
+        await auth_controller.sendOtp(userData.email, otp)
+        const otpExpiryTime = 30 * 1000
         res.render('User/otpVerify', {
-            error: 'invalid otp',
-            email: email,
-            timerDuration: reminingTime > 0 ? reminingTime : 0
-
+            email: userData.email,
+            timerDuration: Math.ceil(otpExpiryTime / 1000)
         })
+    } catch (error) {
+        next(error)
     }
+
 }
 
-exports.resendOtp = async (req, res) => {
+exports.signupVerification = async (req, res, next) => {
+    try {
+        const { email, otp } = req.body
+
+        const otpCheck = await otpCollection.findOne({ email, otp })
+
+        if (otpCheck && new Date() < otpCheck.expiresAt) {
+            const userData = req.session.tempUser
+            if (!userData) {
+                res.render('User/otpVerify', {
+                    error: 'session expired please try again',
+                    email: email
+                })
+            }
+            //hahsPassword
+            const hashedPassword = await bcrypt.hash(userData.password, 10)
+            userData.password = hashedPassword
+
+            //generate referal code
+            const userName = userData.username.slice(0, 3)
+
+            const code = auth_controller.generateReferralCode()
+
+            const referralCode = userName + code
+
+            userData.referralCode = referralCode
+
+
+            const refereeCode = userData.refereeCode //store referee code before delete
+
+            delete userData.refereeCode  //delete the refereee code before save userData to database
+
+
+            const newUser = await usersCollection.create(userData)
+            req.session.user = newUser._id
+
+            // add referal bonus to referal user
+            const findReferraUser = await usersCollection.findOne({ referralCode: refereeCode })
+            if (findReferraUser) {
+                referalUserId = findReferraUser._id
+                const referralUserWallet = await walletCollection.findOne({ userId: referalUserId })
+                if (!referralUserWallet) {
+                    await walletCollection.create({
+                        userId: referalUserId,
+                        balance: 100,
+                        history: [{ amount: 100, status: 'credit', description: `Credited ${100} via referral` }]
+                    })
+                } else {
+                    await walletCollection.updateOne(
+                        { userId: referalUserId },
+                        {
+                            $inc: { balance: 100 }, // Increment the wallet balance
+                            $push: {
+                                history: { amount: 1000, status: 'credit', description: `Credited ${100} via referral` }
+                            }
+                        }
+                    )
+                }
+            }
+
+            res.redirect('/')
+        } else {
+            const reminingTime = otpCheck ? Math.ceil((otpCheck.expiresAt - new Date()) / 1000) : 0;
+            res.render('User/otpVerify', {
+                error: 'invalid otp',
+                email: email,
+                timerDuration: reminingTime > 0 ? reminingTime : 0
+
+            })
+        }
+    } catch (error) {
+        next(error)
+    }
+
+}
+
+exports.resendOtp = async (req, res, next) => {
     try {
         const userData = req.session.tempUser
         const otp = auth_controller.generateOtp();
@@ -283,7 +298,7 @@ exports.resendOtp = async (req, res) => {
             error: 'A new OTP has been sent to your email.'
         });
     } catch (error) {
-        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json('someting went wrong', error)
+        next(error)
     }
 
 };
@@ -295,22 +310,22 @@ exports.resendOtp = async (req, res) => {
 
 //=========forgotPasword end=========// 
 
-exports.emailVerification = (req, res) => {
+exports.emailVerification = (req, res, next) => {
     try {
         res.render('User/emailVerification')
     } catch (error) {
-        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json('something went wrong', error)
+        next(error)
     }
 }
 
-exports.postEmailVerification = async (req, res) => {
+exports.postEmailVerification = async (req, res, next) => {
     try {
         const { email } = req.body
 
         const user = await usersCollection.findOne({ email: email })
         if (user) {
             if (user.googleId) {
-                return res.json({ googleUser: true, message: 'You signed up using Google. Please use Google Sign-In to access your account.' })
+                return res.state(HttpStatusCode.FORBIDDEN).json({ googleUser: true, message: 'You signed up using Google. Please use Google Sign-In to access your account.' })
             }
 
             const otp = auth_controller.generateOtp()
@@ -326,25 +341,25 @@ exports.postEmailVerification = async (req, res) => {
         return res.json({ inValidEmail: true, message: 'invalid email' })
 
     } catch (error) {
-        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json('sometihng went wrong', error)
+        next(error)
     }
 }
 
 
-exports.getOtpVerificationFrg = (req, res) => {
+exports.getOtpVerificationFrg = (req, res, next) => {
     try {
         res.render('User/otpVerifyFrg')
     } catch (error) {
-        console.error('something went wrong', error)
+        next(error)
     }
 }
 
-exports.postOtpVerifyFrg = async (req, res) => {
+exports.postOtpVerifyFrg = async (req, res, next) => {
     try {
         const email = req.session.emailAuth
         const { otp } = req.body
         if (!email) {
-            return res.json({ error: true, message: 'email not found' })
+            return res.state(HttpStatusCode.NOT_FOUND).json({ error: true, message: 'email not found' })
         }
 
         const otpCheck = await otpCollection.findOne({ email, otp })
@@ -352,43 +367,38 @@ exports.postOtpVerifyFrg = async (req, res) => {
             return res.json({ success: true })
         }
 
-        return res.json({ error: true, message: 'invalid otp' })
-
-
+        return res.state(HttpStatusCode.BAD_REQUEST).json({ error: true, message: 'invalid otp' })
     } catch (error) {
-        console.error('something went wrong', error)
+        next(error)
     }
 }
 
-exports.resendOtpFrg = async (req, res) => {
-    const email = req.session.emailAuth;
-    if (!email) {
-        return res.json({ error: true, message: 'Email not found' });
-    }
-
+exports.resendOtpFrg = async (req, res, next) => {
     try {
-
+        const email = req.session.emailAuth;
+        if (!email) {
+            return res.state(HttpStatusCode.NOT_FOUND).json({ error: true, message: 'Email not found' });
+        }
         const otp = auth_controller.generateOtp()
 
         await auth_controller.sendOtp(email, otp)
 
         res.json({ success: true, message: 'A new OTP has been sent to your email' });
     } catch (error) {
-        console.error('Error resending OTP', error);
-        res.json({ error: true, message: 'Failed to resend OTP' });
+        next(error)
     }
 };
 
 
-exports.changePassword = (req, res) => {
+exports.changePassword = (req, res, next) => {
     try {
         res.render('User/changePassword')
     } catch (error) {
-        console.error('something went wrong', error)
+        next(error)
     }
 }
 
-exports.PostchangePassword = async (req, res) => {
+exports.PostchangePassword = async (req, res, next) => {
     try {
         const { newPassword, confirmPassword } = req.body
         console.log('change password body ', req.body)
@@ -398,19 +408,14 @@ exports.PostchangePassword = async (req, res) => {
         user.password = hashedPassword
         await user.save()
         return res.json({ success: true })
-
     } catch (error) {
-        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json('sometihng went wrong', error)
+        next(error)
     }
 }
-
-
 //=========forgot Pasword end=========// 
 
 //=========profile start=========// 
-
-
-exports.getProfile = async (req, res) => {
+exports.getProfile = async (req, res, next) => {
     try {
         const userId = req.session.user;
         const { section = 'profile', page = 1, limit = 5 } = req.query;
@@ -483,13 +488,12 @@ exports.getProfile = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error in getProfile:', error);
-        res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).render('error', { message: 'Something went wrong' });
+        next(error)
     }
 };
 
 // Separate API endpoints for AJAX pagination
-exports.getOrdersPaginated = async (req, res) => {
+exports.getOrdersPaginated = async (req, res, next) => {
     try {
         const userId = req.session.user;
         const { page = 1, limit = 5 } = req.query;
@@ -518,14 +522,13 @@ exports.getOrdersPaginated = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error in getOrdersPaginated:', error);
-        res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Error fetching orders' });
+        next(error)
     }
 };
 
 
 
-exports.editProfile = async (req, res) => {
+exports.editProfile = async (req, res, next) => {
     try {
         //validation
         const errors = validationResult(req)
@@ -534,7 +537,7 @@ exports.editProfile = async (req, res) => {
                 acc[error.path] = error.msg;
                 return acc;
             }, {})
-            return res.json({ validationError: true, validationErrors })
+            return res.state(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
         }
 
         const userId = req.session.user
@@ -542,9 +545,8 @@ exports.editProfile = async (req, res) => {
         const user = await usersCollection.findById(userId)
 
         if (user.username === username && (user.phone ? user.phone.toString() === phone : !phone)) {
-            return res.json({ noChange: true, message: 'sorry you didit make any changes' })
+            return res.state(HttpStatusCode.BAD_REQUEST).json({ noChange: true, message: 'sorry you didit make any changes' })
         }
-
 
         if (user.username !== username) {
             await usersCollection.updateOne(
@@ -564,33 +566,35 @@ exports.editProfile = async (req, res) => {
 
 
     } catch (error) {
-        console.error('error', error)
-        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json('something went wrong', error)
+        next(error)
     }
 }
 
 
-exports.setNewPassword = async (req, res) => {
-    const { currentPassword, newPassword } = req.body;
+exports.setNewPassword = async (req, res, next) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
 
-    if (newPassword.trim().length < 8) {
-        return res.json({ success: false, error: 'newPassword', message: 'password should be atleast length 8' })
+        if (newPassword.trim().length < 8) {
+            return res.state(HttpStatusCode.BAD_REQUEST).json({ success: false, error: 'newPassword', message: 'password should be atleast length 8' })
+        }
+        const userId = req.session.user
+        const user = await usersCollection.findById({ _id: userId });
+
+        if (!user || !(await bcrypt.compare(currentPassword, user.password))) {
+            return res.json({ success: false, error: 'currentPassword', message: 'Current password is incorrect' });
+        }
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        await user.save();
+
+        res.json({ success: true, message: 'Password changed successfully' });
+    } catch (error) {
+        next(error)
     }
-    const userId = req.session.user
-    const user = await usersCollection.findById({ _id: userId });
-
-    if (!user || !(await bcrypt.compare(currentPassword, user.password))) {
-        return res.json({ success: false, error: 'currentPassword', message: 'Current password is incorrect' });
-    }
-
-    user.password = await bcrypt.hash(newPassword, 10);
-    await user.save();
-
-    res.json({ success: true, message: 'Password changed successfully' });
-
 }
 
-exports.addAddress = async (req, res) => {
+exports.addAddress = async (req, res, next) => {
     try {
         req.session.source = req.query.profile
 
@@ -602,11 +606,11 @@ exports.addAddress = async (req, res) => {
             currAddress
         })
     } catch (error) {
-        console.log('something went wron', error)
+        next(error)
     }
 }
 
-exports.postAddress = async (req, res) => {
+exports.postAddress = async (req, res, next) => {
     try {
         const source = req.session.source
         //validation 
@@ -616,11 +620,10 @@ exports.postAddress = async (req, res) => {
                 acc[error.path] = error.msg
                 return acc
             }, {})
-            return res.json({ validationError: true, validationErrors })
+            return res.state(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
         }
 
         const userId = req.session.user
-
 
         const newAddress = {
             fullName: req.body.fullName,
@@ -645,7 +648,7 @@ exports.postAddress = async (req, res) => {
         }
 
         if (address.addresses.length === 3) {
-            return res.json({ success: false, message: 'sorry you cannot add more than three address!', source })
+            return res.state(HttpStatusCode.FORBIDDEN).json({ success: false, message: 'sorry you cannot add more than three address!', source })
         }
 
         if (newAddress.isDefault) {
@@ -657,14 +660,13 @@ exports.postAddress = async (req, res) => {
         address.addresses.push(newAddress)
         await address.save()
         return res.json({ success: true, message: 'address added successfully', source })
-
     } catch (error) {
-        console.error('somethig went wrong', error)
+        next(error)
     }
 }
 
 
-exports.getEditAddress = async (req, res) => {
+exports.getEditAddress = async (req, res, next) => {
     try {
         req.session.source = req.query.profile
         user = req.session.user
@@ -678,15 +680,14 @@ exports.getEditAddress = async (req, res) => {
                 page: null,
                 currAddress
             })
-
         }
 
     } catch (error) {
-        console.error('something went wrong', error)
+        next(error)
     }
 }
 
-exports.editAddressPost = async (req, res) => {
+exports.editAddressPost = async (req, res, next) => {
     try {
         const source = req.session.source
         //validation errror
@@ -696,12 +697,11 @@ exports.editAddressPost = async (req, res) => {
                 acc[error.path] = error.msg
                 return acc
             }, {})
-            return res.json({ validationError: true, validationErrors })
+            return res.state(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
         }
 
         addressId = req.params.id
         userId = req.session.user
-
 
         const address = await addressCollection.findOne({ userId: userId })
         if (address) {
@@ -730,16 +730,16 @@ exports.editAddressPost = async (req, res) => {
 
                 return res.json({ success: true, message: 'successfuly updated the address', source })
             }
-            return res.status(404).json({ success: false, message: 'address not found', source })
+            return res.state(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'address not found', source })
         } else {
-            return res.status(404).json({ success: false, message: 'user document not found', source })
+            return res.state(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'user document not found', source })
         }
     } catch (error) {
-        console.error('something went wrong', error)
+        next(error)
     }
 }
 
-exports.deleteAddress = async (req, res) => {
+exports.deleteAddress = async (req, res, next) => {
     try {
         const userId = req.session.user
         const addressId = req.params.id
@@ -759,17 +759,15 @@ exports.deleteAddress = async (req, res) => {
                 return res.json({ success: true, message: 'successfully deleted the address' })
             }
 
-            return res.status(404).json({ success: false, message: 'address not found' })
+            return res.state(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'address not found' })
         }
-        return res.status(404), json({ success: false, message: 'address document not found' })
-
+        return res.state(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'address document not found' })
     } catch (error) {
-        console.error('something went wrong', error)
+        next(error)
     }
 }
 
-
-exports.orderDetail = async (req, res) => {
+exports.orderDetail = async (req, res, next) => {
     try {
         orderId = req.params.id
         const order = await orderCollection.findOne({ _id: orderId })
@@ -780,35 +778,32 @@ exports.orderDetail = async (req, res) => {
             page: null
         })
     } catch (error) {
-        console.error('error', error)
-        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'error', error })
+        next(error)
     }
 }
 
-exports.downloadInvoice = (req, res) => {
+exports.downloadInvoice = (req, res, next) => {
     try {
         const { orderId } = req.query
-
         invoiceService.invoiceDownload(res, orderId)
     } catch (error) {
-        console.error('something went wrong', error)
-        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'somethng went wrong', error })
+        next(error)
     }
 }
 
-exports.cancelProduct = async (req, res) => {
+exports.cancelProduct = async (req, res, next) => {
     try {
         const { orderId, itemId } = req.body
 
         const orders = await orderCollection.findOne({ _id: orderId })
 
         if (!orders) {
-            return res.json({ success: false, message: 'Order not found' });
+            return res.state(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Order not found' });
         }
 
         const itemIndex = orders.items.findIndex(item => item._id.toString() === itemId);
         if (itemIndex === -1) {
-            return res.json({ success: false, message: 'Item not found in order' });
+            return res.state(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Item not found in order' });
         }
 
 
@@ -831,7 +826,7 @@ exports.cancelProduct = async (req, res) => {
                 { new: true }
             )
         } else {
-            return res.status.json({ success: false, message: 'sorry, please make sure your product is not delivered' })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'sorry, please make sure your product is not delivered' })
         }
 
         // handinling wallet refunds for online or wallet payment methods
@@ -860,32 +855,27 @@ exports.cancelProduct = async (req, res) => {
                     }
                 );
             }
-
-
         }
 
         return res.json({ success: true, message: 'order canceled successfully' })
-
     } catch (error) {
-        console.error('somethig went wrong', error)
-        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'something went wrong' })
+        next(error)
     }
 }
 
-exports.returnProduct = async (req, res) => {
+exports.returnProduct = async (req, res, next) => {
     try {
-
         const { orderId, itemId, returnReason } = req.body
 
         const orders = await orderCollection.findOne({ _id: orderId })
 
         if (!orders) {
-            return res.json({ success: false, message: 'Order not found' });
+            return res.state(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Order not found' });
         }
 
         const itemIndex = orders.items.findIndex(item => item._id.toString() === itemId);
         if (itemIndex === -1) {
-            return res.json({ success: false, message: 'Item not found in order' });
+            return res.state(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Item not found in order' });
         }
 
         await orderCollection.findOneAndUpdate(
@@ -900,14 +890,13 @@ exports.returnProduct = async (req, res) => {
         return res.json({ success: true, message: 'return requested' })
 
     } catch (error) {
-        console.error('something went wrong', error)
-        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'someting went wrong' })
+        next(error)
     }
 }
 
 //=========profile end=========// 
 
-exports.getCheckOut = async (req, res) => {
+exports.getCheckOut = async (req, res, next) => {
     try {
         user = req.session.user
         const cart = await cartCollection.findOne({ userId: user }).populate({
@@ -965,13 +954,10 @@ exports.getCheckOut = async (req, res) => {
             }
 
             await cart.save();
-
         } else {
             res.redirect('/')
             return
         }
-
-
 
         const address = await addressCollection.findOne({ userId: user })
 
@@ -991,34 +977,34 @@ exports.getCheckOut = async (req, res) => {
             couponDiscount
         })
     } catch (error) {
-        console.error('somehing went wrong', error)
+        next(error)
     }
 }
 
-exports.placeOrder = async (req, res) => {
+exports.placeOrder = async (req, res, next) => {
     try {
         const userId = req.session.user
         const { deliveryAddress, paymentMethod } = req.body
 
         const existingOrder = await orderCollection.findOne({ userId, orderLockStatus: 'in-progress' })
         if (existingOrder) {
-            return res.json({ error: true, message: "You're already placing an order. Please complete the payment or wait." });
+            return res.state(HttpStatusCode.BAD_REQUEST).json({ error: true, message: "You're already placing an order. Please complete the payment or wait." });
         }
 
         //address
         const address = await addressCollection.findOne({ userId })
         if (!address) {
-            return res.json({ error: true, message: 'sorry address not found' })
+            return res.state(HttpStatusCode.NOT_FOUND).json({ error: true, message: 'sorry address not found' })
         }
 
         const userAddress = address.addresses.find(addr => addr._id.toString() === deliveryAddress)
         if (!userAddress) {
-            return res.json({ error: true, message: 'sorry address not found' })
+            return res.state(HttpStatusCode.NOT_FOUND).json({ error: true, message: 'sorry address not found' })
         }
 
         //payment method
         if (!paymentMethod) {
-            return res.json({ error: true, message: 'plese select a payment option' })
+            return res.state(HttpStatusCode.NOT_FOUND).json({ error: true, message: 'plese select a payment option' })
         }
 
         //cart
@@ -1169,10 +1155,8 @@ exports.placeOrder = async (req, res) => {
 
             return res.json({ success: true, message: 'order placed successfully' })
         }
-
     } catch (error) {
-        console.error('something went wrong', error)
-        return res.json({ error: true, message: 'An error occurred while placing the order' });
+        next(error)
     }
 }
 
@@ -1190,15 +1174,15 @@ async function processOrderPostPayment(orderItems) {
 
 
 // Close Razorpay Payment Modal 
-exports.closePayment = async (req, res) => {
+exports.closePayment = async (req, res, next) => {
     try {
         const { orderId } = req.body;
 
         console.log('duty started maan ', orderId)
 
-        const order = await orderCollection.findOne({ _id: orderId, orderLockStatus: 'in-progress'});
+        const order = await orderCollection.findOne({ _id: orderId, orderLockStatus: 'in-progress' });
         if (!order) {
-            return res.status(404).json({ error: true, message: 'Order not found' });
+            return res.state(HttpStatusCode.BAD_REQUEST).json({ error: true, message: 'Order not found' });
         }
 
         // Loop over items to restore stock
@@ -1219,15 +1203,13 @@ exports.closePayment = async (req, res) => {
         // Delete the order
         await orderCollection.findByIdAndDelete(orderId);
     } catch (error) {
-        console.error('closign modal error ', error)
+        next(error)
     }
 }
 
-exports.verifyPayment = async (req, res) => {
+exports.verifyPayment = async (req, res, next) => {
     try {
-        console.log('verifying paymetn started... ')
         const { paymentId, razorpayOrderId, orderId, signature, failed, isRetry } = req.body
-        
         const userId = req.session.user
 
         let paymentStatus = 'faild'
@@ -1261,7 +1243,7 @@ exports.verifyPayment = async (req, res) => {
             if (paymentSuccess) {
                 return res.json({ success: true, message: 'payment successfull' })
             } else {
-                return res.json({ success: false, message: 'payment faild' })
+                return res.state(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'payment faild' })
             }
 
         }
@@ -1293,8 +1275,7 @@ exports.verifyPayment = async (req, res) => {
     }
 }
 
-exports.payAfter = async (req, res) => {
-
+exports.payAfter = async (req, res, next) => {
     try {
         const { orderId, paymentMethod } = req.body
         const userId = req.session.user
@@ -1306,20 +1287,20 @@ exports.payAfter = async (req, res) => {
 
         //payment method
         if (!paymentMethod) {
-            return res.json({ success: false, message: 'plese select a payment method' })
+            return res.state(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'plese select a payment method' })
         }
 
         // Wallet Payment 
         if (paymentMethod === 'wallet') {
             const wallet = await walletCollection.findOne({ userId: userId })
             if (!wallet) {
-                return res.json({ success: false, message: 'sorry wallet not found' })
+                return res.state(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'sorry wallet not found' })
             }
 
 
             //wallet balance checking
             if (order.totalAmount > wallet.balance) {
-                return res.json({ success: false, message: 'Insufficient balance in wallet' })
+                return res.state(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'Insufficient balance in wallet' })
             }
 
             //update wallet balance
@@ -1369,16 +1350,13 @@ exports.payAfter = async (req, res) => {
 
 
     } catch (error) {
-        console.log('something went wrong', error)
-        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json('something wnet wrong', error)
+        next(error)
     }
 }
 
-
-exports.submitReview = async (req, res) => {
+exports.submitReview = async (req, res, next) => {
     try {
         const { rating, review, product, item } = req.body
-
         const userId = req.session.user
 
         //add review to the ordered product
@@ -1401,8 +1379,7 @@ exports.submitReview = async (req, res) => {
         return res.json({ success: true, message: 'Thanks for your feedback', item })
 
     } catch (error) {
-        console.error('something went wrong', error)
-        return res.json({ success: false, message: 'something went wrong' })
+        next(error)
     }
 }
 

@@ -5,9 +5,10 @@ const cartCollection = require('../models/cartModel')
 const shippingService = require('../services/applyShippingCharge')
 const variantModel = require('../models/variantModel')
 const mongoose = require('mongoose')
+const HttpStatusCode = require('../utils/statsCode')
 
 
-exports.getCart = async (req, res) => {
+exports.getCart = async (req, res, next) => {
     try {
 
         userId = req.session.user //user id
@@ -48,12 +49,12 @@ exports.getCart = async (req, res) => {
             couponDiscount
         })
     } catch (error) {
-        console.log('something went wrong', error)
+        next(error)
     }
 
 }
 
-exports.addToCart = async (req, res) => {
+exports.addToCart = async (req, res, next) => {
     try {
         const userId = req.session.user
         const productId = req.params.id
@@ -107,11 +108,11 @@ exports.addToCart = async (req, res) => {
         }
     } catch (error) {
         console.error('add to cart error ', error)
-        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'sever error' })
+        next(error)
     }
 }
 
-exports.deleteCartItem = async (req, res) => {
+exports.deleteCartItem = async (req, res, next) => {
     try {
         //user id
         const userId = req.session.user
@@ -163,11 +164,11 @@ exports.deleteCartItem = async (req, res) => {
 
         return res.json({ success: true, updatedCart: updatedCart })
     } catch (error) {
-        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json('something went wrong', error)
+        next(error)
     }
 }
 
-exports.updatedCartQuantity = async (req, res) => {
+exports.updatedCartQuantity = async (req, res, next) => {
     try {
         const userId = req.session.user
 
@@ -214,8 +215,7 @@ exports.updatedCartQuantity = async (req, res) => {
 
 
     } catch (error) {
-        console.error('Error updating quantity:', error.message);
-        console.error('Error stack:', error.stack);
+        next(error)
     }
 }
 

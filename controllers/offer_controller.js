@@ -1,11 +1,10 @@
 
 const productCollection = require('../models/productModel')
 const categoryCollection = require('../models/categoryModel')
-// const variantCollection = require('../models/variantModel')
-// const { deleteOne } = require('../models/cartModel')
+const HttpStatusCode = require('../utils/statsCode')
 
 
-exports.loadOfferManagment = async (req,res)=>{
+exports.loadOfferManagment = async (req, res, next) => {
     try {
 
         const type = req.query.type
@@ -13,66 +12,66 @@ exports.loadOfferManagment = async (req,res)=>{
         const searchQuery = req.query.search || ''
         const page = parseInt(req.query.page) || 1
         const limit = parseInt(req.query.limit) || 10
-        const skip = (page-1)*limit
+        const skip = (page - 1) * limit
 
-        const products = await productCollection.find({deleted:false}).populate('variants')
-        const categories = await categoryCollection.find({deleted:false})
-        
+        const products = await productCollection.find({ deleted: false }).populate('variants')
+        const categories = await categoryCollection.find({ deleted: false })
+
         const currTime = Date.now()
 
         const offerProductsList = []
         products.forEach(product => {
-            if(product.offer.discountPercentage  && product.offer.expirAt){
+            if (product.offer.discountPercentage && product.offer.expirAt) {
 
                 const status = new Date(product.offer.expirAt) < currTime ? false : true;
 
                 offerProductsList.push({
-                productId:product._id,
-                productName: product.productName,
-                image: product.variants[0].images[0] || 'No image available',
-                discountPercentage: product.offer.discountPercentage,
-                expirAt: product.offer.expirAt,
-                status: status
-            });
-        }
+                    productId: product._id,
+                    productName: product.productName,
+                    image: product.variants[0].images[0] || 'No image available',
+                    discountPercentage: product.offer.discountPercentage,
+                    expirAt: product.offer.expirAt,
+                    status: status
+                });
+            }
         });
         const paginatedOfferProducts = offerProductsList.slice(skip, skip + limit)
         const totalOfferedProduct = offerProductsList.length
-        const OfferProductTotalPage = Math.ceil(totalOfferedProduct/limit) 
+        const OfferProductTotalPage = Math.ceil(totalOfferedProduct / limit)
 
         const offerCategoryList = []
         categories.forEach(category => {
-            if(category.offer.discountPercentage && category.offer.expirAt){
+            if (category.offer.discountPercentage && category.offer.expirAt) {
                 const status = new Date(category.offer.expirAt) < currTime ? false : true;
 
                 offerCategoryList.push({
-                categoryId:category._id,
-                categoryName: category.categoryName,
-                discountPercentage: category.offer.discountPercentage,
-                expirAt: category.offer.expirAt,
-                status: status
-            }); 
+                    categoryId: category._id,
+                    categoryName: category.categoryName,
+                    discountPercentage: category.offer.discountPercentage,
+                    expirAt: category.offer.expirAt,
+                    status: status
+                });
             }
         });
 
         const paginatedOfferCategory = offerCategoryList.slice(skip, skip + limit)
-        const totalOfferedCategory = offerCategoryList.length 
-        const OfferCategoryTotalPage = Math.ceil(totalOfferedCategory/limit)
+        const totalOfferedCategory = offerCategoryList.length
+        const OfferCategoryTotalPage = Math.ceil(totalOfferedCategory / limit)
 
         let productPage = 1
-        if(type === 'product'){
+        if (type === 'product') {
             productPage = page
         }
 
         let categoryPage = 1
-        if(type === 'category'){
+        if (type === 'category') {
             categoryPage = page
         }
 
-        res.render('Admin/offerManagment',{
+        res.render('Admin/offerManagment', {
             products,
             categories,
-            offerProductsList : paginatedOfferProducts,           //offered product list 
+            offerProductsList: paginatedOfferProducts,           //offered product list 
             OfferProductTotalPage,       //total pages for product offerlist
             productPage,                 //current page in the product offerlist
             offerCategoryList: paginatedOfferCategory,           //offered product list 
@@ -81,117 +80,126 @@ exports.loadOfferManagment = async (req,res)=>{
             limit
         })
     } catch (error) {
-        console.error('something went wrong',error)
+        next(error)
     }
 }
 
-exports.addProductOffer = async (req,res)=>{
+exports.addProductOffer = async (req, res, next) => {
     try {
-        const {productId, discountPercentage, expirAt} = req.body
+        const { productId, discountPercentage, expirAt } = req.body
         const offerType = 'product'
 
-        const product = await productCollection.findOne({_id:productId})
-        if(!product){
-           return res.json({success:false,message:'product not found!'})
+        const product = await productCollection.findOne({ _id: productId })
+        if (!product) {
+            return res.status(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'product not found!' })
         }
 
-        if(product.deleted){
-            return res.json({success:false,message:'sorry, the product is removed by admin!'})
+        if (product.deleted) {
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'sorry, the product is removed by admin!' })
         }
 
         const currTime = Date.now()
-        if(new Date(expirAt) <= currTime){
-            return res.json({success:false,message:'sorry,expiry time should be in the future!'})
+        if (new Date(expirAt) <= currTime) {
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'sorry,expiry time should be in the future!' })
         }
 
-        product.offer = {offerType, discountPercentage, expirAt}
+        product.offer = { offerType, discountPercentage, expirAt }
         product.save()
 
-        return res.json({success:true,message:'offer applied successfully'})
+        return res.json({ success: true, message: 'offer applied successfully' })
 
     } catch (error) {
-        console.error('something went wrong',error)
+        next(error)
     }
 }
 
-exports.addCategoryOffer = async (req,res)=>{
+exports.addCategoryOffer = async (req, res) => {
     try {
-        const {categoryId, discountPercentage, expirAt} = req.body
+        const { categoryId, discountPercentage, expirAt } = req.body
         const offerType = 'category'
 
-        const category = await categoryCollection.findOne({_id:categoryId})
+        const category = await categoryCollection.findOne({ _id: categoryId })
 
-        const products = await productCollection.find({category:categoryId})
+        const products = await productCollection.find({ category: categoryId })
 
-        if(!category){
-           return res.json({success:false,message:'category not found!'})
+        if (!category) {
+            return res.status(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'category not found!' })
         }
 
-        if(category.deleted){
-            return res.json({success:false,message:'sorry, the category is removed by admin!'})
+        if (category.deleted) {
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'sorry, the category is removed by admin!' })
         }
 
         const currTime = Date.now()
-        if(new Date(expirAt) <= currTime){
-            return res.json({success:false,message:'sorry,expiry time should be in the future!'})
+        if (new Date(expirAt) <= currTime) {
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'sorry,expiry time should be in the future!' })
         }
 
         // if(category.offer.discountPercentage){
         //     return res.json({success:false,message:'soryy, a offer is there in this category'})
         // }
 
-        category.offer = {discountPercentage, expirAt}
+        category.offer = { discountPercentage, expirAt }
         category.save()
 
         products.forEach(async (product) => {
-            product.offer = {offerType, discountPercentage, expirAt}
+            product.offer = { offerType, discountPercentage, expirAt }
             await product.save()
         });
 
-        return res.json({success:true,message:'category offer added successfully'})
+        return res.json({ success: true, message: 'category offer added successfully' })
 
     } catch (error) {
-        console.error('something went wrong',error)
+        next(error)
     }
 }
 
 
-exports.removeProductOffer = async (req,res) =>{
-
-    const productId = req.params.id
+exports.removeProductOffer = async (req, res, next) => {
+    try {
+        const productId = req.params.id
 
         await productCollection.updateOne(
-            {_id:productId},
-            {$unset:{offer: ''}}
+            { _id: productId },
+            { $unset: { offer: '' } }
         )
 
-    return res.json({success:true,message:'successfully deleted the offer'})
-   
+        return res.json({ success: true, message: 'successfully deleted the offer' })
+    } catch (error) {
+        next(error)
+    }
+
+
 }
 
-exports.removeCategoryOffer = async (req,res) =>{
+exports.removeCategoryOffer = async (req, res, next) => {
 
-    const categoryId = req.params.id
+    try {
+        const categoryId = req.params.id
 
-    const products = await productCollection.find({category:categoryId})
+        const products = await productCollection.find({ category: categoryId })
 
-    //remove the offer feild from category schema
-    await categoryCollection.updateOne(
-        {_id:categoryId},
-        {$unset:{offer: ''}}
-    )
+        //remove the offer feild from category schema
+        await categoryCollection.updateOne(
+            { _id: categoryId },
+            { $unset: { offer: '' } }
+        )
 
-    //remove the category offer from product schema
-    products.forEach(async product => {
-        if(product.offer && product.offer.offerType === 'category'){
-            let productId = product._id 
-            await productCollection.updateOne(
-                {_id:productId},
-                {$unset:{offer: ''}}
-            )
-        }
-    });
+        //remove the category offer from product schema
+        products.forEach(async product => {
+            if (product.offer && product.offer.offerType === 'category') {
+                let productId = product._id
+                await productCollection.updateOne(
+                    { _id: productId },
+                    { $unset: { offer: '' } }
+                )
+            }
+        });
 
-    return res.json({success:true,message:'successfully deleted the offer'})
+        return res.json({ success: true, message: 'successfully deleted the offer' })
+    } catch (error) {
+        next(error)
+    }
+
 
 }

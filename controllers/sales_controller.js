@@ -3,7 +3,7 @@ const orderCollection = require('../models/orderModel')
 const salesReportService = require('../services/salesReport')
 
 
-exports.salesManagment = async (req,res)=>{
+exports.salesManagment = async (req,res, next)=>{
     try {
        const {sort, startDate, endDate} = req.query
 
@@ -32,11 +32,11 @@ exports.salesManagment = async (req,res)=>{
     })
  
     } catch (error) {
-       console.error('something went wrong',error)
+       next(error)
     }
  }
  
- exports.downloadSalesReport = async (req,res) =>{
+ exports.downloadSalesReport = async (req,res, next) =>{
     try {
        const {format, filterType, startDate, endDate} = req.query
 
@@ -55,7 +55,7 @@ exports.salesManagment = async (req,res)=>{
        }
  
     } catch (error) {
-       console.error('something went wrong',error)
+      next(error)
     }
  }
  

@@ -6,7 +6,7 @@ const cartCollection = require('../models/cartModel')
 const HttpStatusCode = require('../utils/statsCode')
 
 
-exports.getShop = async (req, res) => {
+exports.getShop = async (req, res, next) => {
     try {
         const categories = await categoryCollection.find({ deleted: false })
         const brands = await brandCollection.find({ deleted: false })
@@ -145,11 +145,11 @@ exports.getShop = async (req, res) => {
         })
 
     } catch (error) {
-        console.log('error', error)
+        next(error)
     }
 }
 
-exports.getProducts = async (req, res) => {
+exports.getProducts = async (req, res, next) => {
     try {
         const userId = req.session.user
         const { category, brand, filter, search, page = 1, limit = 10 } = req.query;
@@ -218,15 +218,14 @@ exports.getProducts = async (req, res) => {
         res.json({ products, totalProducts, productsInCart, averageRating });
 
     } catch (err) {
-        console.error(err);
-        res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: 'Server error' });
+        next(error)
     }
 }
 
 //=========shope page end=========// 
 
 //=========view product start=========// 
-exports.getViewProduct = async (req, res) => {
+exports.getViewProduct = async (req, res, next) => {
     try {
         const productId = req.params.id   //product id
 
@@ -262,7 +261,7 @@ exports.getViewProduct = async (req, res) => {
             avgRating
         })
     } catch (error) {
-        console.log('error', error)
+        next(error)
     }
 
 }

@@ -50,7 +50,7 @@ app.get('*', (req, res) =>{
 //Error handling middleware
 app.use((err, req, res, next) =>{
     console.error('error handling ',err.stack);
-    res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).send('error')
+    res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({message: 'Internal Server Error'})
 })
 
 app.listen(PORT,()=> console.log(`server is running on ${PORT}`))

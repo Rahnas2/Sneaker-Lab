@@ -4,11 +4,11 @@ const wishlistCollection = require('../models/wishlistModel')
 const cartCollection = require('../models/cartModel');
 const HttpStatusCode = require('../utils/statsCode');
 
-exports.getWishlist = async (req,res) =>{
+exports.getWishlist = async (req,res, next) =>{
     try {
         const user = req.session.user
-
         const wishlist = await wishlistCollection
+
         .findOne({ userId:user })
         .populate({
           path: 'productId', // Populating the productId field
@@ -43,11 +43,11 @@ exports.getWishlist = async (req,res) =>{
             
         })
     } catch (error) {
-        console.error('something went wrong',error)
+        next(error)
     }
 }
 
-exports.postWishlist = async (req,res) =>{
+exports.postWishlist = async (req,res, next) =>{
     try {
         const productId = req.params.id
 
@@ -62,7 +62,7 @@ exports.postWishlist = async (req,res) =>{
         }
 
         if(wishlist.productId.length > 10){
-            return res.json({success:false,message:'sorry, your wishlist is full'})
+            return res.state(HttpStatusCode.BAD_REQUEST).json({success:false,message:'sorry, your wishlist is full'})
         }
 
         if(!wishlist.productId.includes(productId)){
@@ -70,16 +70,15 @@ exports.postWishlist = async (req,res) =>{
             await wishlist.save()
             return res.json({success:true,message:'Added Successfully'})
         }else{
-            return res.json({alreadyExist:true,message:'Already Exist'})
+            return res.state(HttpStatusCode.CONFLICT).json({alreadyExist:true,message:'Already Exist'})
         }
-
     } catch (error) {
-       console.error('something went wrong',error) 
+       next(error)
     }
 }
 
 
-exports.removeWishlist = async (req,res)=>{
+exports.removeWishlist = async (req, res, next)=>{
     try {
         const userId = req.session.user
         const productId = req.params.id
@@ -89,7 +88,6 @@ exports.removeWishlist = async (req,res)=>{
         )
         return res.json({success:true,message:'successfully removed the product'})
     } catch (error) {
-        console.error('something went wrong',error)
-        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Failed to remove product' });
+        next(error)
     }
 }

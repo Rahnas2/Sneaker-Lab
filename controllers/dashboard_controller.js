@@ -3,7 +3,7 @@ const ordersCollection = require('../models/orderModel')
 const { productManagment } = require('./admin_controller')
 
 
-exports.dashBoard = async (req,res) =>{
+exports.dashBoard = async (req,res, next) =>{
     try {
 
         const { filterType } = req.query
@@ -413,6 +413,6 @@ exports.dashBoard = async (req,res) =>{
             }
         )
     } catch (error) {
-        console.error('something went wrong',error)
+        next(error)
     }
 }
