@@ -1,6 +1,8 @@
 const express = require('express')
 const router = express.Router()
 const admin_controller = require('../controllers/admin_controller')
+const category_controller = require('../controllers/category_controller')
+const brand_controller = require('../controllers/brand_controller')
 const coupon_controller = require('../controllers/coupon_controller')
 const offer_controller = require('../controllers/offer_controller')
 const sales_controller = require('../controllers/sales_controller')
@@ -26,16 +28,16 @@ router.post('/userManagment/unblock/:userId',auth,admin_controller.unblockUser)
 //user managment end
 
 //category managment start 
-router.get('/categoryManagment',auth,admin_controller.categoryManagment) 
-router.post('/addCategory',auth,catogoryValid,admin_controller.addCategory)
-router.post('/toggleCategory/:id',auth,admin_controller.toggleCategoryStatus)  
+router.get('/categoryManagment',auth,category_controller.categoryManagment) 
+router.post('/addCategory',auth,catogoryValid,category_controller.addCategory)
+router.post('/toggleCategory/:id',auth,category_controller.toggleCategoryStatus)  
 //category managment end
 
 
 //brand managment start 
-router.get('/brandManagment',auth,admin_controller.brandManagment) 
-router.post('/addBrand',auth,brandValid,admin_controller.addBrand)
-router.post('/toggleBrand/:id',auth,admin_controller.toggleBrandStatus)
+router.get('/brandManagment',auth,brand_controller.brandManagment) 
+router.post('/addBrand',auth,brandValid,brand_controller.addBrand)
+router.post('/toggleBrand/:id',auth,brand_controller.toggleBrandStatus)
 //brand managment end
 
 

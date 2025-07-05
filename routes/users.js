@@ -1,7 +1,9 @@
 const express = require('express') 
 const passport = require('passport')
 const users_controller = require('../controllers/users_controller')
+const shop_controller = require('../controllers/shop_controller')
 const wishlist_controller = require('../controllers/wishlist_controller')
+const cart_controller = require('../controllers/cart_controller')
 const coupon_controller = require('../controllers/coupon_controller')
 const wallet_controller = require('../controllers/wallet_controller')
 const userAuth = require('../middleware/userAuth')
@@ -36,7 +38,7 @@ router.get('/auth/google/callback',passport.authenticate('google',{failureRedire
    
 })
 
-// Forgot password start
+// Password
 router.get('/forgotPassword/emailVerification',users_controller.emailVerification)
 router.post('/forgotPassword/emailVerify',users_controller.postEmailVerification) 
 router.get('/forgotPassword/otpVerify',users_controller.getOtpVerificationFrg)
@@ -46,15 +48,15 @@ router.get('/changePassword',users_controller.changePassword)
 router.post('/changePassword',users_controller.PostchangePassword)
 
 // Shop
-router.get('/shop',users_controller.getShop)
-router.get('/viewProduct/:id',users_controller.getViewProduct) 
-router.get('/products', users_controller.getProducts)   
+router.get('/shop',shop_controller.getShop)
+router.get('/viewProduct/:id',shop_controller.getViewProduct) 
+router.get('/products', shop_controller.getProducts)   
 
 // cart start
-router.get('/cart',userAuth,users_controller.getCart)
-router.post('/addToCart/:id',userAuth,users_controller.addToCart)
-router.put('/updatedCartItemQuantity',userAuth,users_controller.updatedCartQuantity)
-router.delete('/deleteCartItem/:id',userAuth,users_controller.deleteCartItem)
+router.get('/cart',userAuth,cart_controller.getCart)
+router.post('/addToCart/:id',userAuth,cart_controller.addToCart)
+router.put('/updatedCartItemQuantity',userAuth,cart_controller.updatedCartQuantity)
+router.delete('/deleteCartItem/:id',userAuth,cart_controller.deleteCartItem)
 //cart end
 
 //coupon start
