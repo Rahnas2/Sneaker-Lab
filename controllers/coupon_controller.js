@@ -132,10 +132,9 @@ exports.couponDelete = async (req, res) => {
 exports.applyCoupon = async (req, res) => {
     try {
         const { couponCode } = req.body
-        console.log('coupon code', req.body)
         const userId = req.session.user
 
-        const coupon = await couponCollection.findOne({ code: couponCode })
+        const coupon = await couponCollection.findOne({ code: couponCode, usedBy: {$ne: userId}  })
 
         const cart = await cartCollection.findOne({ userId })
 
@@ -202,10 +201,7 @@ exports.applyCoupon = async (req, res) => {
                 couponDiscount: couponDiscount,
                 cartTotal: subTotal
             }
-
-            console.log('session coupon', typeof req.session.coupon)
-            console.log('discount type', typeof req.session.coupon.couponDiscount)
-
+            console.log('applied couon ', req.session.coupon)
             return res.json({ success: true, message: 'coupon applied successfully' })
 
         } else {
@@ -221,7 +217,6 @@ exports.userRemoveCoupon = async (req, res) => {
         const userId = req.session.user
         const couponCode = req.session.coupon.code
         const couponDiscount = req.session.coupon.couponDiscount
-        console.log('type of discount', couponDiscount)
         const appliedCoupon = await couponCollection.findOne({ code: couponCode })
 
         const cart = await cartCollection.findOne({ userId: userId })

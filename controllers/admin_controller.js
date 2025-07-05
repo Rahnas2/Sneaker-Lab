@@ -62,6 +62,7 @@ exports.userManagment = async (req, res) => {
       }
 
       let usersList = await usersCollection.find(searchCriteria)
+         .sort({ createdAt: -1 })
          .skip(skip)
          .limit(limit)
 
@@ -125,7 +126,7 @@ exports.categoryManagment = async (req, res) => {
       ]
    }
 
-   const categoryList = await categoryCollection.find(searchCriteria).skip(skip).limit(limit)
+   const categoryList = await categoryCollection.find(searchCriteria).sort({ createdAt: -1 }).skip(skip).limit(limit)
 
    const totalCategorys = await categoryCollection.countDocuments({ deleted: false })
    const totalPages = Math.ceil(totalCategorys / limit)
@@ -213,7 +214,7 @@ exports.brandManagment = async (req, res) => {
       ]
    }
 
-   const brandList = await brandCollection.find(searchCriteria).skip(skip).limit(limit)
+   const brandList = await brandCollection.find(searchCriteria).sort({ createdAt: -1 }).skip(skip).limit(limit)
 
    const totalBrands = await brandCollection.countDocuments({ deleted: false })
    const totalPages = Math.ceil(totalBrands / limit)
@@ -319,6 +320,7 @@ exports.productManagment = async (req, res) => {
       .populate('category', 'categoryName')
       .populate('brand', 'brandName')
       .populate('variants')
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
    res.render('Admin/ProductManagment', {
@@ -659,7 +661,7 @@ exports.loadOrderManagment = async (req, res) => {
       const totalProducts = await orderCollection.countDocuments()
       const totalPages = Math.ceil(totalProducts / limit)
 
-      const orders = await orderCollection.find(searchCriteria).skip(skip).limit(limit)
+      const orders = await orderCollection.find(searchCriteria).sort({createdAt: -1}).skip(skip).limit(limit)
       res.render('Admin/orderManagment', {
          orders,
          currentPage: page,

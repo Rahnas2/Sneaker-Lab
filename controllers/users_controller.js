@@ -25,6 +25,7 @@ const { json } = require('body-parser')
 const Razorpay = require('razorpay')
 const HttpStatusCode = require('../utils/statsCode')
 const variantModel = require('../models/variantModel')
+const { appendFile } = require('fs')
 // const { error } = require('console')
 
 const razorpayInstance = new Razorpay({
@@ -1435,7 +1436,7 @@ exports.getCheckOut = async (req, res) => {
             //if a couon applied
             const appliedCouponCode = req.session.coupon ? req.session.coupon.code : false;
             if (appliedCouponCode) {
-                const coupon = await couponCollection.findOne({ code: appliedCouponCode });
+                const coupon = await couponCollection.findOne({ code: appliedCouponCode, usedBy: {$ne: userId}  });
                 if (coupon && coupon.isActive) {
 
                     const subTotal = cart.items.reduce((total, item) => total + item.itemTotal, 0);
@@ -1459,12 +1460,6 @@ exports.getCheckOut = async (req, res) => {
                         let maxItem = cart.items.reduce((prev, curr) => (prev.itemTotal > curr.itemTotal ? prev : curr));
                         maxItem.itemTotal -= remainingDiscount;
                     }
-
-                    // req.session.coupon = {
-                    //     code: appliedCouponCode,
-                    //     couponDiscount: couponDiscount,
-                    //     cartTotal: subTotal 
-                    // };
                 } else {
                     delete req.session.coupon
                 }
@@ -1472,16 +1467,18 @@ exports.getCheckOut = async (req, res) => {
 
             await cart.save();
 
+        }else {
+            res.redirect('/')
+            return 
         }
 
 
 
         const address = await addressCollection.findOne({ userId: user })
 
-        const coupons = await couponCollection.find({ isActive: true })
-        // const appliedCouponCode = req.session.coupon ? req.session.coupon.code : false 
+        const coupons = await couponCollection.find({ isActive: true, usedBy: {$ne: userId} })
 
-        const appliedCoupon = req.session.coupon ? await couponCollection.findOne({ code: req.session.coupon.code }) : false;
+        const appliedCoupon = req.session.coupon ? await couponCollection.findOne({ code: req.session.coupon.code, usedBy: {$ne: userId} }) : false;
 
         const couponDiscount = req.session.coupon ? req.session.coupon.couponDiscount : 0
 
@@ -1552,8 +1549,9 @@ exports.placeOrder = async (req, res) => {
 
             //if a couon applied
             const appliedCouponCode = req.session.coupon ? req.session.coupon.code : false;
+            console.log('applied coupons code from placeOrder ', appliedCouponCode)
             if (appliedCouponCode) {
-                const coupon = await couponCollection.findOne({ code: appliedCouponCode });
+                const coupon = await couponCollection.findOne({ code: appliedCouponCode, usedBy: {$ne: userId} });
                 if (coupon && coupon.isActive) {
 
                     const subTotal = cart.items.reduce((total, item) => total + item.itemTotal, 0);
@@ -1577,12 +1575,6 @@ exports.placeOrder = async (req, res) => {
                         let maxItem = cart.items.reduce((prev, curr) => (prev.itemTotal > curr.itemTotal ? prev : curr));
                         maxItem.itemTotal -= remainingDiscount;
                     }
-
-                    // req.session.coupon = {
-                    //     code: appliedCouponCode,
-                    //     couponDiscount: couponDiscount,
-                    //     cartTotal: subTotal 
-                    // };
                 } else {
                     delete req.session.coupon
                 }
@@ -1603,7 +1595,6 @@ exports.placeOrder = async (req, res) => {
             itemTotal: item.itemTotal,
             status: 'order placed'
         }));
-        console.log('order items ', orderItems)
 
         const totalAmount = cart.totalPrice
 
@@ -1628,12 +1619,11 @@ exports.placeOrder = async (req, res) => {
             // paymentStatus:'pending', 
             totalAmount
         }
-
         if (req.session.coupon) {
+            await couponCollection.findOneAndUpdate({code: orderDetails.couponCode}, {$push: {usedBy: userId}} )
             delete req.session.coupon
         }
-
-
+        
         // if(paymentMethod === 'WALLET'){
         //     wallet = await walletCollection.findOne({userId:userId})
         //     if(wallet.balance < totalAmount){

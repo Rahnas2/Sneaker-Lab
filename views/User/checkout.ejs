@@ -137,9 +137,19 @@
                                            <% if (cart.totalPrice >= coupon.minimumSpend) { %> 
                                             <ul class="list-group list-unstyled overflow-auto">
                                                 <li class="list-item p-2 " style="background: #f3f2ee;">
+
+                                                    <!-- Code -->
                                                     <input type="radio" name="coupon" class="coupon-radio" value="<%= coupon.code %>"> 
                                                     <span class="font-weight-bold ml-2"><%= coupon.code %></span><br>
-                                                    <div><%= coupon.description %></div>
+
+                                                    <!-- More Details  -->
+                                                     <div class="ml-4 mt-1 text-muted">
+                                                      <small>
+                                                        <%= coupon.discountPercentage %>% OFF 
+                                                        (Up to ₹<%= coupon.maxAmount %>)
+                                                      </small>
+                                                    </div>
+                                                    
                                                 </li>
                                             </ul>
                                            <% } %>
