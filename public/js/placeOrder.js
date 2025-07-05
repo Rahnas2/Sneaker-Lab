@@ -178,7 +178,28 @@ function placeOrder(url) {
                             description: 'make your payment',
                             order_id: result.razorpayOrderId,
                             handler: function (response) {
-                                verifyPayment(response)
+                                verifyPayment({
+                                    ...response,
+                                    orderId: result.orderId
+                                })
+                            },
+                            modal: {
+                                ondismiss: function () {
+                                    // User closed Razorpay popup
+                                    fetch('/close-payment', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({ orderId: result.orderId })  
+                                    }).then(() => {
+                                        Swal.fire({
+                                            icon: 'info',
+                                            title: 'Payment Cancelled',
+                                            text: 'You cancelled the payment. You can try again from your orders page.',
+                                        })
+                                    })
+                                }
                             },
                             theme: {
                                 color: "#0000"
@@ -186,7 +207,10 @@ function placeOrder(url) {
                         }
                         const rzp = new Razorpay(options)
                         rzp.on('payment.failed', function (response) {
-                            handlePaymentFailure(response);
+                            handlePaymentFailure({
+                                ...response,
+                                orderId: result.orderId
+                            });
                         })
                         rzp.open()
                     } else if (result.error) {
@@ -223,6 +247,7 @@ function placeOrder(url) {
 
 //payment verify
 function verifyPayment(response) {
+    console.log('verify response ', response)
     fetch('/verifyPayment', {
         method: 'POST',
         headers: {
@@ -230,8 +255,9 @@ function verifyPayment(response) {
         },
         body: JSON.stringify({
             paymentId: response.razorpay_payment_id,
-            orderId: response.razorpay_order_id,
-            signature: response.razorpay_signature
+            razorpayOrderId: response.razorpay_order_id, // fixed
+            signature: response.razorpay_signature,
+            orderId: response.orderId
         })
     })
         .then(response => response.json())
@@ -250,6 +276,7 @@ function verifyPayment(response) {
 
 // handle failure
 function handlePaymentFailure(response) {
+    console.log('resonpose in failure ', response)
     fetch('/verifyPayment', {
         method: 'POST',
         headers: {
@@ -257,7 +284,8 @@ function handlePaymentFailure(response) {
         },
         body: JSON.stringify({
             paymentId: response.error.metadata.payment_id,
-            orderId: response.error.metadata.order_id,
+            razorpayOrderId: response.error.metadata.order_id,
+            orderId: response.orderId,
             signature: null,
             failed: true
         })

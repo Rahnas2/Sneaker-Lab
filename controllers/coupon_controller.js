@@ -215,6 +215,11 @@ exports.applyCoupon = async (req, res) => {
 exports.userRemoveCoupon = async (req, res) => {
     try {
         const userId = req.session.user
+
+        if(!req.session.coupon){
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'couon not found' })
+        } 
+
         const couponCode = req.session.coupon.code
         const couponDiscount = req.session.coupon.couponDiscount
         const appliedCoupon = await couponCollection.findOne({ code: couponCode })

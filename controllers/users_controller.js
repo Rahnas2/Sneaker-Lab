@@ -391,7 +391,7 @@ exports.changePassword = (req, res) => {
 exports.PostchangePassword = async (req, res) => {
     try {
         const { newPassword, confirmPassword } = req.body
-        console.log('change password body ',req.body)
+        console.log('change password body ', req.body)
         const email = req.session.emailAuth
         const user = await usersCollection.findOne({ email: email })
         const hashedPassword = await bcrypt.hash(newPassword, 10)
@@ -454,7 +454,6 @@ exports.getProfile = async (req, res) => {
                 const walletPage = parseInt(page);
                 const walletSkip = (walletPage - 1) * walletLimit;
 
-                console.log('before sort ', walletDoc.history)
                 // Sort history by date (newest first) and paginate
                 const sortedHistory = walletDoc.history
                     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -462,7 +461,6 @@ exports.getProfile = async (req, res) => {
 
                 wallet.history = sortedHistory;
 
-                console.log('after sort ', sortedHistory)
 
                 walletPagination = {
                     currentPage: walletPage,
@@ -575,8 +573,8 @@ exports.editProfile = async (req, res) => {
 exports.setNewPassword = async (req, res) => {
     const { currentPassword, newPassword } = req.body;
 
-    if(newPassword.trim().length < 8){
-        return res.json({success: false, error: 'newPassword', message: 'password should be atleast length 8'})
+    if (newPassword.trim().length < 8) {
+        return res.json({ success: false, error: 'newPassword', message: 'password should be atleast length 8' })
     }
     const userId = req.session.user
     const user = await usersCollection.findById({ _id: userId });
@@ -815,16 +813,6 @@ exports.cancelProduct = async (req, res) => {
 
 
         const { variantId, quantity, size } = orders.items[itemIndex];
-        // const variant = await variantCollection.findOne({ _id: variantId });
-        // if (!variant) {
-        //     return res.status(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Variant not found' });
-        // }
-
-
-        // variant.sizes[0].stock += quantity;
-
-        // // Save the updated variant
-        // await variant.save();
 
         //Update Size Quantity
         await variantCollection.updateOne(
@@ -947,7 +935,7 @@ exports.getCheckOut = async (req, res) => {
             //if a couon applied
             const appliedCouponCode = req.session.coupon ? req.session.coupon.code : false;
             if (appliedCouponCode) {
-                const coupon = await couponCollection.findOne({ code: appliedCouponCode, usedBy: {$ne: userId}  });
+                const coupon = await couponCollection.findOne({ code: appliedCouponCode, usedBy: { $ne: userId } });
                 if (coupon && coupon.isActive) {
 
                     const subTotal = cart.items.reduce((total, item) => total + item.itemTotal, 0);
@@ -978,18 +966,18 @@ exports.getCheckOut = async (req, res) => {
 
             await cart.save();
 
-        }else {
+        } else {
             res.redirect('/')
-            return 
+            return
         }
 
 
 
         const address = await addressCollection.findOne({ userId: user })
 
-        const coupons = await couponCollection.find({ isActive: true, usedBy: {$ne: userId} })
+        const coupons = await couponCollection.find({ isActive: true, usedBy: { $ne: userId } })
 
-        const appliedCoupon = req.session.coupon ? await couponCollection.findOne({ code: req.session.coupon.code, usedBy: {$ne: userId} }) : false;
+        const appliedCoupon = req.session.coupon ? await couponCollection.findOne({ code: req.session.coupon.code, usedBy: { $ne: userId } }) : false;
 
         const couponDiscount = req.session.coupon ? req.session.coupon.couponDiscount : 0
 
@@ -1011,6 +999,11 @@ exports.placeOrder = async (req, res) => {
     try {
         const userId = req.session.user
         const { deliveryAddress, paymentMethod } = req.body
+
+        const existingOrder = await orderCollection.findOne({ userId, orderLockStatus: 'in-progress' })
+        if (existingOrder) {
+            return res.json({ error: true, message: "You're already placing an order. Please complete the payment or wait." });
+        }
 
         //address
         const address = await addressCollection.findOne({ userId })
@@ -1036,7 +1029,6 @@ exports.placeOrder = async (req, res) => {
         ])
 
         if (!cart || cart.items.length === 0) {
-            console.log('cart is empty')
             return res.json({ error: true, message: 'your cart is empty' })
         } else {
             cart.items.forEach(item => {
@@ -1060,9 +1052,8 @@ exports.placeOrder = async (req, res) => {
 
             //if a couon applied
             const appliedCouponCode = req.session.coupon ? req.session.coupon.code : false;
-            console.log('applied coupons code from placeOrder ', appliedCouponCode)
             if (appliedCouponCode) {
-                const coupon = await couponCollection.findOne({ code: appliedCouponCode, usedBy: {$ne: userId} });
+                const coupon = await couponCollection.findOne({ code: appliedCouponCode, usedBy: { $ne: userId } });
                 if (coupon && coupon.isActive) {
 
                     const subTotal = cart.items.reduce((total, item) => total + item.itemTotal, 0);
@@ -1131,10 +1122,10 @@ exports.placeOrder = async (req, res) => {
             totalAmount
         }
         if (req.session.coupon) {
-            await couponCollection.findOneAndUpdate({code: orderDetails.couponCode}, {$push: {usedBy: userId}} )
+            await couponCollection.findOneAndUpdate({ code: orderDetails.couponCode }, { $push: { usedBy: userId } })
             delete req.session.coupon
         }
-        
+
         // if(paymentMethod === 'WALLET'){
         //     wallet = await walletCollection.findOne({userId:userId})
         //     if(wallet.balance < totalAmount){
@@ -1143,11 +1134,10 @@ exports.placeOrder = async (req, res) => {
 
         // }
 
+        const order = await orderCollection.create(orderDetails)
+        await processOrderPostPayment(orderItems)
+
         if (paymentMethod === 'RAZORPAY') {
-            req.session.tempOrderDetails = orderDetails
-
-            // await processOrderPostPayment(orderDetails, orderItems)
-
             const options = {
                 amount: totalAmount * 100,
                 currency: 'INR',
@@ -1160,7 +1150,7 @@ exports.placeOrder = async (req, res) => {
             return res.json({
                 success: true,
                 message: 'please complete the payment',
-                // orderId:newOrder._id,
+                orderId: order._id,
                 razorpayOrderId: razorpayOrder.id,
                 amount: totalAmount,
                 razorpay: true,
@@ -1173,8 +1163,10 @@ exports.placeOrder = async (req, res) => {
             if (orderDetails.totalAmount > 1000) {
                 return res.json({ error: true, message: 'sorry cash on delivery is not allowed for above 1000,plese go with another methods' })
             }
-            await orderCollection.create(orderDetails)
-            await processOrderPostPayment(orderDetails, orderItems)
+
+            await orderCollection.findByIdAndUpdate(order._id, { orderLockStatus: 'completed' })
+            await cartCollection.findOneAndUpdate({ userId: order.userId }, { $set: { items: [] } });
+
             return res.json({ success: true, message: 'order placed successfully' })
         }
 
@@ -1185,7 +1177,7 @@ exports.placeOrder = async (req, res) => {
 }
 
 //function to handle order post logic
-async function processOrderPostPayment(order, orderItems) {
+async function processOrderPostPayment(orderItems) {
 
     //update the stock
     for (const item of orderItems) {
@@ -1194,29 +1186,57 @@ async function processOrderPostPayment(order, orderItems) {
             { $inc: { "sizes.$.stock": -item.quantity } }
         );
     }
+}
 
-    //clear user cart
-    await cartCollection.findOneAndUpdate({ userId: order.userId }, { $set: { items: [] } });
 
+// Close Razorpay Payment Modal 
+exports.closePayment = async (req, res) => {
+    try {
+        const { orderId } = req.body;
+
+        console.log('duty started maan ', orderId)
+
+        const order = await orderCollection.findOne({ _id: orderId, orderLockStatus: 'in-progress'});
+        if (!order) {
+            return res.status(404).json({ error: true, message: 'Order not found' });
+        }
+
+        // Loop over items to restore stock
+        for (const item of order.items) {
+            await variantCollection.updateOne(
+                {
+                    _id: item.variantId,
+                    'sizes.size': item.size
+                },
+                {
+                    $inc: {
+                        'sizes.$.stock': item.quantity
+                    }
+                }
+            );
+        }
+
+        // Delete the order
+        await orderCollection.findByIdAndDelete(orderId);
+    } catch (error) {
+        console.error('closign modal error ', error)
+    }
 }
 
 exports.verifyPayment = async (req, res) => {
     try {
-        const { paymentId, orderId, signature, failed, isRetry } = req.body
-
-        const orderDetails = req.session.tempOrderDetails
-        if (!orderDetails) {
-            return res.json({ success: false, message: 'order details not found in the session' })
-        }
+        console.log('verifying paymetn started... ')
+        const { paymentId, razorpayOrderId, orderId, signature, failed, isRetry } = req.body
+        
+        const userId = req.session.user
 
         let paymentStatus = 'faild'
         let status = 'pending'
         let paymentSuccess = false
 
         if (!failed) {
-
             const generatedSignature = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-                .update(orderId + '|' + paymentId)
+                .update(razorpayOrderId + '|' + paymentId)
                 .digest('hex')
 
             if (generatedSignature === signature) {
@@ -1224,14 +1244,12 @@ exports.verifyPayment = async (req, res) => {
                 status = 'order placed'
                 paymentSuccess = true
             }
-
-
         }
 
         //retrying from order detail page
         if (isRetry) {
             await orderCollection.updateOne(
-                { _id: orderDetails },
+                { _id: orderId },
                 {
                     $set: {
                         'items.$[].paymentStatus': paymentStatus,
@@ -1239,8 +1257,6 @@ exports.verifyPayment = async (req, res) => {
                     }
                 }
             )
-
-            delete req.session.tempOrderDetails
 
             if (paymentSuccess) {
                 return res.json({ success: true, message: 'payment successfull' })
@@ -1250,30 +1266,25 @@ exports.verifyPayment = async (req, res) => {
 
         }
 
-        //update payment status
-        orderDetails.items.forEach(item => {
-            item.paymentStatus = paymentStatus,
-                item.status = status
-        })
+        await orderCollection.updateOne(
+            { _id: orderId },
+            {
+                $set: {
+                    'items.$[].status': status,
+                    'items.$[].paymentStatus': paymentStatus,
+                    orderLockStatus: 'completed'
+                }
+            }
+        )
 
-        //create order
-        const createdOrder = await orderCollection.create(orderDetails)
-
-
-        //newly created order id
-        const newOrderId = createdOrder._id
-
-        //update the quantity
-        const orderItems = orderDetails.items;
-        await processOrderPostPayment(orderDetails, orderItems);
-
-        delete req.session.tempOrderDetails
+        // Cear User Cart 
+        await cartCollection.findOneAndUpdate({ userId }, { $set: { items: [] } });
 
         if (paymentSuccess) {
 
-            return res.json({ success: true, message: 'order placed successfully', orderId: newOrderId })
+            return res.json({ success: true, message: 'order placed successfully', orderId })
         } else {
-            return res.json({ success: true, messagae: 'payment faild , order created with pending status', orderId: newOrderId })
+            return res.json({ success: true, messagae: 'payment faild , order created with pending status', orderId })
         }
 
 
@@ -1283,7 +1294,7 @@ exports.verifyPayment = async (req, res) => {
 }
 
 exports.payAfter = async (req, res) => {
-    console.log('hello')
+
     try {
         const { orderId, paymentMethod } = req.body
         const userId = req.session.user
@@ -1298,6 +1309,7 @@ exports.payAfter = async (req, res) => {
             return res.json({ success: false, message: 'plese select a payment method' })
         }
 
+        // Wallet Payment 
         if (paymentMethod === 'wallet') {
             const wallet = await walletCollection.findOne({ userId: userId })
             if (!wallet) {
@@ -1335,8 +1347,8 @@ exports.payAfter = async (req, res) => {
             return res.json('success')
         }
 
-        req.session.tempOrderDetails = order
 
+        // Razorpay
         const options = {
             amount: order.totalAmount * 100,
             currency: 'INR',
@@ -1349,12 +1361,11 @@ exports.payAfter = async (req, res) => {
             success: true,
             message: 'please complete the payment',
             razorpayOrderId: razorpayOrder.id,
+            orderId,
             amount: order.totalAmount,
             razorpay: true,
             key: process.env.RAZORPAY_KEY_ID
         })
-
-
 
 
     } catch (error) {

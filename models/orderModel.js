@@ -2,10 +2,10 @@
 const mongoose = require('mongoose')
 
 const orderSchema = new mongoose.Schema({
-    userId:{
-        type:mongoose.Schema.Types.ObjectId,
-        required:true,
-        ref:'Users'
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'Users'
     },
     deliveryAddress: {
         fullName: { type: String, required: true },
@@ -15,8 +15,8 @@ const orderSchema = new mongoose.Schema({
         country: { type: String, required: true },
         state: { type: String, required: true },
         city: { type: String, required: true },
-        typeOfAddress: {type: String, required: true},
-        email: {type: String}
+        typeOfAddress: { type: String, required: true },
+        email: { type: String }
     },
     items: [{
         productId: {
@@ -29,7 +29,7 @@ const orderSchema = new mongoose.Schema({
             required: true,
             ref: 'variants'
         },
-        productName: { 
+        productName: {
             type: String,
             required: true
         },
@@ -37,63 +37,68 @@ const orderSchema = new mongoose.Schema({
             type: String,
             required: true
         },
-        image:{
-           type:String
+        image: {
+            type: String
         },
-        price: { 
+        price: {
             type: Number,
             required: true
         },
-        offerPrice:{
-            type:Number
+        offerPrice: {
+            type: Number
         },
-        quantity: { 
+        quantity: {
             type: Number,
             required: true,
             min: 1
         },
-        itemTotal: { 
+        itemTotal: {
             type: Number,
             required: true
         },
-        status:{
-            type:String,
-            default:'Order Placed'
+        status: {
+            type: String,
+            default: 'Order Placed'
         },
-        paymentStatus:{
-            type:String,
-            default:'pending'
+        paymentStatus: {
+            type: String,
+            default: 'pending'
         },
-        rating:{
-            type:Number
+        rating: {
+            type: Number
         },
-        returnReson:{
-            type:String
+        returnReson: {
+            type: String
         }
     }],
-    couponCode:{
-        type:String
+    couponCode: {
+        type: String
     },
-    couponDiscount:{
-        type:Number,
-        default:0
+    couponDiscount: {
+        type: Number,
+        default: 0
     },
     shippingFee: {
-        type:Number
+        type: Number
     },
     paymentMethod: {
         type: String,
         required: true
     },
-    totalAmount:{
-        type:Number,
-        required:true
+    totalAmount: {
+        type: Number,
+        required: true
+    },
+    orderLockStatus: {
+        type: String,
+        enum: ['in-progress', 'completed'],
+        default: 'in-progress'
     },
     expectedDelivery: {
         type: Date,
         default: () => Date.now() + 7 * 24 * 60 * 60 * 1000
     }
-},{timestamps:true})
+}, { timestamps: true })
 
 
-module.exports = mongoose.model('orders',orderSchema)  
+module.exports = mongoose.model('orders', orderSchema)  

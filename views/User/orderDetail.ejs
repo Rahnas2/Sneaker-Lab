@@ -233,7 +233,10 @@
                       description: 'make your payment',
                       order_id: result.razorpayOrderId,
                       handler: function (response) {
-                        verifyPayment(response)
+                        verifyPayment({
+                          ...response,
+                          orderId: result.orderId
+                        })
                       },
                       theme: {
                         color: "#0000"
@@ -264,8 +267,9 @@
             },
             body: JSON.stringify({
               paymentId: response.razorpay_payment_id,
-              orderId: response.razorpay_order_id,
+              razorpayOrderId: response.razorpay_order_id,
               signature: response.razorpay_signature,
+              orderId: response.orderId,
               isRetry: true
             })
           })
@@ -292,7 +296,8 @@
             },
             body: JSON.stringify({
               paymentId: response.error.metadata.payment_id,
-              orderId: response.error.metadata.order_id,
+              razorpayOrderId: response.error.metadata.order_id,
+              orderId: response.orderId,
               signature: null,
               failed: true,
               isRetry: true

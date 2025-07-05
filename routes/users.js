@@ -73,6 +73,7 @@ router.put('/removeWishlist/:id',userAuth,wishlist_controller.removeWishlist)
 //checkout start
 router.get('/cart/checkOut',userAuth,users_controller.getCheckOut)
 router.post('/cart/checkOut/placeOrder',userAuth,users_controller.placeOrder)
+router.post('/close-payment', userAuth, users_controller.closePayment)
 router.post('/verifyPayment',userAuth,users_controller.verifyPayment)
 //checkout end
 
