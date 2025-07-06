@@ -62,7 +62,7 @@ exports.postWishlist = async (req,res, next) =>{
         }
 
         if(wishlist.productId.length > 10){
-            return res.state(HttpStatusCode.BAD_REQUEST).json({success:false,message:'sorry, your wishlist is full'})
+            return res.status(HttpStatusCode.BAD_REQUEST).json({success:false,message:'sorry, your wishlist is full'})
         }
 
         if(!wishlist.productId.includes(productId)){
@@ -70,7 +70,7 @@ exports.postWishlist = async (req,res, next) =>{
             await wishlist.save()
             return res.json({success:true,message:'Added Successfully'})
         }else{
-            return res.state(HttpStatusCode.CONFLICT).json({alreadyExist:true,message:'Already Exist'})
+            return res.status(HttpStatusCode.CONFLICT).json({alreadyExist:true,message:'Already Exist'})
         }
     } catch (error) {
        next(error)

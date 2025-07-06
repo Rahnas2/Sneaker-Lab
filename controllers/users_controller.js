@@ -99,19 +99,19 @@ exports.postlogin = async (req, res, next) => {
                 acc[error.path] = error.msg;
                 return acc;
             }, {})
-            return res.state(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
         }
         userCheck = await usersCollection.findOne({ email: email })
         if (!userCheck) {
-            return res.state(HttpStatusCode.BAD_REQUEST).json({ error: 'invalid user' });
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ error: 'invalid user' });
         }
 
         if (userCheck.isBlock) {
-            return res.state(HttpStatusCode.FORBIDDEN).json({ error: 'you are blocked by admin' })
+            return res.status(HttpStatusCode.FORBIDDEN).json({ error: 'you are blocked by admin' })
         }
 
         if (userCheck.googleId) {
-            return res.state(HttpStatusCode.FORBIDDEN).json({ error: 'You signed up using Google. Please use Google Sign-In to access your account.' })
+            return res.status(HttpStatusCode.FORBIDDEN).json({ error: 'You signed up using Google. Please use Google Sign-In to access your account.' })
         }
         if (userCheck) {
             const passCheck = await bcrypt.compare(password, userCheck.password)
@@ -120,7 +120,7 @@ exports.postlogin = async (req, res, next) => {
                 return res.json({ success: true })
 
             } else {
-                return res.state(HttpStatusCode.BAD_REQUEST).json({ error: 'wrong password' })
+                return res.status(HttpStatusCode.BAD_REQUEST).json({ error: 'wrong password' })
 
             }
         }
@@ -158,13 +158,13 @@ exports.postsignup = async (req, res, next) => {
                 acc[error.path] = error.msg
                 return acc
             }, {})
-            return res.state(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
         } else {
             const user_check = await usersCollection.findOne({ email: data.email })
             if (user_check) {
-                return res.state(HttpStatusCode.CONFLICT).json({ emailError: 'user is already existed' })
+                return res.status(HttpStatusCode.CONFLICT).json({ emailError: 'user is already existed' })
             } else if (data.password != data.cfpassword) {
-                return res.state(HttpStatusCode.BAD_REQUEST).json({ passError: 'please enter correct password' })
+                return res.status(HttpStatusCode.BAD_REQUEST).json({ passError: 'please enter correct password' })
             } else {
                 req.session.tempUser = {
                     username: data.username,
@@ -324,7 +324,7 @@ exports.postEmailVerification = async (req, res, next) => {
         const user = await usersCollection.findOne({ email: email })
         if (user) {
             if (user.googleId) {
-                return res.state(HttpStatusCode.FORBIDDEN).json({ googleUser: true, message: 'You signed up using Google. Please use Google Sign-In to access your account.' })
+                return res.status(HttpStatusCode.FORBIDDEN).json({ googleUser: true, message: 'You signed up using Google. Please use Google Sign-In to access your account.' })
             }
 
             const otp = generateOtp()
@@ -357,7 +357,7 @@ exports.postOtpVerifyFrg = async (req, res, next) => {
         const email = req.session.emailAuth
         const { otp } = req.body
         if (!email) {
-            return res.state(HttpStatusCode.NOT_FOUND).json({ error: true, message: 'email not found' })
+            return res.status(HttpStatusCode.NOT_FOUND).json({ error: true, message: 'email not found' })
         }
 
         const otpCheck = await otpCollection.findOne({ email, otp })
@@ -365,7 +365,7 @@ exports.postOtpVerifyFrg = async (req, res, next) => {
             return res.json({ success: true })
         }
 
-        return res.state(HttpStatusCode.BAD_REQUEST).json({ error: true, message: 'invalid otp' })
+        return res.status(HttpStatusCode.BAD_REQUEST).json({ error: true, message: 'invalid otp' })
     } catch (error) {
         next(error)
     }
@@ -375,7 +375,7 @@ exports.resendOtpFrg = async (req, res, next) => {
     try {
         const email = req.session.emailAuth;
         if (!email) {
-            return res.state(HttpStatusCode.NOT_FOUND).json({ error: true, message: 'Email not found' });
+            return res.status(HttpStatusCode.NOT_FOUND).json({ error: true, message: 'Email not found' });
         }
         const otp = generateOtp()
 
@@ -535,7 +535,7 @@ exports.editProfile = async (req, res, next) => {
                 acc[error.path] = error.msg;
                 return acc;
             }, {})
-            return res.state(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
         }
 
         const userId = req.session.user
@@ -543,7 +543,7 @@ exports.editProfile = async (req, res, next) => {
         const user = await usersCollection.findById(userId)
 
         if (user.username === username && (user.phone ? user.phone.toString() === phone : !phone)) {
-            return res.state(HttpStatusCode.BAD_REQUEST).json({ noChange: true, message: 'sorry you didit make any changes' })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ noChange: true, message: 'sorry you didit make any changes' })
         }
 
         if (user.username !== username) {
@@ -574,7 +574,7 @@ exports.setNewPassword = async (req, res, next) => {
         const { currentPassword, newPassword } = req.body;
 
         if (newPassword.trim().length < 8) {
-            return res.state(HttpStatusCode.BAD_REQUEST).json({ success: false, error: 'newPassword', message: 'password should be atleast length 8' })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, error: 'newPassword', message: 'password should be atleast length 8' })
         }
         const userId = req.session.user
         const user = await usersCollection.findById({ _id: userId });
@@ -618,7 +618,7 @@ exports.postAddress = async (req, res, next) => {
                 acc[error.path] = error.msg
                 return acc
             }, {})
-            return res.state(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
         }
 
         const userId = req.session.user
@@ -646,7 +646,7 @@ exports.postAddress = async (req, res, next) => {
         }
 
         if (address.addresses.length === 3) {
-            return res.state(HttpStatusCode.FORBIDDEN).json({ success: false, message: 'sorry you cannot add more than three address!', source })
+            return res.status(HttpStatusCode.FORBIDDEN).json({ success: false, message: 'sorry you cannot add more than three address!', source })
         }
 
         if (newAddress.isDefault) {
@@ -695,7 +695,7 @@ exports.editAddressPost = async (req, res, next) => {
                 acc[error.path] = error.msg
                 return acc
             }, {})
-            return res.state(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ validationError: true, validationErrors })
         }
 
         addressId = req.params.id
@@ -728,9 +728,9 @@ exports.editAddressPost = async (req, res, next) => {
 
                 return res.json({ success: true, message: 'successfuly updated the address', source })
             }
-            return res.state(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'address not found', source })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'address not found', source })
         } else {
-            return res.state(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'user document not found', source })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'user document not found', source })
         }
     } catch (error) {
         next(error)
@@ -757,9 +757,9 @@ exports.deleteAddress = async (req, res, next) => {
                 return res.json({ success: true, message: 'successfully deleted the address' })
             }
 
-            return res.state(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'address not found' })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'address not found' })
         }
-        return res.state(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'address document not found' })
+        return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'address document not found' })
     } catch (error) {
         next(error)
     }
@@ -796,12 +796,12 @@ exports.cancelProduct = async (req, res, next) => {
         const orders = await orderCollection.findOne({ _id: orderId })
 
         if (!orders) {
-            return res.state(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Order not found' });
+            return res.status(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Order not found' });
         }
 
         const itemIndex = orders.items.findIndex(item => item._id.toString() === itemId);
         if (itemIndex === -1) {
-            return res.state(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Item not found in order' });
+            return res.status(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Item not found in order' });
         }
 
 
@@ -868,12 +868,12 @@ exports.returnProduct = async (req, res, next) => {
         const orders = await orderCollection.findOne({ _id: orderId })
 
         if (!orders) {
-            return res.state(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Order not found' });
+            return res.status(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Order not found' });
         }
 
         const itemIndex = orders.items.findIndex(item => item._id.toString() === itemId);
         if (itemIndex === -1) {
-            return res.state(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Item not found in order' });
+            return res.status(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'Item not found in order' });
         }
 
         await orderCollection.findOneAndUpdate(
@@ -986,23 +986,23 @@ exports.placeOrder = async (req, res, next) => {
 
         const existingOrder = await orderCollection.findOne({ userId, orderLockStatus: 'in-progress' })
         if (existingOrder) {
-            return res.state(HttpStatusCode.BAD_REQUEST).json({ error: true, message: "You're already placing an order. Please complete the payment or wait." });
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ error: true, message: "You're already placing an order. Please complete the payment or wait." });
         }
 
         //address
         const address = await addressCollection.findOne({ userId })
         if (!address) {
-            return res.state(HttpStatusCode.NOT_FOUND).json({ error: true, message: 'sorry address not found' })
+            return res.status(HttpStatusCode.NOT_FOUND).json({ error: true, message: 'sorry address not found' })
         }
 
         const userAddress = address.addresses.find(addr => addr._id.toString() === deliveryAddress)
         if (!userAddress) {
-            return res.state(HttpStatusCode.NOT_FOUND).json({ error: true, message: 'sorry address not found' })
+            return res.status(HttpStatusCode.NOT_FOUND).json({ error: true, message: 'sorry address not found' })
         }
 
         //payment method
         if (!paymentMethod) {
-            return res.state(HttpStatusCode.NOT_FOUND).json({ error: true, message: 'plese select a payment option' })
+            return res.status(HttpStatusCode.NOT_FOUND).json({ error: true, message: 'plese select a payment option' })
         }
 
         //cart
@@ -1180,7 +1180,7 @@ exports.closePayment = async (req, res, next) => {
 
         const order = await orderCollection.findOne({ _id: orderId, orderLockStatus: 'in-progress' });
         if (!order) {
-            return res.state(HttpStatusCode.BAD_REQUEST).json({ error: true, message: 'Order not found' });
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ error: true, message: 'Order not found' });
         }
 
         // Loop over items to restore stock
@@ -1241,7 +1241,7 @@ exports.verifyPayment = async (req, res, next) => {
             if (paymentSuccess) {
                 return res.json({ success: true, message: 'payment successfull' })
             } else {
-                return res.state(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'payment faild' })
+                return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'payment faild' })
             }
 
         }
@@ -1285,20 +1285,20 @@ exports.payAfter = async (req, res, next) => {
 
         //payment method
         if (!paymentMethod) {
-            return res.state(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'plese select a payment method' })
+            return res.status(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'plese select a payment method' })
         }
 
         // Wallet Payment 
         if (paymentMethod === 'wallet') {
             const wallet = await walletCollection.findOne({ userId: userId })
             if (!wallet) {
-                return res.state(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'sorry wallet not found' })
+                return res.status(HttpStatusCode.NOT_FOUND).json({ success: false, message: 'sorry wallet not found' })
             }
 
 
             //wallet balance checking
             if (order.totalAmount > wallet.balance) {
-                return res.state(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'Insufficient balance in wallet' })
+                return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'Insufficient balance in wallet' })
             }
 
             //update wallet balance
