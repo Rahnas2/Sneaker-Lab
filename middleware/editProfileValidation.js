@@ -3,11 +3,13 @@ const usersCollection = require('../models/usersModel');
 
 const editProfileValidation = async (req, res, next) => {
   const user = await usersCollection.findOne({ _id: req.session.user });
-
+  console.log('user ', user.phone)
+  
   const validations = [
     body('username')
       .trim()
-      .isLength({ min: 5 }).withMessage('Username must be at least 5 characters'),
+      .isLength({ min: 5 }).withMessage('Username must be at least 5 characters')
+      .matches(/[a-zA-Z]/).withMessage('Username must contain at least one alphabet'),
 
     body('email')
       .trim()
@@ -24,9 +26,9 @@ const editProfileValidation = async (req, res, next) => {
         //     throw new Error('Please enter a valid 10-digit mobile number');
         //   }
         // }
-        if(user.phone){
-          if (!/^\d{10}$/.test(value)) {
-            throw new Error('Please enter a valid 10-digit mobile number');
+        if(value || user.phone !== undefined){ 
+          if (!/^\d{10}$/.test(Number(value))) {
+            throw new Error('Invalid Phone Number');
           }
         }
         return true

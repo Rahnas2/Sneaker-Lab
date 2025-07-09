@@ -4,7 +4,8 @@ const categoryValidation = [
 
     body('categoryName')
     .trim()
-    .notEmpty().withMessage('please enter the category name!'),
+    .notEmpty().withMessage('please enter the category name!')
+    .matches(/[a-zA-Z]/).withMessage('Category Name must contain at least one alphabet'),
 
     body('categoryDescription')
     .trim()

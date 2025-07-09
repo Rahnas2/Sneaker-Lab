@@ -561,8 +561,6 @@ exports.editProfile = async (req, res, next) => {
         }
 
         return res.json({ success: true, message: 'successfully updated your profile' })
-
-
     } catch (error) {
         next(error)
     }
@@ -824,7 +822,7 @@ exports.cancelProduct = async (req, res, next) => {
                 { new: true }
             )
         } else {
-            return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'sorry, please make sure your product is not delivered' })
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'sorry, please make sure your product is not delivered or canceled' })
         }
 
         // handinling wallet refunds for online or wallet payment methods

@@ -5,7 +5,8 @@ const proValidation = [
     //validate product name
     body('productName')
     .trim()
-    .isLength({min:5, max:30}).withMessage('product name should be between 5 and 30!'),
+    .isLength({min:5, max:30}).withMessage('Product Name should be between 5 and 30!')
+    .matches(/[a-zA-Z]/).withMessage('Product Name must contain at least one alphabet'),
 
     //validate category
     body('category')

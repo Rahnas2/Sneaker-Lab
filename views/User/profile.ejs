@@ -621,13 +621,13 @@
                 })
                     .then(response => response.json())
                     .then(result => {
-
+                    console.log('edit profile reuslt ', result)
                         //clear previous errors
                         if (userNameValidation) userNameValidation.classList.add('d-none')
                         if (emailValidation) emailValidation.classList.add('d-none')
                         if (phoneValidation) phoneValidation.classList.add('d-none')
                         if (noChange) noChange.classList.add('d-none')
-                        console.log('result', result)
+                        
                         if (result.validationError) {
                             Object.entries(result.validationErrors).forEach(([field, message]) => {
                                 const validationFaild = document.getElementById(`${field}-notValid`)

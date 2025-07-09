@@ -11,7 +11,8 @@ const variantValid = [
     .isFloat({min:1}).withMessage('price should be positive'),
 
     body('sizes.*.size')
-    .notEmpty().withMessage('size is required'),
+    .notEmpty().withMessage('size is required')
+    .isInt({min:1}).withMessage('invalid'),,
 
     body('sizes.*.stock')
     .notEmpty().withMessage('stock is required')

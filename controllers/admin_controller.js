@@ -197,7 +197,7 @@ exports.postaddproduct = async (req, res, next) => {
          return match ? match[1] : null
       }).filter(path => path !== null) : []
 
-      if (uploadedFiles.length < 4) {
+      if (uploadedFiles.length < (variants.length * 4)) {
          return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'all images are required' })
       }
 

@@ -47,7 +47,7 @@ router.get('/addProduct',auth,admin_controller.getaddProduct)
 router.post('/addProduct',upload.any(), auth, provalidation, admin_controller.postaddproduct)  
 router.post('/softDeleteProduct/:id',auth,admin_controller.toggleProductStatus)    
 router.get('/editProduct/:id',upload.any(),auth,admin_controller.getEditProduct)
-router.post('/editProduct/:id',upload.any(),auth,provalidation,admin_controller.postUpdatedProduct) 
+router.post('/editProduct/:id',upload.any(),auth,provalidation, admin_controller.postUpdatedProduct) 
 //product managment end
 
 //order managment start
