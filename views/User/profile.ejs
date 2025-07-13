@@ -65,7 +65,7 @@
                                             <% let viewButton=false %>
                                                 <div class="d-flex justify-content-between">
                                                     <h6 class="p-3 mb-0"><span class="font-weight-bold">Order Id:</span>
-                                                        <%= order._id %>
+                                                        <%= order._id.toString().slice(-6)  %>
                                                     </h6>
 
                                                     <% if (!viewButton) { %>

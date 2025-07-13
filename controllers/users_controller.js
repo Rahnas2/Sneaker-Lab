@@ -1115,11 +1115,14 @@ exports.placeOrder = async (req, res, next) => {
         //     }
 
         // }
-
+       
         const order = await orderCollection.create(orderDetails)
-        await processOrderPostPayment(orderItems)
+       
 
         if (paymentMethod === 'RAZORPAY') {
+            
+            await processOrderPostPayment(orderItems)
+
             const options = {
                 amount: totalAmount * 100,
                 currency: 'INR',
@@ -1143,10 +1146,14 @@ exports.placeOrder = async (req, res, next) => {
         if (paymentMethod === 'COD') {
             //COD Not allowed for above 1000
             if (orderDetails.totalAmount > 1000) {
+                const deleteOrder = await orderCollection.findByIdAndDelete(order._id)
+                console.log('delte order ', deleteOrder)
                 return res.json({ error: true, message: 'sorry cash on delivery is not allowed for above 1000,plese go with another methods' })
             }
-
+            
             await orderCollection.findByIdAndUpdate(order._id, { orderLockStatus: 'completed' })
+            await processOrderPostPayment(orderItems)
+
             await cartCollection.findOneAndUpdate({ userId: order.userId }, { $set: { items: [] } });
 
             return res.json({ success: true, message: 'order placed successfully' })

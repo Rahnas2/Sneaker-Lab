@@ -40,16 +40,20 @@ exports.invoiceDownload = async (res, orderId) =>{
     // Order and Shipping Information
 
     doc.fontSize(12).font('Helvetica-Bold').text('Compay Name: ', { continued: true })
-    doc.font('Helvetica').text('SNEKER LAB');
+    doc.font('Helvetica').text('SNEAKER LAB');
 
     doc.fontSize(12).font('Helvetica-Bold').text('Order ID: ', { continued: true });
-    doc.font('Helvetica').text(`${order._id}`);
+    doc.font('Helvetica').text(`${order._id.toString().slice(-6) }`);
+
+    doc.fontSize(12).font('Helvetica-Bold').text('Customer Name: ', { continued: true });
+    doc.font('Helvetica').text(`${order.deliveryAddress.fullName }`);
 
     doc.fontSize(12).font('Helvetica-Bold').text('Order Date: ', { continued: true });
     doc.font('Helvetica').text(`${order.createdAt.toDateString()}`);
     
     doc.font('Helvetica-Bold').text('Shipping To: ', { continued: true });
     doc.font('Helvetica').text(`${order.deliveryAddress.fullName}, ${order.deliveryAddress.localAddress}, ${order.deliveryAddress.city}, ${order.deliveryAddress.state}, ${order.deliveryAddress.pinCode}, ${order.deliveryAddress.country}`);
+
     doc.font('Helvetica-Bold').text('Payment Method: ', { continued: true });
     doc.font('Helvetica').text(`${order.paymentMethod}`);
 
